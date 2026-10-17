@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { evaluateDeterministicRules } from '../src/engine/deal-rules';
-import { calculateFreshnessStatus, isOfferActionable } from '../src/engine/freshness';
-import { generateDeduplicationKey, createOutboxEvent } from '../src/services/outbox';
-import { calculateDealScore } from '../src/engine/deal-scorer';
-import { MockCatalogAdapter } from '../src/adapters/mock-catalog';
-import { PayPalService } from '../src/services/paypal';
-import prisma from '../src/lib/db';
-import { NormalizedOffer } from '../src/contracts/offer';
+import { evaluateDeterministicRules } from '@/backend/engine/deal-rules';
+import { calculateFreshnessStatus, isOfferActionable } from '@/backend/engine/freshness';
+import { generateDeduplicationKey, createOutboxEvent } from '@/backend/services/outbox';
+import { calculateDealScore } from '@/backend/engine/deal-scorer';
+import { MockCatalogAdapter } from '@/backend/adapters/mock-catalog';
+import { PayPalService } from '@/backend/services/paypal';
+import prisma from '@/utils/db';
+import { NormalizedOffer } from '@/backend/contracts/offer';
 
 describe('DealPilot Architectural Guardrails & Failure Paths', () => {
   let sampleOffer: NormalizedOffer;
