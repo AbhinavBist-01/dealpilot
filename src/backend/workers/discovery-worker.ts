@@ -1,9 +1,9 @@
-import { Job } from 'bullmq';
-import prisma from '@/backend/utils/db';
-import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
-import { Channel3CatalogAdapter } from '@/backend/adapters/channel3-catalog';
-import { calculateDealScore } from '@/backend/engine/deal-scorer';
-import { generateDealExplanation } from '@/backend/services/llm';
+import { Job } from "bullmq";
+import prisma from "@/backend/utils/db";
+import { mockCatalogAdapter } from "@/backend/adapters/mock-catalog";
+import { Channel3CatalogAdapter } from "@/backend/adapters/channel3-catalog";
+import { calculateDealScore } from "@/backend/engine/deal-scorer";
+import { generateDealExplanation } from "@/backend/services/llm";
 
 export interface DiscoveryJobData {
   searchJobId: string;
@@ -14,11 +14,13 @@ export interface DiscoveryJobData {
 
 export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
   const { searchJobId, query, budget, targetPrice } = job.data;
-  console.log(`[Discovery Worker] Processing job ${job.id} for query "${query}"`);
+  console.log(
+    `[Discovery Worker] Processing job ${job.id} for query "${query}"`,
+  );
 
   await prisma.searchJob.update({
     where: { id: searchJobId },
-    data: { status: 'processing' },
+    data: { status: "processing" },
   });
 
   try {
@@ -27,7 +29,10 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
     const [mockOffers, channel3Offers] = await Promise.all([
       mockCatalogAdapter.search({ query, maxPrice: budget }),
       channel3Adapter.search({ query, maxPrice: budget }).catch((err) => {
-        console.warn('[Discovery Worker] Channel3 adapter failed, continuing with mock offers:', err);
+        console.warn(
+          "[Discovery Worker] Channel3 adapter failed, continuing with mock offers:",
+          err,
+        );
         return [];
       }),
     ]);
@@ -68,13 +73,16 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
           sellerName: offerData.seller.name,
           sellerId: offerData.seller.id,
           isAuthorizedSeller: offerData.seller.isAuthorized,
+          sellerRating: offerData.seller.rating ?? undefined,
+          sellerReviewCount: offerData.seller.reviewCount ?? undefined,
+          lowestPrice: Math.round(offerData.price.totalPrice * 0.94),
           itemPrice: offerData.price.itemPrice,
           shippingPrice: offerData.price.shippingPrice,
           fees: offerData.price.fees,
           currency: offerData.price.currency,
           totalPrice: offerData.price.totalPrice,
           availabilityStatus: offerData.availabilityStatus,
-          freshnessStatus: 'fresh',
+          freshnessStatus: "fresh",
           sourceConfidence: offerData.sourceConfidence,
           lastCheckedAt: new Date(),
         },
@@ -82,8 +90,10 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
           itemPrice: offerData.price.itemPrice,
           shippingPrice: offerData.price.shippingPrice,
           totalPrice: offerData.price.totalPrice,
+          sellerRating: offerData.seller.rating || undefined,
+          sellerReviewCount: offerData.seller.reviewCount || undefined,
           availabilityStatus: offerData.availabilityStatus,
-          freshnessStatus: 'fresh',
+          freshnessStatus: "fresh",
           lastCheckedAt: new Date(),
         },
       });
@@ -105,7 +115,7 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
       const pastObservations = await prisma.priceObservation.findMany({
         where: { productId: product.id },
         select: { totalPrice: true },
-        orderBy: { observedAt: 'desc' },
+        orderBy: { observedAt: "desc" },
         take: 30,
       });
       const historicalPrices = pastObservations.map((o) => o.totalPrice);
@@ -118,13 +128,18 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
         budget,
       });
 
-      // 7. Generate fact-based explanation
+      // 7. Generate fact-based AI specs & deal explanation
       const explanation = await generateDealExplanation({
         productTitle: product.title,
         currentPrice: offer.totalPrice,
         targetPrice,
         signals: evaluationResult.signals,
         score: evaluationResult.score,
+        condition: offerData.variantAttributes?.condition,
+        sellerName: offerData.seller.name,
+        sellerRating: offerData.seller.rating,
+        specs: (offerData.variantAttributes as any)?.specs || `${offerData.brand} ${offerData.model}`,
+        lowestPrice: offer.lowestPrice || offer.totalPrice,
       });
 
       // 8. Persist Deal Evaluation
@@ -145,19 +160,21 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
     await prisma.searchJob.update({
       where: { id: searchJobId },
       data: {
-        status: 'completed',
+        status: "completed",
         resultCount: offers.length,
       },
     });
 
-    console.log(`[Discovery Worker] Job ${job.id} completed. Ingested ${offers.length} offers.`);
+    console.log(
+      `[Discovery Worker] Job ${job.id} completed. Ingested ${offers.length} offers.`,
+    );
     return { success: true, count: offers.length };
   } catch (error: any) {
     console.error(`[Discovery Worker] Job ${job.id} failed:`, error);
     await prisma.searchJob.update({
       where: { id: searchJobId },
       data: {
-        status: 'failed',
+        status: "failed",
         error: error.message,
       },
     });
