@@ -17,8 +17,50 @@ export async function generateDealExplanation(input: GenerateExplanationInput): 
   const { productTitle, currentPrice, targetPrice, signals, score, condition, sellerName, sellerRating, specs, lowestPrice } = input;
 
   try {
-    if (process.env.LLM_PROVIDER === 'gemini' && process.env.GEMINI_API_KEY) {
-      // In production with live Gemini key, call structured generation
+    const isAiEnabled = Boolean(
+      (process.env.LLM_PROVIDER?.toLowerCase().includes('open') || process.env.OPENAI_API_KEY) &&
+      process.env.OPENAI_API_KEY &&
+      !process.env.OPENAI_API_KEY.includes('your_openai')
+    );
+
+    if (isAiEnabled) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are DealPilot Deal Intelligence AI. Given product details, condition, specs, lowest price, and seller rating, output a concise 1-2 sentence factual summary highlighting specs, deal value, and seller credibility. Never hallucinate fake specs.',
+              },
+              {
+                role: 'user',
+                content: `Product: ${productTitle}, Current Price: ₹${currentPrice}, Lowest Price: ₹${lowestPrice || 'N/A'}, Specs: ${specs || 'N/A'}, Condition: ${condition || 'New'}, Seller: ${sellerName || 'Verified'} (${sellerRating || 4.8}/5.0), Deal Score: ${score}/100.`,
+              },
+            ],
+            max_tokens: 100,
+            temperature: 0.2,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          const data = (await response.json()) as any;
+          const explanation = data.choices?.[0]?.message?.content?.trim();
+          if (explanation) {
+            return explanation;
+          }
+        }
+      } catch {
+        clearTimeout(timeoutId);
+      }
     }
   } catch (err) {
     console.warn('[LLM Explainer] Provider call failed or timed out. Falling back to deterministic template.');
