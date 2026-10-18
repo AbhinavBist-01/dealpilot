@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, RefreshCw, Sparkles } from 'lucide-react';
+import { Search, RefreshCw, Sparkles, LayoutGrid, Table } from 'lucide-react';
 import { Header } from '../components/Header';
 import { DealCard } from '../components/DealCard';
+import { DealGrid } from '../components/DealGrid';
 import { WatchesList } from '../components/WatchesList';
 import { OutboxAlertsList } from '../components/OutboxAlertsList';
 import { TestLabPanel } from '../components/TestLabPanel';
@@ -18,6 +19,7 @@ export const DashboardView: React.FC = () => {
   const [trackingRules, setTrackingRules] = useState<any[]>([]);
   const [outboxAlerts, setOutboxAlerts] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'search' | 'watches' | 'alerts' | 'simulation'>('search');
+  const [viewMode, setViewMode] = useState<'cards' | 'grid'>('cards');
 
   // Tracking Modal State
   const [trackModalProduct, setTrackModalProduct] = useState<any | null>(null);
@@ -270,11 +272,40 @@ export const DashboardView: React.FC = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-300">
-                  Normalized Deals ({products.length} found)
-                </h2>
-                <span className="text-xs text-slate-500">Deterministic scoring & live inventory</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-300">
+                    Normalized Deals ({products.length} found)
+                  </h2>
+                  <span className="text-xs text-slate-500">Deterministic scoring & live inventory</span>
+                </div>
+
+                {products.length > 0 && (
+                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button
+                      onClick={() => setViewMode('cards')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                        viewMode === 'cards'
+                          ? 'bg-slate-800 text-emerald-400 shadow'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      <span>Cards</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                        viewMode === 'grid'
+                          ? 'bg-slate-800 text-emerald-400 shadow'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Table className="w-3.5 h-3.5" />
+                      <span>AG Grid Table</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {products.length === 0 && !loading && (
@@ -283,19 +314,30 @@ export const DashboardView: React.FC = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <DealCard
-                    key={product.id}
-                    product={product}
-                    onTrack={(p, o) => {
-                      setTrackModalProduct(p);
-                      setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
-                    }}
-                    onBuy={(p, o) => initiateCheckout(p, o)}
-                  />
-                ))}
-              </div>
+              {viewMode === 'cards' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <DealCard
+                      key={product.id}
+                      product={product}
+                      onTrack={(p, o) => {
+                        setTrackModalProduct(p);
+                        setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
+                      }}
+                      onBuy={(p, o) => initiateCheckout(p, o)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <DealGrid
+                  products={products}
+                  onTrack={(p, o) => {
+                    setTrackModalProduct(p);
+                    setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
+                  }}
+                  onBuy={(p, o) => initiateCheckout(p, o)}
+                />
+              )}
             </div>
           </div>
         )}

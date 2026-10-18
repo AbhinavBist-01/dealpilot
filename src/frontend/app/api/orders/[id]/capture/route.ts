@@ -19,10 +19,12 @@ export async function POST(
     }
 
     const { paypalOrderId } = parsed.data;
+    const idempotencyKey = req.headers.get('idempotency-key') || req.headers.get('x-idempotency-key') || undefined;
 
     const result = await payPalService.captureOrder({
       orderId: params.id,
       paypalOrderId,
+      idempotencyKey,
     });
 
     return NextResponse.json({

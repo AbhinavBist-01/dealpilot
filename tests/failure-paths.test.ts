@@ -281,5 +281,80 @@ describe('DealPilot Architectural Guardrails & Failure Paths', () => {
     const revalidation = await mockAdapter.revalidateOffer(testExtId);
     expect(revalidation.currentTotalPrice).toBe(21999);
     expect(revalidation.currentTotalPrice).not.toBe(initialOffer?.price.totalPrice);
+
+    // Reset price for downstream tests
+    mockAdapter.updateSimulatedPrice(testExtId, 19499);
+  });
+
+  // Test 11: Payment Idempotency Keys Guard
+  it('11. Idempotency keys prevent double order creation and duplicate payment captures during concurrent requests', async () => {
+    const payPal = new PayPalService();
+    const mockUser = await prisma.user.upsert({
+      where: { email: 'idempotency_user@dealpilot.ai' },
+      create: { email: 'idempotency_user@dealpilot.ai', name: 'Idempotency User' },
+      update: {},
+    });
+    const mockProduct = await prisma.product.findFirst();
+    const mockOffer = await prisma.offer.upsert({
+      where: {
+        sourceId_externalProductId: {
+          sourceId: 'mock_retailer',
+          externalProductId: 'mock-sony-xm5-black',
+        },
+      },
+      create: {
+        productId: mockProduct!.id,
+        sourceId: 'mock_retailer',
+        externalProductId: 'mock-sony-xm5-black',
+        offerUrl: 'https://mock.com',
+        sellerName: 'Best Buy Official',
+        itemPrice: 19499,
+        totalPrice: 19499,
+      },
+      update: {
+        totalPrice: 19499,
+      },
+    });
+
+    const idempotencyKey = `req-idempotency-${Date.now()}`;
+
+    // First checkout order creation
+    const orderResult1 = await payPal.createCheckoutOrder({
+      userId: mockUser.id,
+      offerId: mockOffer.id,
+      idempotencyKey,
+    });
+    expect(orderResult1.valid).toBe(true);
+    expect(orderResult1.order).toBeDefined();
+
+    // Duplicate concurrent checkout order creation with same idempotency key
+    const orderResult2 = await payPal.createCheckoutOrder({
+      userId: mockUser.id,
+      offerId: mockOffer.id,
+      idempotencyKey,
+    });
+    expect(orderResult2.valid).toBe(true);
+    expect(orderResult2.idempotent).toBe(true);
+    expect(orderResult2.order.id).toBe(orderResult1.order.id);
+
+    // Test capture idempotency key
+    const captureKey = `capture-idempotency-${Date.now()}`;
+    const capture1 = await payPal.captureOrder({
+      orderId: orderResult1.order.id,
+      paypalOrderId: orderResult1.order.paypalOrderId,
+      idempotencyKey: captureKey,
+    });
+    expect(capture1.success).toBe(true);
+    expect(capture1.idempotent).toBe(false);
+
+    // Duplicate capture call with same key
+    const capture2 = await payPal.captureOrder({
+      orderId: orderResult1.order.id,
+      paypalOrderId: orderResult1.order.paypalOrderId,
+      idempotencyKey: captureKey,
+    });
+    expect(capture2.success).toBe(true);
+    expect(capture2.idempotent).toBe(true);
+    expect(capture2.order.id).toBe(capture1.order.id);
   });
 });

@@ -18,10 +18,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { offerId } = parsed.data;
+    const idempotencyKey = req.headers.get('idempotency-key') || req.headers.get('x-idempotency-key') || undefined;
 
     const result = await payPalService.createCheckoutOrder({
       userId: user.id,
       offerId,
+      idempotencyKey,
     });
 
     if (!result.valid) {

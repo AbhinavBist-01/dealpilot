@@ -1,6 +1,7 @@
 import { Job } from 'bullmq';
 import prisma from '@/backend/utils/db';
 import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
+import { Channel3CatalogAdapter } from '@/backend/adapters/channel3-catalog';
 import { calculateDealScore } from '@/backend/engine/deal-scorer';
 import { generateDealExplanation } from '@/backend/services/llm';
 
@@ -21,11 +22,16 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
   });
 
   try {
-    // 1. Query catalog adapter
-    const offers = await mockCatalogAdapter.search({
-      query,
-      maxPrice: budget,
-    });
+    // 1. Query catalog adapters in parallel (Mock Catalog + Channel3 Commerce Feed)
+    const channel3Adapter = new Channel3CatalogAdapter();
+    const [mockOffers, channel3Offers] = await Promise.all([
+      mockCatalogAdapter.search({ query, maxPrice: budget }),
+      channel3Adapter.search({ query, maxPrice: budget }).catch((err) => {
+        console.warn('[Discovery Worker] Channel3 adapter failed, continuing with mock offers:', err);
+        return [];
+      }),
+    ]);
+    const offers = [...mockOffers, ...channel3Offers];
 
     for (const offerData of offers) {
       // 2. Upsert Canonical Product

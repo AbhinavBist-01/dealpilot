@@ -68,6 +68,10 @@ dealpilot/
 | **M5: Transactional Outbox & Alerts** | Atomic DB writes for alerts, deduplication keys (`rule+offer+event+obs`) | ✅ Complete | `src/backend/services/outbox.ts` with deduplication constraints. |
 | **M6: Pre-flight Revalidation & PayPal** | Live revalidation gatekeeper + PayPal Orders v2 Sandbox integration | ✅ Complete | `src/backend/services/paypal.ts` with server-side capture verification. |
 | **M7: Failure-Path Test Suite & Telemetry** | 10 automated test suites covering failure paths and edge cases | ✅ Complete | `tests/failure-paths.test.ts` (10/10 passing in 148ms). |
+| **M8: AG Grid Comparison Dashboard** | Interactive comparison grid with column sorting, filters, and dark quartz theme | ✅ Complete | `src/frontend/components/DealGrid.tsx` with toggle in `DashboardView`. |
+| **M9: Channel3 Commerce Adapter** | Channel3 API integration for multi-merchant product discovery and normalization | ✅ Complete | `src/backend/adapters/channel3-catalog.ts` in discovery worker pipeline. |
+| **M10: APIMatic OpenAPI Specification** | OpenAPI 3.1 specification for client SDK generation | ✅ Complete | `src/backend/contracts/dealpilot-openapi.json`. |
+| **M11: Payment Idempotency Key Guard** | `Idempotency-Key` header enforcement for order creation & capture | ✅ Complete | `src/backend/services/paypal.ts` & verified in `tests/failure-paths.test.ts` Test 11. |
 
 ---
 

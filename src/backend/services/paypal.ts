@@ -4,11 +4,13 @@ import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 export interface CreateOrderParams {
   userId: string;
   offerId: string;
+  idempotencyKey?: string;
 }
 
 export interface CaptureOrderParams {
   orderId: string;
   paypalOrderId: string;
+  idempotencyKey?: string;
 }
 
 export interface CheckoutValidationResult {
@@ -16,12 +18,14 @@ export interface CheckoutValidationResult {
   reason?: string;
   order?: any;
   currentPrice?: number;
+  idempotent?: boolean;
 }
 
 export class PayPalService {
   private clientId: string;
   private clientSecret: string;
   private apiBase: string;
+  private idempotencyCache: Map<string, any> = new Map();
 
   constructor() {
     this.clientId = process.env.PAYPAL_CLIENT_ID || 'mock_paypal_client_id';
@@ -34,7 +38,15 @@ export class PayPalService {
    * Revalidates live price, stock, and seller BEFORE initiating order
    */
   async createCheckoutOrder(params: CreateOrderParams): Promise<CheckoutValidationResult> {
-    const { userId, offerId } = params;
+    const { userId, offerId, idempotencyKey } = params;
+
+    // Check idempotency cache to prevent duplicate order races
+    if (idempotencyKey && this.idempotencyCache.has(`create_${idempotencyKey}`)) {
+      return {
+        ...this.idempotencyCache.get(`create_${idempotencyKey}`),
+        idempotent: true,
+      };
+    }
 
     const offer = await prisma.offer.findUnique({
       where: { id: offerId },
@@ -82,7 +94,7 @@ export class PayPalService {
       },
     });
 
-    return {
+    const result = {
       valid: true,
       order: {
         id: order.id,
@@ -92,6 +104,12 @@ export class PayPalService {
         status: order.status,
       },
     };
+
+    if (idempotencyKey) {
+      this.idempotencyCache.set(`create_${idempotencyKey}`, result);
+    }
+
+    return result;
   }
 
   /**
@@ -99,7 +117,15 @@ export class PayPalService {
    * Transitions state machine: capture_pending -> paid
    */
   async captureOrder(params: CaptureOrderParams) {
-    const { orderId, paypalOrderId } = params;
+    const { orderId, paypalOrderId, idempotencyKey } = params;
+
+    // Check idempotency cache
+    if (idempotencyKey && this.idempotencyCache.has(`capture_${idempotencyKey}`)) {
+      return {
+        ...this.idempotencyCache.get(`capture_${idempotencyKey}`),
+        idempotent: true,
+      };
+    }
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -160,12 +186,21 @@ export class PayPalService {
       }),
     ]);
 
-    return {
+    const result = {
       success: true,
       order: updatedOrder,
       transaction,
       idempotent: false,
     };
+
+    if (idempotencyKey) {
+      this.idempotencyCache.set(`capture_${idempotencyKey}`, {
+        ...result,
+        idempotent: true,
+      });
+    }
+
+    return result;
   }
 }
 

@@ -1,0 +1,280 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DealPilot API",
+    "version": "1.0.0",
+    "description": "Autonomous deal-hunting and price-monitoring agent API specification, fully compatible with APIMatic SDK code-generation and multi-retailer source adapters.",
+    "contact": {
+      "name": "DealPilot Engineering"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/search": {
+      "post": {
+        "summary": "Initiate async deal discovery job",
+        "description": "Queues a BullMQ worker job to crawl verified retailer feeds (Channel3, BestBuy, B&H) and normalize offers.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Search job accepted and queued in BullMQ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobId": { "type": "string" },
+                    "status": { "type": "string", "example": "queued" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Search products and normalized deals directly",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "required": false },
+          { "name": "budget", "in": "query", "schema": { "type": "number" }, "required": false }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of normalized products with evaluated offers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "products": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/ProductWithOffers" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tracking-rules": {
+      "get": {
+        "summary": "List active tracking rules for the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Active tracking watches and alerts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rules": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/TrackingRule" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new price tracking watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateTrackingRuleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tracking rule created and monitoring worker scheduled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "rule": { "$ref": "#/components/schemas/TrackingRule" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Revalidate deal and create PayPal checkout order",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Unique UUID or key to prevent duplicate order creation races"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["offerId"],
+                "properties": {
+                  "offerId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pre-flight revalidated and PayPal order initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "order": { "$ref": "#/components/schemas/Order" }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Price changed or out of stock during pre-flight revalidation"
+          }
+        }
+      }
+    },
+    "/orders/{id}/capture": {
+      "post": {
+        "summary": "Verify and capture approved PayPal transaction server-to-server",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Unique key to ensure payment capture is strictly idempotent"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server verified capture; order transitioned to paid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "order": { "$ref": "#/components/schemas/Order" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SearchRequest": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string", "example": "best headphones under 20000" },
+          "budget": { "type": "number", "example": 20000 },
+          "targetPrice": { "type": "number", "example": 18000 }
+        }
+      },
+      "CreateTrackingRuleRequest": {
+        "type": "object",
+        "required": ["productId", "targetPrice"],
+        "properties": {
+          "productId": { "type": "string" },
+          "targetPrice": { "type": "number" },
+          "strategy": { "type": "string", "enum": ["target_price", "historical_low", "percentage_drop"] }
+        }
+      },
+      "NormalizedOffer": {
+        "type": "object",
+        "required": ["externalProductId", "sourceId", "title", "totalPrice", "currency"],
+        "properties": {
+          "externalProductId": { "type": "string" },
+          "sourceId": { "type": "string" },
+          "title": { "type": "string" },
+          "brand": { "type": "string" },
+          "category": { "type": "string" },
+          "condition": { "type": "string", "enum": ["new", "refurbished", "open_box"] },
+          "basePrice": { "type": "number" },
+          "shippingFee": { "type": "number" },
+          "totalPrice": { "type": "number" },
+          "currency": { "type": "string", "example": "INR" },
+          "availabilityStatus": { "type": "string", "enum": ["in_stock", "out_of_stock", "backorder"] },
+          "sellerName": { "type": "string" },
+          "isAuthorizedSeller": { "type": "boolean" }
+        }
+      },
+      "ProductWithOffers": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "brand": { "type": "string" },
+          "category": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "offers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/NormalizedOffer" }
+          }
+        }
+      },
+      "TrackingRule": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "productId": { "type": "string" },
+          "targetPrice": { "type": "number" },
+          "strategy": { "type": "string" },
+          "isActive": { "type": "boolean" },
+          "lastEvaluatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string", "enum": ["created", "revalidated", "awaiting_capture", "paid", "failed"] },
+          "amount": { "type": "number" },
+          "currency": { "type": "string" },
+          "paypalOrderId": { "type": "string" }
+        }
+      }
+    }
+  }
+}

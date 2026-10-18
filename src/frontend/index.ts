@@ -1,6 +1,7 @@
 // DealPilot Frontend Subsystem
 export * from './components/Header';
 export * from './components/DealCard';
+export * from './components/DealGrid';
 export * from './components/WatchesList';
 export * from './components/OutboxAlertsList';
 export * from './components/TestLabPanel';
