@@ -1,4 +1,4 @@
-import { DealSignals } from '../contracts/evaluation';
+import { DealSignals } from "../contracts/evaluation";
 
 export interface GenerateExplanationInput {
   productTitle: string;
@@ -13,43 +13,61 @@ export interface GenerateExplanationInput {
   lowestPrice?: number;
 }
 
-export async function generateDealExplanation(input: GenerateExplanationInput): Promise<string> {
-  const { productTitle, currentPrice, targetPrice, signals, score, condition, sellerName, sellerRating, specs, lowestPrice } = input;
+export async function generateDealExplanation(
+  input: GenerateExplanationInput,
+): Promise<string> {
+  const {
+    productTitle,
+    currentPrice,
+    targetPrice,
+    signals,
+    score,
+    condition,
+    sellerName,
+    sellerRating,
+    specs,
+    lowestPrice,
+  } = input;
 
   try {
     const isAiEnabled = Boolean(
-      (process.env.LLM_PROVIDER?.toLowerCase().includes('open') || process.env.OPENAI_API_KEY) &&
+      (process.env.LLM_PROVIDER?.toLowerCase().includes("open") ||
+        process.env.OPENAI_API_KEY) &&
       process.env.OPENAI_API_KEY &&
-      !process.env.OPENAI_API_KEY.includes('your_openai')
+      !process.env.OPENAI_API_KEY.includes("your_openai"),
     );
 
     if (isAiEnabled) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
       try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        const response = await fetch(
+          "https://api.openai.com/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: process.env.OPENAI_MODEL ?? "gpt-6-luna",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are DealPilot Deal Intelligence AI. Given product details, condition, specs, lowest price, and seller rating, output a concise 1-2 sentence factual summary highlighting specs, deal value, and seller credibility. Never hallucinate fake specs.",
+                },
+                {
+                  role: "user",
+                  content: `Product: ${productTitle}, Current Price: ₹${currentPrice}, Lowest Price: ₹${lowestPrice || "N/A"}, Specs: ${specs || "N/A"}, Condition: ${condition || "New"}, Seller: ${sellerName || "Verified"} (${sellerRating || 4.8}/5.0), Deal Score: ${score}/100.`,
+                },
+              ],
+              max_tokens: 100,
+              temperature: 0.2,
+            }),
+            signal: controller.signal,
           },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              {
-                role: 'system',
-                content: 'You are DealPilot Deal Intelligence AI. Given product details, condition, specs, lowest price, and seller rating, output a concise 1-2 sentence factual summary highlighting specs, deal value, and seller credibility. Never hallucinate fake specs.',
-              },
-              {
-                role: 'user',
-                content: `Product: ${productTitle}, Current Price: ₹${currentPrice}, Lowest Price: ₹${lowestPrice || 'N/A'}, Specs: ${specs || 'N/A'}, Condition: ${condition || 'New'}, Seller: ${sellerName || 'Verified'} (${sellerRating || 4.8}/5.0), Deal Score: ${score}/100.`,
-              },
-            ],
-            max_tokens: 100,
-            temperature: 0.2,
-          }),
-          signal: controller.signal,
-        });
+        );
         clearTimeout(timeoutId);
         if (response.ok) {
           const data = (await response.json()) as any;
@@ -63,14 +81,21 @@ export async function generateDealExplanation(input: GenerateExplanationInput): 
       }
     }
   } catch (err) {
-    console.warn('[LLM Explainer] Provider call failed or timed out. Falling back to deterministic template.');
+    console.warn(
+      "[LLM Explainer] Provider call failed or timed out. Falling back to deterministic template.",
+    );
   }
 
   // Factual, deterministic AI deal & specs summary respecting boundaries
   const parts: string[] = [];
 
   // 1. Condition & Specs
-  const conditionLabel = condition === 'refurbished' ? 'Certified Refurbished' : condition === 'open_box' ? 'Open Box' : 'Brand New';
+  const conditionLabel =
+    condition === "refurbished"
+      ? "Certified Refurbished"
+      : condition === "open_box"
+        ? "Open Box"
+        : "Brand New";
   if (specs) {
     parts.push(`${conditionLabel} (${specs}).`);
   } else {
@@ -78,19 +103,29 @@ export async function generateDealExplanation(input: GenerateExplanationInput): 
   }
 
   // 2. Price vs Historical Low
-  const historicalLow = lowestPrice || (signals.isHistoricalLow ? currentPrice : Math.round(currentPrice * 0.95));
+  const historicalLow =
+    lowestPrice ||
+    (signals.isHistoricalLow ? currentPrice : Math.round(currentPrice * 0.95));
   if (currentPrice <= historicalLow || signals.isHistoricalLow) {
-    parts.push(`Lowest price ever recorded (₹${currentPrice.toLocaleString()}).`);
+    parts.push(
+      `Lowest price ever recorded (₹${currentPrice.toLocaleString()}).`,
+    );
   } else {
     const diff = currentPrice - historicalLow;
-    parts.push(`Historical low is ₹${historicalLow.toLocaleString()} (currently ₹${diff.toLocaleString()} above).`);
+    parts.push(
+      `Historical low is ₹${historicalLow.toLocaleString()} (currently ₹${diff.toLocaleString()} above).`,
+    );
   }
 
   // 3. Seller Rating & Credibility
-  const ratingText = sellerRating ? `★ ${sellerRating.toFixed(1)}/5.0` : '★ 4.8/5.0';
-  const sellerText = sellerName || 'Verified Merchant';
+  const ratingText = sellerRating
+    ? `★ ${sellerRating.toFixed(1)}/5.0`
+    : "★ 4.8/5.0";
+  const sellerText = sellerName || "Verified Merchant";
   if (signals.isAuthorizedSeller) {
-    parts.push(`Sold by authorized retailer ${sellerText} with ${ratingText} customer satisfaction.`);
+    parts.push(
+      `Sold by authorized retailer ${sellerText} with ${ratingText} customer satisfaction.`,
+    );
   } else {
     parts.push(`Sold by ${sellerText} (${ratingText}).`);
   }
@@ -98,8 +133,10 @@ export async function generateDealExplanation(input: GenerateExplanationInput): 
   // 4. Target Match & Savings
   if (targetPrice && currentPrice <= targetPrice) {
     const savings = targetPrice - currentPrice;
-    parts.push(`Hits your target price with ₹${savings.toLocaleString()} bonus savings.`);
+    parts.push(
+      `Hits your target price with ₹${savings.toLocaleString()} bonus savings.`,
+    );
   }
 
-  return parts.join(' ');
+  return parts.join(" ");
 }
