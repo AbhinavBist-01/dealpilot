@@ -1,88 +1,101 @@
+import { Channel3 } from '@channel3/sdk';
 import { CatalogAdapter, CatalogSearchFilter } from './catalog-adapter';
 import { NormalizedOffer } from '../contracts/offer';
 
 export class Channel3CatalogAdapter implements CatalogAdapter {
   readonly sourceId = 'channel3';
-  readonly name = 'Channel3 Commerce Network';
-  private apiKey: string | undefined;
-  private baseUrl = 'https://api.trychannel3.com/v1';
+  readonly name = 'Channel3 Universal Commerce Network';
+  private client: Channel3 | null = null;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.CHANNEL3_API_KEY;
+    const key = apiKey || process.env.CHANNEL3_API_KEY;
+    if (key) {
+      this.client = new Channel3({ apiKey: key });
+    }
   }
 
   async search(filter: CatalogSearchFilter): Promise<NormalizedOffer[]> {
-    if (this.apiKey) {
+    // 1. Live Query via Official Channel3 SDK
+    if (this.client) {
       try {
-        const response = await fetch(`${this.baseUrl}/search`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
-            'x-api-key': this.apiKey,
-          },
-          body: JSON.stringify({
-            query: filter.query,
-            filters: {
-              ...(filter.maxPrice ? { price: { max: filter.maxPrice } } : {}),
-            },
-          }),
+        const queryTerm = filter.query || 'headphones';
+        const page = await this.client.products.search({
+          query: queryTerm,
+          limit: 10,
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          const offers: NormalizedOffer[] = [];
+        const products = page.data || [];
+        const offers: NormalizedOffer[] = [];
 
-          if (Array.isArray(data.products)) {
-            for (const prod of data.products) {
-              const bestOffer = prod.offers?.[0];
-              if (!bestOffer) continue;
+        for (const prod of products) {
+          const productOffers = (prod as any).offers || [];
+          if (productOffers.length === 0) continue;
 
-              const price = Number(bestOffer.price?.price || bestOffer.price || 0);
-              const shipping = Number(bestOffer.shipping?.price || 0);
-              const extId = `c3_${prod.id || Math.random().toString(36).substring(7)}`;
+          const brandName = (Array.isArray((prod as any).brands) && (prod as any).brands[0]?.name)
+            || ((prod as any).brands && (prod as any).brands[0])
+            || 'Verified Retailer';
+          const categoryName = typeof (prod as any).category === 'string'
+            ? (prod as any).category
+            : ((prod as any).category?.name || filter.category || 'Consumer Goods');
+          const imageUrl = (prod as any).images?.[0]?.cleaned_url
+            || (prod as any).images?.[0]?.url
+            || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80';
 
-              offers.push({
-                sourceId: this.sourceId,
-                externalProductId: extId,
-                offerUrl: bestOffer.url || 'https://trychannel3.com',
-                canonicalProductId: `c3-canonical-${prod.id || extId}`,
-                title: prod.title || 'Channel3 Product',
-                brand: prod.brand || 'Verified Retailer',
-                model: prod.model || prod.title || 'Standard',
-                category: filter.category || 'Electronics',
-                imageUrl: prod.images?.[0]?.cleaned_url || prod.images?.[0]?.url || prod.images?.[0],
-                variantAttributes: {
-                  condition: (filter.condition || 'new') as 'new' | 'refurbished' | 'open_box',
-                },
-                seller: {
-                  id: `seller-${bestOffer.domain || 'c3'}`,
-                  name: bestOffer.domain || 'Channel3 Verified Merchant',
-                  isAuthorized: true,
-                  rating: 4.7,
-                },
-                price: {
-                  itemPrice: price,
-                  shippingPrice: shipping,
-                  fees: 0,
-                  currency: 'INR',
-                  totalPrice: price + shipping,
-                },
-                availabilityStatus: bestOffer.availability === 'out_of_stock' ? 'out_of_stock' : 'in_stock',
-                sourceConfidence: 0.95,
-                observedAt: new Date(),
-              });
+          for (const rawOffer of productOffers) {
+            const rawPrice = Number(rawOffer.price?.price || 0);
+            if (rawPrice <= 0) continue;
+
+            const currency = rawOffer.price?.currency || 'USD';
+            // Convert USD to INR for unified shopping view (~83 INR/USD)
+            const conversionRate = currency === 'USD' ? 83 : 1;
+            const normalizedItemPrice = Math.round(rawPrice * conversionRate);
+
+            if (filter.maxPrice && normalizedItemPrice > filter.maxPrice) {
+              continue;
             }
-          }
 
-          if (offers.length > 0) return offers;
+            const extId = `c3_${prod.id}_${rawOffer.domain?.replace(/[^a-zA-Z0-9]/g, '')}`;
+
+            offers.push({
+              sourceId: this.sourceId,
+              externalProductId: extId,
+              offerUrl: rawOffer.url || 'https://trychannel3.com',
+              canonicalProductId: `c3-${prod.id}`,
+              title: prod.title || 'Channel3 Verified Deal',
+              brand: String(brandName),
+              model: prod.title || 'Standard',
+              category: String(categoryName),
+              imageUrl,
+              variantAttributes: {
+                condition: (rawOffer.condition === 'refurbished' ? 'refurbished' : 'new'),
+              },
+              seller: {
+                id: `c3-seller-${rawOffer.domain}`,
+                name: rawOffer.domain || 'Channel3 Verified Merchant',
+                isAuthorized: true,
+                rating: 4.8,
+              },
+              price: {
+                itemPrice: normalizedItemPrice,
+                shippingPrice: 0,
+                fees: 0,
+                currency: 'INR',
+                totalPrice: normalizedItemPrice,
+              },
+              availabilityStatus: rawOffer.availability === 'OutOfStock' ? 'out_of_stock' : 'in_stock',
+              sourceConfidence: 0.98,
+              observedAt: new Date(),
+            });
+          }
         }
-      } catch (err) {
-        console.warn('[Channel3CatalogAdapter] Live API call failed, falling back to simulated Channel3 feed:', err);
+
+        if (offers.length > 0) return offers;
+      } catch (err: any) {
+        console.warn('[Channel3CatalogAdapter] Channel3 SDK query failed, falling back to simulated catalog:', err.message || err);
       }
     }
 
-    // Curated Channel3 fallback feed if API key is not configured or network offline
+    // 2. Curated Fallback Feed (if offline or unconfigured)
     return this.getSimulatedChannel3Offers(filter);
   }
 
