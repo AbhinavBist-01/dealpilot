@@ -5,7 +5,7 @@ import { generateDeduplicationKey, createOutboxEvent } from '@/backend/services/
 import { calculateDealScore } from '@/backend/engine/deal-scorer';
 import { MockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 import { PayPalService } from '@/backend/services/paypal';
-import prisma from '@/utils/db';
+import prisma from '@/backend/utils/db';
 import { NormalizedOffer } from '@/backend/contracts/offer';
 
 describe('DealPilot Architectural Guardrails & Failure Paths', () => {

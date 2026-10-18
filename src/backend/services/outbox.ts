@@ -1,4 +1,4 @@
-import prisma from '@/utils/db';
+import prisma from '@/backend/utils/db';
 
 export interface EnqueueOutboxParams {
   trackingRuleId: string;

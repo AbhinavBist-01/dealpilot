@@ -1,6 +1,6 @@
 import React from 'react';
 import { RefreshCw, Clock } from 'lucide-react';
-import { formatCurrency, formatDateTime } from '@/utils/formatters';
+import { formatCurrency, formatDateTime } from '../utils/formatters';
 
 interface WatchesListProps {
   rules: any[];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { CreditCard, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '../utils/formatters';
 
 interface PayPalModalProps {
   step: 'review' | 'paypal_sandbox' | 'completed' | 'error';

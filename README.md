@@ -80,7 +80,7 @@ Shopping online requires manual checking, price comparison across dozens of tabs
 
 ## ADDONS
 
-Use these in the produ t too
+Use these in the product too
 
 1. Channel3
    Where: Product discovery and offer normalization.
@@ -96,6 +96,9 @@ Use these in the produ t too
    Where: External API integration.
    Investigate it for generating client SDKs and integrating supported APIs from their specifications. This can help keep your retailer or commerce API integrations consistent.
    Architecture: API specification → generated client → source adapter
+
+**Important**:Use idempotency keys while the payment is processed to prevent race around condns.
+:Use proper agent tool validation and verification with input schema , output schema reuirement when to use the tool
 
 ## 🏗️ System Architecture
 

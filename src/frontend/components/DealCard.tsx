@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShieldCheck, Sparkles, Bell, CreditCard } from 'lucide-react';
-import { formatCurrency, getDealScoreBadgeColor } from '@/utils/formatters';
+import { formatCurrency, getDealScoreBadgeColor } from '../utils/formatters';
 
 interface DealCardProps {
   product: any;

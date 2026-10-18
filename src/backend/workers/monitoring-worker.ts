@@ -1,5 +1,5 @@
 import { Job } from 'bullmq';
-import prisma from '@/utils/db';
+import prisma from '@/backend/utils/db';
 import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 import { evaluateDeterministicRules } from '@/backend/engine/deal-rules';
 import { createOutboxEvent } from '@/backend/services/outbox';

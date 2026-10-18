@@ -1,4 +1,4 @@
-import prisma from '@/utils/db';
+import prisma from '@/backend/utils/db';
 import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 
 export interface CreateOrderParams {
