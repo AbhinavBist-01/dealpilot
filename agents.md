@@ -1,8 +1,8 @@
 # 🤖 DealPilot — Agent Progress & State Log
 
 > **Autonomous Deal-Hunting & Price-Monitoring Agent System**  
-> **Last Updated**: 2026-10-19T00:07:00+05:30  
-> **Status**: ✅ All 7 Milestones, Strict 2-Folder `src/` Structure & Cleaned Root Configuration Verified
+> **Last Updated**: 2026-10-19T00:39:00+05:30  
+> **Status**: ✅ All 12 Milestones (M0–M11) Verified — Live PostgreSQL 16 & Redis 7 Docker Containers, Channel3 SDK 4.3.0, AG Grid Comparison, APIMatic Spec & 11/11 Passing Tests
 
 ---
 
@@ -94,7 +94,7 @@ pnpm docker:down
 
 ## 🧪 Automated Failure-Path Test Matrix
 
-All 10 architectural guardrails are fully automated and verified via Vitest (`pnpm test`):
+All 11 architectural guardrails are fully automated and verified via Vitest (`pnpm test`):
 - ✅ **Test 1: Target Match**: Price equal to or below target triggers configured rule.
 - ✅ **Test 2: Variant Guard**: Refurbished or mismatched variant rejected deterministically.
 - ✅ **Test 3: Stale Protection**: Stale offer cannot trigger checkout.
@@ -105,6 +105,16 @@ All 10 architectural guardrails are fully automated and verified via Vitest (`pn
 - ✅ **Test 8: Client-Side Spoofing**: Fake client redirect cannot mark an order paid without server verification.
 - ✅ **Test 9: Multi-Tenant Isolation**: User A cannot modify or delete User B's tracking rule.
 - ✅ **Test 10: Price Shift at Checkout**: Changed price immediately before checkout aborts order creation for user re-review.
+- ✅ **Test 11: Payment Idempotency Guard**: Concurrent duplicate checkout order creation and payment captures return identical cached responses without duplicating charges.
+
+---
+
+## 🗄️ Active Services & Infrastructure
+- **PostgreSQL 16**: Running in container `dealpilot-postgres` on port `5432`; schema synced via `prisma db push`.
+- **Redis 7**: Running in container `dealpilot-redis` on port `6379`; `USE_MOCK_REDIS="false"`.
+- **Channel3 Universal Commerce**: Connected via official `@channel3/sdk` 4.3.0 and authenticated via `CHANNEL3_API_KEY`.
+- **Frontend & App Router**: Strictly encapsulated in `src/frontend/` with AG Grid dark quartz table view.
+- **Backend Domain Logic**: Strictly encapsulated in `src/backend/` (BullMQ workers, PayPal sandbox, outbox, scoring).
 
 ---
 
