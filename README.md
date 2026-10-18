@@ -99,6 +99,7 @@ Use these in the product too
 
 **Important**:Use idempotency keys while the payment is processed to prevent race around condns.
 :Use proper agent tool validation and verification with input schema , output schema reuirement when to use the tool
+: buget enforced agent running and gracefull fallback , model routing
 
 ## 🏗️ System Architecture
 

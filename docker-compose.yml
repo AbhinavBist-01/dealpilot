@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: dealpilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dealpilot
+      POSTGRES_PASSWORD: dealpilot_password
+      POSTGRES_DB: dealpilot
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dealpilot -d dealpilot']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis Cache & BullMQ Task Queue
+  redis:
+    image: redis:7-alpine
+    container_name: dealpilot-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local

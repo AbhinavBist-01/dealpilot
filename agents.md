@@ -1,8 +1,8 @@
 # 🤖 DealPilot — Agent Progress & State Log
 
 > **Autonomous Deal-Hunting & Price-Monitoring Agent System**  
-> **Last Updated**: 2026-10-18T01:54:00+05:30  
-> **Status**: ✅ All 7 Milestones & Clean Modular Architecture (`src/frontend`, `src/backend`, `src/utils`, `src/index.ts`) Implemented & Verified
+> **Last Updated**: 2026-10-18T23:48:00+05:30  
+> **Status**: ✅ All 7 Milestones & Clean Modular Architecture (`src/frontend`, `src/backend`, Docker Services) Implemented & Verified
 
 ---
 
@@ -18,38 +18,40 @@ DealPilot is an autonomous agentic shopping assistant that:
 
 ## 🏛️ Codebase Organization & Modular Structure
 
-The codebase is organized into a clean pattern separating frontend, backend, and shared utilities:
+The codebase is strictly organized with **only 2 subdirectories inside `src/`**:
 
 ```
-src/
-├── index.ts                     # Main entrypoint: bootstraps subsystems and exports API
-├── frontend/                    # Client UI layer
-│   ├── components/              # Modular UI components
-│   │   ├── Header.tsx           # Navigation & status counters
-│   │   ├── DealCard.tsx         # Score badge, pricing breakdown, Buy & Track CTAs
-│   │   ├── WatchesList.tsx      # Active rules, polling policies, countdowns
-│   │   ├── OutboxAlertsList.tsx # Sent/pending alerts with deduplication keys
-│   │   ├── TestLabPanel.tsx     # One-click price drop & failure path simulations
-│   │   ├── TrackingModal.tsx    # Modal to configure custom target thresholds
-│   │   └── PayPalModal.tsx      # Pre-flight checkout & PayPal Sandbox modal
-│   └── views/
-│       └── DashboardView.tsx    # Unified interactive dashboard view
-├── backend/                     # Server & worker domain logic
-│   ├── adapters/                # Retailer adapters (MockCatalogAdapter with seed data)
-│   ├── contracts/               # Universal NormalizedOffer, Rules, & Evaluation schemas
-│   ├── engine/                  # Deterministic deal rules, rubric scorer, freshness calculator
-│   ├── queue/                   # BullMQ queues & resilient Redis connection (mock + real)
-│   ├── services/                # PayPal Sandbox, Transactional Outbox, LLM Explainer
-│   ├── workers/                 # Discovery Worker & Adaptive Monitoring Worker
-│   └── index.ts                 # Unified backend export
-├── utils/                       # Shared utilities
-│   ├── db.ts                    # Prisma ORM singleton instance
-│   ├── user.ts                  # Demo user session helper
-│   └── formatters.ts            # Currency, timestamp, and score badge color formatters
-└── app/                         # Next.js App Router (delegates to frontend & backend)
-    ├── layout.tsx & globals.css
-    ├── page.tsx                 # Renders DashboardView
-    └── api/                     # REST API endpoints
+dealpilot/
+├── Dockerfile                   # Multi-stage production container build
+├── docker-compose.yml           # PostgreSQL 16 + Redis 7 services with healthchecks
+├── prisma/
+│   └── schema.prisma            # 11 models synced to SQLite/Postgres
+├── tests/
+│   └── failure-paths.test.ts    # 10 automated guardrail failure-path test suites
+│
+└── src/                         # Strictly 2 subdirectories ONLY
+    │
+    ├── frontend/                # Complete client and App Router layer
+    │   ├── app/                 # Next.js App Router (pages, layout, styles, API routes)
+    │   │   ├── layout.tsx & globals.css
+    │   │   ├── page.tsx         # Dashboard view entrypoint
+    │   │   └── api/             # REST endpoints (search, rules, orders, simulate)
+    │   ├── components/          # Header, DealCard, WatchesList, OutboxAlerts, Modals
+    │   ├── views/               # DashboardView
+    │   ├── utils/               # Formatters and badge color helpers
+    │   ├── tailwind.config.js   # Local Tailwind config
+    │   ├── tsconfig.json        # Frontend TypeScript config
+    │   └── index.ts             # Unified frontend export
+    │
+    └── backend/                 # Domain logic, queues, workers & utilities
+        ├── adapters/            # MockCatalogAdapter (seed data + live simulation)
+        ├── contracts/           # Universal NormalizedOffer, Rules, & Evaluation schemas
+        ├── engine/              # Deterministic deal rules, rubric scorer, freshness calculator
+        ├── queue/               # BullMQ queues & resilient Redis connection (mock + real)
+        ├── services/            # PayPal Sandbox, Transactional Outbox, LLM Explainer
+        ├── workers/             # Discovery Worker & Adaptive Monitoring Worker
+        ├── utils/               # Prisma db client singleton & user session helpers
+        └── index.ts             # Unified backend bootstrap entrypoint
 ```
 
 ---
@@ -65,13 +67,30 @@ src/
 | **M4: BullMQ Workers & Adaptive Polling** | Discovery worker, monitoring worker, rate-limits & jitter backoff | ✅ Complete | `src/backend/workers/discovery-worker.ts`, `src/backend/workers/monitoring-worker.ts`. |
 | **M5: Transactional Outbox & Alerts** | Atomic DB writes for alerts, deduplication keys (`rule+offer+event+obs`) | ✅ Complete | `src/backend/services/outbox.ts` with deduplication constraints. |
 | **M6: Pre-flight Revalidation & PayPal** | Live revalidation gatekeeper + PayPal Orders v2 Sandbox integration | ✅ Complete | `src/backend/services/paypal.ts` with server-side capture verification. |
-| **M7: Failure-Path Test Suite & Telemetry** | 10 automated test suites covering failure paths and edge cases | ✅ Complete | `tests/failure-paths.test.ts` (10/10 passing in 67ms). |
+| **M7: Failure-Path Test Suite & Telemetry** | 10 automated test suites covering failure paths and edge cases | ✅ Complete | `tests/failure-paths.test.ts` (10/10 passing in 148ms). |
+
+---
+
+## 🐳 Docker Services (`docker-compose.yml`)
+
+Run PostgreSQL and Redis with a single command:
+```bash
+# Start PostgreSQL (5432) and Redis (6379)
+pnpm docker:up
+# Or: docker compose up -d
+
+# Check service logs
+pnpm docker:logs
+
+# Stop services
+pnpm docker:down
+```
 
 ---
 
 ## 🧪 Automated Failure-Path Test Matrix
 
-All 10 architectural guardrails are fully automated and verified via Vitest:
+All 10 architectural guardrails are fully automated and verified via Vitest (`pnpm test`):
 - ✅ **Test 1: Target Match**: Price equal to or below target triggers configured rule.
 - ✅ **Test 2: Variant Guard**: Refurbished or mismatched variant rejected deterministically.
 - ✅ **Test 3: Stale Protection**: Stale offer cannot trigger checkout.
@@ -85,15 +104,9 @@ All 10 architectural guardrails are fully automated and verified via Vitest:
 
 ---
 
-## 🚀 Interactive UI & API Capabilities
-- **Web App (`/`)**: Natural language query search, deal score breakdown, active watches dashboard, outbox alerts, and PayPal Sandbox modal.
-- **Test Lab (`/`)**: One-click simulations for price drops, merchant stock outages, and instant worker poll runs.
-- **REST Endpoints**:
-  - `POST /api/search` & `GET /api/search/[jobId]`
-  - `POST /api/tracking-rules` & `GET /api/tracking-rules`
-  - `PATCH /api/tracking-rules/[id]` & `DELETE /api/tracking-rules/[id]`
-  - `GET /api/products/[id]/price-history`
-  - `POST /api/orders`
-  - `POST /api/orders/[id]/capture`
-  - `GET /api/orders/[id]`
-  - `POST /api/simulate`
+## 🚀 Commands
+- `pnpm dev`: Start Next.js client (`src/frontend`)
+- `pnpm worker`: Start background BullMQ workers (`src/backend`)
+- `pnpm test`: Execute automated test suite
+- `pnpm build`: Run production Next.js build
+- `pnpm docker:up`: Launch PostgreSQL & Redis containers
