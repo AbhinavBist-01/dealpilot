@@ -73,7 +73,7 @@ dealpilot/
 | **M10: APIMatic OpenAPI Specification** | OpenAPI 3.1 specification for client SDK generation | ✅ Complete | `src/backend/contracts/dealpilot-openapi.json`. |
 | **M11: Payment Idempotency Key Guard** | `Idempotency-Key` header enforcement for order creation & capture | ✅ Complete | `src/backend/services/paypal.ts` & verified in `tests/failure-paths.test.ts` Test 11. |
 | **M12: Deal Intelligence & Specs Presentation** | Deal score, lowest recorded price, AI specs summary, product condition, and seller ratings | ✅ Complete | `DealCard.tsx`, `DealGrid.tsx`, `schema.prisma`, `discovery-worker.ts`, `llm.ts`. |
-| **M13: OpenAI Model Integration & LLM Explainer** | OpenAI API support with gpt-4o-mini, 3s timeout, and deterministic fallback guardrail | ✅ Complete | `src/backend/services/llm.ts`, `.env.example`, verified by Test 6. |
+| **M13: OpenAI Model Integration & LLM Explainer** | OpenAI API support with `gpt-6-luna`, 3s timeout, and deterministic fallback guardrail | ✅ Complete | `src/backend/services/llm.ts`, `.env.example`, verified by Test 6. |
 
 ---
 
