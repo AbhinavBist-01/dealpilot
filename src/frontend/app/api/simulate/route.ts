@@ -3,6 +3,8 @@ import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 import { processMonitoringJob } from '@/backend/workers/monitoring-worker';
 import prisma from '@/backend/utils/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { action, externalProductId, newPrice } = await req.json();

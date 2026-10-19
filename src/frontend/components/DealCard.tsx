@@ -69,8 +69,8 @@ export const DealCard: React.FC<DealCardProps> = ({ product, onTrack, onBuy }) =
               </span>
             </div>
 
-            {/* Condition Badge on thumbnail */}
-            <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
+            {/* Condition & Source Badges on thumbnail */}
+            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 flex-wrap">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border backdrop-blur-md flex items-center gap-1 ${
                 condition === 'refurbished'
                   ? 'bg-amber-950/80 text-amber-300 border-amber-700/60'
@@ -79,6 +79,13 @@ export const DealCard: React.FC<DealCardProps> = ({ product, onTrack, onBuy }) =
                 <Tag className="w-2.5 h-2.5" />
                 <span>{conditionDisplay}</span>
               </span>
+
+              {offer?.sourceId === 'channel3' && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md border backdrop-blur-md bg-indigo-950/80 text-indigo-300 border-indigo-700/60 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                  <span>Channel3 Live</span>
+                </span>
+              )}
             </div>
           </div>
         )}

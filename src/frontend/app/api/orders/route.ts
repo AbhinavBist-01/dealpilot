@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { getOrCreateDemoUser } from '@/backend/utils/user';
 import { payPalService } from '@/backend/services/paypal';
 
+export const dynamic = 'force-dynamic';
+
 const CreateOrderSchema = z.object({
   offerId: z.string().min(1),
 });

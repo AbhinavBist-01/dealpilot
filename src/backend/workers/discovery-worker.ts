@@ -36,7 +36,11 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
         return [];
       }),
     ]);
-    const offers = [...mockOffers, ...channel3Offers];
+    // Prioritize real live Channel3 commerce offers over mock seeds
+    const offers =
+      channel3Offers.length > 0
+        ? [...channel3Offers, ...mockOffers]
+        : mockOffers;
 
     for (const offerData of offers) {
       // 2. Upsert Canonical Product
@@ -138,7 +142,9 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
         condition: offerData.variantAttributes?.condition,
         sellerName: offerData.seller.name,
         sellerRating: offerData.seller.rating,
-        specs: (offerData.variantAttributes as any)?.specs || `${offerData.brand} ${offerData.model}`,
+        specs:
+          (offerData.variantAttributes as any)?.specs ||
+          `${offerData.brand} ${offerData.model}`,
         lowestPrice: offer.lowestPrice || offer.totalPrice,
       });
 

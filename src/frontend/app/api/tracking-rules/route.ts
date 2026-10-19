@@ -4,6 +4,8 @@ import prisma from '@/backend/utils/db';
 import { getOrCreateDemoUser } from '@/backend/utils/user';
 import { monitoringQueue } from '@/backend/queue/queues';
 
+export const dynamic = 'force-dynamic';
+
 const TrackingRuleCreateSchema = z.object({
   productId: z.string(),
   offerId: z.string().optional(),

@@ -51,6 +51,7 @@ export const DealGrid: React.FC<DealGridProps> = ({ products, onTrack, onBuy }) 
         sellerRating,
         sellerReviewCount,
         isAuthorized: offer?.isAuthorizedSeller,
+        source: offer?.sourceId || 'mock_retailer',
         price: offer?.totalPrice || 0,
         currency: offer?.currency || 'INR',
         historicalLow: lowestObserved,
@@ -165,13 +166,18 @@ export const DealGrid: React.FC<DealGridProps> = ({ products, onTrack, onBuy }) 
         if (!data) return null;
         return (
           <div className="truncate py-1">
-            <div className="flex items-center gap-1 text-xs text-slate-200 font-medium truncate">
+            <div className="flex items-center gap-1.5 text-xs text-slate-200 font-medium truncate">
               {data.isAuthorized && (
                 <span title="Authorized Retailer">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 </span>
               )}
               <span className="truncate">{data.seller}</span>
+              {data.source === 'channel3' && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 shrink-0">
+                  Channel3
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1 text-[11px] text-amber-400 mt-0.5">
               <Star className="w-3 h-3 fill-amber-400" />
