@@ -1,5 +1,6 @@
 import prisma from '@/backend/utils/db';
 import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
+import { Channel3CatalogAdapter } from '@/backend/adapters/channel3-catalog';
 
 export interface CreateOrderParams {
   userId: string;
@@ -57,8 +58,23 @@ export class PayPalService {
       return { valid: false, reason: 'Offer does not exist' };
     }
 
-    // 1. Revalidate live price and inventory
-    const revalidation = await mockCatalogAdapter.revalidateOffer(offer.externalProductId);
+    // 1. Revalidate live price and inventory using matching adapter (Channel3 or Mock)
+    const adapter = offer.sourceId === 'channel3'
+      ? new Channel3CatalogAdapter()
+      : mockCatalogAdapter;
+
+    let revalidation = await adapter.revalidateOffer(offer.externalProductId).catch(() => null);
+
+    // Outage guardrail: if live fetch is unavailable, use last known verified state
+    if (!revalidation || !revalidation.offer) {
+      revalidation = {
+        offer: null,
+        isAvailable: offer.availabilityStatus === 'in_stock',
+        priceChanged: false,
+        currentTotalPrice: offer.totalPrice,
+      };
+    }
+
     if (!revalidation.isAvailable) {
       return { valid: false, reason: 'Item is no longer available in stock' };
     }
