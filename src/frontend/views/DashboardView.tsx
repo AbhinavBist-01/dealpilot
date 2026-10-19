@@ -10,6 +10,7 @@ import { OutboxAlertsList } from '../components/OutboxAlertsList';
 import { TestLabPanel } from '../components/TestLabPanel';
 import { TrackingModal } from '../components/TrackingModal';
 import { PayPalModal } from '../components/PayPalModal';
+import { PriceHistoryModal } from '../components/PriceHistoryModal';
 
 export const DashboardView: React.FC = () => {
   const [query, setQuery] = useState('headphones');
@@ -20,6 +21,9 @@ export const DashboardView: React.FC = () => {
   const [outboxAlerts, setOutboxAlerts] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'search' | 'watches' | 'alerts' | 'simulation'>('search');
   const [viewMode, setViewMode] = useState<'cards' | 'grid'>('cards');
+
+  // Price History Modal State
+  const [historyModalProductId, setHistoryModalProductId] = useState<string | null>(null);
 
   // Tracking Modal State
   const [trackModalProduct, setTrackModalProduct] = useState<any | null>(null);
@@ -325,6 +329,7 @@ export const DashboardView: React.FC = () => {
                         setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
                       }}
                       onBuy={(p, o) => initiateCheckout(p, o)}
+                      onViewHistory={(p) => setHistoryModalProductId(p.id)}
                     />
                   ))}
                 </div>
@@ -336,6 +341,7 @@ export const DashboardView: React.FC = () => {
                     setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
                   }}
                   onBuy={(p, o) => initiateCheckout(p, o)}
+                  onViewHistory={(p) => setHistoryModalProductId(p.id)}
                 />
               )}
             </div>
@@ -354,6 +360,18 @@ export const DashboardView: React.FC = () => {
           <TestLabPanel onSimulate={runSimulation} />
         )}
       </main>
+
+      {historyModalProductId && (
+        <PriceHistoryModal
+          productId={historyModalProductId}
+          onClose={() => setHistoryModalProductId(null)}
+          onTrack={(p, targetPrice) => {
+            setTrackModalProduct(p);
+            setTargetPriceInput(targetPrice);
+          }}
+          onBuy={(p, o) => initiateCheckout(p, o)}
+        />
+      )}
 
       {trackModalProduct && (
         <TrackingModal
