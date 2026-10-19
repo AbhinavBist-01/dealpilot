@@ -33,7 +33,7 @@ export async function bootstrapDealPilot() {
   try {
     // 1. Verify Database Connection
     await prisma.$connect();
-    console.log('✅ Database: SQLite/PostgreSQL connected via Prisma');
+    console.log('✅ Database: PostgreSQL connected via Prisma');
 
     // 2. Verify Redis / Queue System
     const redis = getRedisConnection();
