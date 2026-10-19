@@ -7,7 +7,6 @@ import { MockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 import { PayPalService } from '@/backend/services/paypal';
 import prisma from '@/backend/utils/db';
 import { NormalizedOffer } from '@/backend/contracts/offer';
-import { executeShoppingCopilot } from '@/backend/services/copilot';
 
 describe('DealPilot Architectural Guardrails & Failure Paths', () => {
   let sampleOffer: NormalizedOffer;
@@ -357,31 +356,5 @@ describe('DealPilot Architectural Guardrails & Failure Paths', () => {
     expect(capture2.success).toBe(true);
     expect(capture2.idempotent).toBe(true);
     expect(capture2.order.id).toBe(capture1.order.id);
-  });
-
-  it('12. Autonomous Shopping Copilot correctly parses intents, searches deals, and creates price watches', async () => {
-    // 12a. Search Intent
-    const searchResponse = await executeShoppingCopilot('Find headphones under 20000');
-    expect(searchResponse.reply).toBeDefined();
-    expect(searchResponse.action?.type).toBe('search_results');
-    expect(Array.isArray(searchResponse.action?.products)).toBe(true);
-
-    // 12b. Price History Intent
-    const historyResponse = await executeShoppingCopilot('Show 30-day price history for headphones');
-    expect(historyResponse.reply).toBeDefined();
-    expect(historyResponse.action?.type).toBe('price_history');
-    expect(historyResponse.action?.history?.lowestRecorded).toBeGreaterThan(0);
-
-    // 12c. Comparison Intent
-    const compareResponse = await executeShoppingCopilot('Compare Sony vs Bose headphones');
-    expect(compareResponse.reply).toBeDefined();
-    expect(compareResponse.action?.type).toBe('comparison');
-    expect(compareResponse.action?.comparison?.length).toBeGreaterThanOrEqual(1);
-
-    // 12d. Price Alert / Watch Creation Intent
-    const trackResponse = await executeShoppingCopilot('Track headphones if it drops below 16000');
-    expect(trackResponse.reply).toBeDefined();
-    expect(trackResponse.action?.type).toBe('rule_created');
-    expect(trackResponse.action?.rule?.targetPrice).toBe(16000);
   });
 });

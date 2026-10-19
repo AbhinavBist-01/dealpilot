@@ -11,7 +11,6 @@ import { TestLabPanel } from '../components/TestLabPanel';
 import { TrackingModal } from '../components/TrackingModal';
 import { PayPalModal } from '../components/PayPalModal';
 import { PriceHistoryModal } from '../components/PriceHistoryModal';
-import { ShoppingCopilot } from '../components/ShoppingCopilot';
 
 export const DashboardView: React.FC = () => {
   const [query, setQuery] = useState('headphones');
@@ -394,17 +393,6 @@ export const DashboardView: React.FC = () => {
           onClose={() => setCheckoutOffer(null)}
         />
       )}
-
-      {/* Autonomous Shopping Copilot */}
-      <ShoppingCopilot
-        onTrackProduct={(p, o) => {
-          setTrackModalProduct(p);
-          setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
-        }}
-        onViewHistory={(p) => setHistoryModalProductId(p.id)}
-        onBuyProduct={(p, o) => initiateCheckout(p, o)}
-        onNavigateTab={(tab) => setActiveTab(tab)}
-      />
     </div>
   );
 };

@@ -75,7 +75,6 @@ dealpilot/
 | **M12: Deal Intelligence & Specs Presentation** | Deal score, lowest recorded price, AI specs summary, product condition, and seller ratings | ✅ Complete | `DealCard.tsx`, `DealGrid.tsx`, `schema.prisma`, `discovery-worker.ts`, `llm.ts`. |
 | **M13: OpenAI Model Integration & LLM Explainer** | OpenAI API support with `gpt-6-luna`, 3s timeout, and deterministic fallback guardrail | ✅ Complete | `src/backend/services/llm.ts`, `.env.example`, verified by Test 6. |
 | **M14: Interactive Price History Charts & Multi-Merchant Trend Analysis** | Interactive SVG bezier price trajectory chart, statistical aggregates (all-time low/high, average, savings, drop %), 7D/14D/30D/ALL toggles, and multi-merchant breakdown modal | ✅ Complete | `PriceHistoryModal.tsx`, `route.ts`, integrated into `DealCard.tsx`, `DealGrid.tsx`, and `DashboardView.tsx`. |
-| **M15: Conversational Shopping Copilot** | Expandable AI chat assistant powered by GPT-6 Luna with tool calling, search, automated watch creation, price history, comparison cards, and pre-flight triggers | ✅ Complete | `ShoppingCopilot.tsx`, `copilot.ts`, `/api/copilot/chat`, Test 12 in `failure-paths.test.ts`. |
 
 ---
 
@@ -98,7 +97,7 @@ pnpm docker:down
 
 ## 🧪 Automated Failure-Path Test Matrix
 
-All 12 architectural guardrails are fully automated and verified via Vitest (`pnpm test`):
+All 11 architectural guardrails are fully automated and verified via Vitest (`pnpm test`):
 - ✅ **Test 1: Target Match**: Price equal to or below target triggers configured rule.
 - ✅ **Test 2: Variant Guard**: Refurbished or mismatched variant rejected deterministically.
 - ✅ **Test 3: Stale Protection**: Stale offer cannot trigger checkout.
@@ -110,7 +109,6 @@ All 12 architectural guardrails are fully automated and verified via Vitest (`pn
 - ✅ **Test 9: Multi-Tenant Isolation**: User A cannot modify or delete User B's tracking rule.
 - ✅ **Test 10: Price Shift at Checkout**: Changed price immediately before checkout aborts order creation for user re-review.
 - ✅ **Test 11: Payment Idempotency Guard**: Concurrent duplicate checkout order creation and payment captures return identical cached responses without duplicating charges.
-- ✅ **Test 12: Autonomous Shopping Copilot**: Intent parsing, deal discovery, price trajectory extraction, and automated price watch creation verified.
 
 ---
 
