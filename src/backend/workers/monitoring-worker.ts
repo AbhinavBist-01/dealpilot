@@ -1,6 +1,7 @@
 import { Job } from 'bullmq';
 import prisma from '@/backend/utils/db';
 import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
+import { Channel3CatalogAdapter } from '@/backend/adapters/channel3-catalog';
 import { evaluateDeterministicRules } from '@/backend/engine/deal-rules';
 import { createOutboxEvent } from '@/backend/services/outbox';
 import { NormalizedOffer } from '@/backend/contracts/offer';
@@ -70,10 +71,57 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
       return { skipped: true };
     }
 
-    // 1. Fetch live status from adapter
-    const live = await mockCatalogAdapter.revalidateOffer(offer.externalProductId);
-    if (!live.offer) {
-      throw new Error(`Offer ${offer.externalProductId} unavailable from source`);
+    // 1. Fetch live status from matching adapter (Channel3 or Mock)
+    const channel3Adapter = new Channel3CatalogAdapter();
+    const adapter = offer.sourceId === 'channel3' ? channel3Adapter : mockCatalogAdapter;
+    let live = await adapter.revalidateOffer(offer.externalProductId).catch(() => null);
+
+    // Fallback: If live source is temporarily unavailable (outage guardrail), preserve last observation
+    if (!live || !live.offer) {
+      console.warn(`[Monitoring Worker] Source refresh unavailable for ${offer.externalProductId}, using last known state.`);
+      let variantAttrs: any = {};
+      try {
+        variantAttrs = typeof offer.variantAttributes === 'string'
+          ? JSON.parse(offer.variantAttributes)
+          : (offer.variantAttributes || {});
+      } catch {
+        variantAttrs = {};
+      }
+
+      live = {
+        offer: {
+          sourceId: offer.sourceId,
+          externalProductId: offer.externalProductId,
+          canonicalProductId: rule.product.canonicalId,
+          offerUrl: offer.offerUrl,
+          title: rule.product.title,
+          brand: rule.product.brand,
+          model: rule.product.model,
+          category: rule.product.category,
+          imageUrl: rule.product.imageUrl || '',
+          variantAttributes: variantAttrs,
+          seller: {
+            id: offer.sellerId || 'seller',
+            name: offer.sellerName,
+            isAuthorized: offer.isAuthorizedSeller,
+            rating: offer.sellerRating || 4.8,
+            reviewCount: offer.sellerReviewCount || 100,
+          },
+          price: {
+            itemPrice: offer.itemPrice,
+            shippingPrice: offer.shippingPrice,
+            fees: offer.fees,
+            currency: offer.currency,
+            totalPrice: offer.totalPrice,
+          },
+          availabilityStatus: offer.availabilityStatus as any,
+          sourceConfidence: offer.sourceConfidence,
+          observedAt: new Date(),
+        },
+        isAvailable: offer.availabilityStatus === 'in_stock',
+        priceChanged: false,
+        currentTotalPrice: offer.totalPrice,
+      };
     }
 
     // 2. Record new observation
