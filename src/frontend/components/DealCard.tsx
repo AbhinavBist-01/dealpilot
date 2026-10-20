@@ -115,9 +115,22 @@ export const DealCard: React.FC<DealCardProps> = ({
         )}
 
         <div className="p-5">
-          {/* Category & Brand Header */}
-          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            {product.brand} · {product.category}
+          {/* Category, Brand & Verification Header */}
+          <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              {product.brand} · {product.category}
+            </div>
+
+            {product.verification?.isMatch && (
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
+                product.verification.matchQuality === 'exact_model'
+                  ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/50'
+                  : 'bg-teal-950/80 text-teal-300 border-teal-600/50'
+              }`}>
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <span>{product.verification.matchQuality === 'exact_model' ? 'Verified Model' : 'Verified Deal'}</span>
+              </span>
+            )}
           </div>
 
           <h3

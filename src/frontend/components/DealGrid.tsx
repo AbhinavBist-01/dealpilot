@@ -82,6 +82,8 @@ export const DealGrid: React.FC<DealGridProps> = ({
             ? "In Stock"
             : "Out of Stock",
         freshness: offer?.freshnessState || "LIVE",
+        matchQuality: product.verification?.matchQuality || "exact_model",
+        isMatch: product.verification?.isMatch !== false,
         rawProduct: product,
         rawOffer: offer,
       };
@@ -115,6 +117,24 @@ export const DealGrid: React.FC<DealGridProps> = ({
                   {data.brand} · {data.category}
                 </div>
               </div>
+            </div>
+          );
+        },
+      },
+      {
+        field: "matchQuality",
+        headerName: "Verification",
+        width: 140,
+        cellRenderer: (params: any) => {
+          const isExact = params.value === "exact_model";
+          return (
+            <div className="flex items-center h-full">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${
+                isExact ? "bg-emerald-950/80 text-emerald-300 border-emerald-600/50" : "bg-teal-950/80 text-teal-300 border-teal-600/50"
+              }`}>
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <span>{isExact ? "Exact Model" : "Verified Deal"}</span>
+              </span>
             </div>
           );
         },
