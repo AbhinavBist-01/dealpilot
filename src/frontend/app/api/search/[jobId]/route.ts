@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/backend/utils/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
+    const { jobId } = await params;
     const job = await prisma.searchJob.findUnique({
-      where: { id: params.jobId },
+      where: { id: jobId },
     });
 
     if (!job) {
@@ -17,9 +20,9 @@ export async function GET(
     const products = await prisma.product.findMany({
       where: {
         OR: [
-          { title: { contains: job.query } },
-          { brand: { contains: job.query } },
-          { category: { contains: job.query } },
+          { title: { contains: job.query, mode: 'insensitive' } },
+          { brand: { contains: job.query, mode: 'insensitive' } },
+          { category: { contains: job.query, mode: 'insensitive' } },
         ],
       },
       include: {

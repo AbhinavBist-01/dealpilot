@@ -3,6 +3,8 @@ import { z } from 'zod';
 import prisma from '@/backend/utils/db';
 import { getOrCreateDemoUser } from '@/backend/utils/user';
 
+export const dynamic = 'force-dynamic';
+
 const UpdateSchema = z.object({
   targetPrice: z.number().positive().optional(),
   status: z.enum(['active', 'paused', 'triggered', 'expired']).optional(),
@@ -11,9 +13,10 @@ const UpdateSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getOrCreateDemoUser();
     const body = await req.json();
     const parsed = UpdateSchema.safeParse(body);
@@ -24,7 +27,7 @@ export async function PATCH(
 
     // Verify ownership
     const existing = await prisma.trackingRule.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id, userId: user.id },
     });
 
     if (!existing) {
@@ -32,7 +35,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.trackingRule.update({
-      where: { id: params.id },
+      where: { id },
       data: parsed.data,
     });
 
@@ -44,13 +47,14 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getOrCreateDemoUser();
 
     const existing = await prisma.trackingRule.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id, userId: user.id },
     });
 
     if (!existing) {
@@ -58,7 +62,7 @@ export async function DELETE(
     }
 
     await prisma.trackingRule.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true, message: 'Tracking rule deleted' });

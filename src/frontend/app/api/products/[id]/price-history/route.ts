@@ -5,11 +5,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         offers: {
           include: {
@@ -27,7 +28,7 @@ export async function GET(
 
     const primaryOffer = product.offers[0];
     const rawObs = await prisma.priceObservation.findMany({
-      where: { productId: params.id },
+      where: { productId: id },
       orderBy: { observedAt: 'asc' },
       take: 100,
     });
