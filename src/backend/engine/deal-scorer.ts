@@ -97,7 +97,7 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
   // Confidence level
   let confidenceLevel: ConfidenceLevel = 'high';
   if (missingEvidence.length >= 2 || !hasSufficientHistory) {
-    confidenceLevel = 'provisional';
+    confidenceLevel = 'low';
   } else if (missingEvidence.length === 1) {
     confidenceLevel = 'medium';
   }

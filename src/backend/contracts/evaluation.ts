@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export type DealRecommendation = "strong_buy" | "buy" | "fair" | "pass";
-export type ConfidenceLevel = "high" | "medium" | "provisional";
+export type ConfidenceLevel = "high" | "medium" | "low";
 
 export interface DealSignals {
   finalPrice: number;
@@ -32,7 +32,7 @@ export const DealEvaluationSchema = z.object({
   score: z.number().min(0).max(100),
   scoreVersion: z.string(),
   recommendation: z.enum(["strong_buy", "buy", "fair", "pass"]),
-  confidenceLevel: z.enum(["high", "medium", "provisional"]),
+  confidenceLevel: z.enum(["high", "medium", "low"]),
   signals: z.record(z.any(), z.any()),
   missingEvidence: z.array(z.string()),
   explanation: z.string(),

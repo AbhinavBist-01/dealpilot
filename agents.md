@@ -1,8 +1,8 @@
 # 🤖 DealPilot — Agent Progress & State Log
 
 > **Autonomous Deal-Hunting & Price-Monitoring Agent System**  
-> **Last Updated**: 2026-10-21T00:23:00+05:30  
-> **Status**: ✅ All 17 Milestones (M0–M17) Verified — Next.js 16.4.2 (Turbopack), React 19.3.1, Live PostgreSQL 16 & Redis 7 Docker Containers, Channel3 SDK 4.3.0, PayPal Agent Toolkit, AG Grid, Email Notification Service & 13/13 Passing Guardrail Tests
+> **Last Updated**: 2026-10-21T01:35:00+05:30  
+> **Status**: ✅ All 20 Milestones (M0–M20) Verified — Next.js 16.4.2 (Turbopack), React 19.3.1, Live PostgreSQL 16 & Redis 7 Docker Containers, Better Auth (Google & GitHub), Product Verification Engine, Channel3 SDK 4.3.0, PayPal Agent Toolkit, AG Grid & 35/35 Passing Tests (13 Guardrails + 22 System Evals)
 
 ---
 
@@ -60,7 +60,7 @@ dealpilot/
 | Milestone | Description | Status | Details |
 |---|---|:---:|---|
 | **M0: Foundation** | Project scaffolding, TypeScript, Next.js, Tailwind, Prisma, BullMQ, Vitest | ✅ Complete | Next.js 16, React 19, Tailwind, Prisma 6, PostgreSQL, Vitest. |
-| **M1: Normalized Contract & Adapters** | Universal `NormalizedOffer` contract + Mock Retailer Catalog Adapter | ✅ Complete | `src/backend/contracts/offer.ts`, `src/backend/adapters/mock-catalog.ts`. |
+| **M1: Normalized Contract & Adapters** | Universal `NormalizedOffer` contract + clean `MockCatalogAdapter` without bundled hardcoded seeds | ✅ Complete | `src/backend/contracts/offer.ts`, `src/backend/adapters/mock-catalog.ts`. |
 | **M2: Database & Freshness Engine** | Prisma schema for users, products, offers, observations, rules, outbox | ✅ Complete | `prisma/schema.prisma` synced to PostgreSQL, `src/backend/engine/freshness.ts`. |
 | **M3: Deterministic Rules & Deal Scoring** | Budget checks, target thresholds, rubric scoring & LLM explainer guardrails | ✅ Complete | `src/backend/engine/deal-rules.ts`, `src/backend/engine/deal-scorer.ts`, `src/backend/services/llm.ts`. |
 | **M4: BullMQ Workers & Adaptive Polling** | Discovery worker, monitoring worker, rate-limits & jitter backoff | ✅ Complete | `src/backend/workers/discovery-worker.ts`, `src/backend/workers/monitoring-worker.ts`. |
@@ -68,7 +68,7 @@ dealpilot/
 | **M6: Pre-flight Revalidation & PayPal** | Live revalidation gatekeeper + PayPal Orders v2 Sandbox integration | ✅ Complete | `src/backend/services/paypal.ts` with server-side capture verification. |
 | **M7: Failure-Path Test Suite & Telemetry** | 10 automated test suites covering failure paths and edge cases | ✅ Complete | `tests/failure-paths.test.ts` (10/10 passing in 148ms). |
 | **M8: AG Grid Comparison Dashboard** | Interactive comparison grid with column sorting, filters, and dark quartz theme | ✅ Complete | `src/frontend/components/DealGrid.tsx` with toggle in `DashboardView`. |
-| **M9: Channel3 Commerce Adapter** | Channel3 skill & SDK 4.3.0 integrated with live API key for multi-merchant product discovery | ✅ Complete | `.agents/skills/channel3-api`, `src/backend/adapters/channel3-catalog.ts` via `@channel3/sdk`. |
+| **M9: Channel3 Commerce Adapter** | Channel3 skill & SDK 4.3.0 integrated with live API key for domestic merchant discovery (US products excluded, conversion logic removed) | ✅ Complete | `.agents/skills/channel3-api`, `src/backend/adapters/channel3-catalog.ts` via `@channel3/sdk`. |
 | **M10: APIMatic OpenAPI Specification** | OpenAPI 3.1 specification for client SDK generation | ✅ Complete | `src/backend/contracts/dealpilot-openapi.json`. |
 | **M11: Payment Idempotency Key Guard** | `Idempotency-Key` header enforcement for order creation & capture | ✅ Complete | `src/backend/services/paypal.ts` & verified in `tests/failure-paths.test.ts` Test 11. |
 | **M12: Deal Intelligence & Specs Presentation** | Deal score, lowest recorded price, AI specs summary, product condition, and seller ratings | ✅ Complete | `DealCard.tsx`, `DealGrid.tsx`, `schema.prisma`, `discovery-worker.ts`, `llm.ts`. |
@@ -77,6 +77,10 @@ dealpilot/
 | **M15: Upgrade to Next.js 16+ & React 19** | Upgraded to Next.js 16.4.2 (Turbopack) & React 19.3.1 with async route params | ✅ Complete | `package.json`, `next.config.js`, all dynamic API routes migrated to `Promise<{ id }>`. |
 | **M16: Price-Drop Email Notification Service** | Transactional outbox worker, responsive dark-quartz HTML email templates, savings metrics, and live in-app preview/test sandbox | ✅ Complete | `src/backend/services/email.ts`, `src/backend/workers/outbox-worker.ts`, `OutboxAlertsList.tsx`, `/api/notifications/test-email`, verified in Test 12. |
 | **M17: PayPal Agent Toolkit Integration** | Official `@paypal/agent-toolkit` (OpenAI tools: `create_order`, `get_order`, `pay_order`) + interactive chat testing interface | ✅ Complete | `src/backend/services/paypal-agent.ts`, `/api/chat`, `PayPalChatInterface.tsx`, verified in Test 13. |
+| **M18: Comprehensive System Evals** | 17 automated end-to-end functionality evaluations spanning all 6 subsystems | ✅ Complete | `tests/system-evals.test.ts`, verified across all adapters, rules, scheduling, outbox, pre-flight, and PayPal agent. |
+| **M19: Better Auth (Google & GitHub OAuth)** | Better Auth integrated with PostgreSQL Prisma adapter (`User`, `Session`, `Account`, `Verification`), Next.js App Router handler `/api/auth/[...all]`, and `UserAuthButton` UI component | ✅ Complete | `src/backend/utils/auth.ts`, `auth-client.ts`, `UserAuthButton.tsx`, `/api/auth/[...all]/route.ts`, verified in Eval 8. |
+| **M20: Product Search Verification & Intent Guard** | Model spec extractor, accessory exclusion guard (filters cases/cables/cushions), token relevance scoring, and verified deal badge presentation | ✅ Complete | `src/backend/engine/product-verifier.ts`, `channel3-catalog.ts`, `route.ts`, `DealCard.tsx`, `DealGrid.tsx`, verified in Eval 7. |
+| **M21: Real Worker Data Pipeline** | Direct worker ingestion of live product attributes: original merchant domains, real Channel3 ratings & review counts, exact prices & currencies, and search endpoint returning exclusively the worker's discovered products | ✅ Complete | `src/backend/adapters/channel3-catalog.ts`, `discovery-worker.ts`, `/api/search/route.ts`, verified across all 35 tests. |
 
 ---
 
