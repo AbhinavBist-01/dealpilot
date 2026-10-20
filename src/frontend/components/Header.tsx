@@ -1,9 +1,9 @@
 import React from 'react';
-import { Clock, Bell, Zap } from 'lucide-react';
+import { Clock, Bell, Zap, CreditCard } from 'lucide-react';
 
 interface HeaderProps {
-  activeTab: 'search' | 'watches' | 'alerts' | 'simulation';
-  setActiveTab: (tab: 'search' | 'watches' | 'alerts' | 'simulation') => void;
+  activeTab: 'search' | 'watches' | 'alerts' | 'simulation' | 'paypal';
+  setActiveTab: (tab: 'search' | 'watches' | 'alerts' | 'simulation' | 'paypal') => void;
   activeWatchesCount: number;
   alertsCount: number;
   onRefreshWatches: () => void;
@@ -72,6 +72,17 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Bell className="w-4 h-4" />
             Outbox Alerts ({alertsCount})
+          </button>
+          <button
+            onClick={() => setActiveTab('paypal')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 ${
+              activeTab === 'paypal'
+                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 text-blue-400" />
+            PayPal Agent
           </button>
           <button
             onClick={() => setActiveTab('simulation')}

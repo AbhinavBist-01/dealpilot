@@ -9,6 +9,7 @@ import prisma from '@/backend/utils/db';
 import { NormalizedOffer } from '@/backend/contracts/offer';
 import { renderPriceDropEmailHtml, sendPriceDropEmail } from '@/backend/services/email';
 import { processOutboxJob } from '@/backend/workers/outbox-worker';
+import { getPayPalAgentToolkit, getPayPalAgentTools, executePayPalAgent } from '@/backend/services/paypal-agent';
 
 describe('DealPilot Architectural Guardrails & Failure Paths', () => {
   let sampleOffer: NormalizedOffer;
@@ -446,5 +447,23 @@ describe('DealPilot Architectural Guardrails & Failure Paths', () => {
       data: { outboxEventId: outboxEvent.id },
     });
     expect(repeatedResult.alreadyDispatched).toBe(true);
+  });
+
+  // Test 13: PayPal Agent Toolkit Integration
+  it('13. PayPal Agent Toolkit initializes with sandbox context, exposes order tools, and handles order actions', async () => {
+    const toolkit = getPayPalAgentToolkit({ sandbox: true });
+    expect(toolkit).toBeDefined();
+
+    const tools = getPayPalAgentTools(toolkit);
+    expect(Array.isArray(tools)).toBe(true);
+    expect(tools.length).toBeGreaterThanOrEqual(1);
+
+    const toolNames = tools.map((t: any) => t.function?.name || t.name);
+    expect(toolNames).toContain('create_order');
+
+    const agentResult = await executePayPalAgent('Create an order for ₹15,499 for Sony WH-1000XM5');
+    expect(agentResult.response).toBeDefined();
+    expect(agentResult.toolCalled).toBe('create_order');
+    expect(agentResult.toolResult).toBeDefined();
   });
 });

@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { payPalService } from '@/backend/services/paypal';
 
+export const dynamic = 'force-dynamic';
+
 const CaptureSchema = z.object({
   paypalOrderId: z.string().min(1),
 });
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const parsed = CaptureSchema.safeParse(body);
 
@@ -22,7 +25,7 @@ export async function POST(
     const idempotencyKey = req.headers.get('idempotency-key') || req.headers.get('x-idempotency-key') || undefined;
 
     const result = await payPalService.captureOrder({
-      orderId: params.id,
+      orderId: id,
       paypalOrderId,
       idempotencyKey,
     });

@@ -11,6 +11,7 @@ import { TestLabPanel } from '../components/TestLabPanel';
 import { TrackingModal } from '../components/TrackingModal';
 import { PayPalModal } from '../components/PayPalModal';
 import { PriceHistoryModal } from '../components/PriceHistoryModal';
+import { PayPalChatInterface } from '../components/PayPalChatInterface';
 
 export const DashboardView: React.FC = () => {
   const [query, setQuery] = useState('headphones');
@@ -19,7 +20,7 @@ export const DashboardView: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [trackingRules, setTrackingRules] = useState<any[]>([]);
   const [outboxAlerts, setOutboxAlerts] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'search' | 'watches' | 'alerts' | 'simulation'>('search');
+  const [activeTab, setActiveTab] = useState<'search' | 'watches' | 'alerts' | 'simulation' | 'paypal'>('search');
   const [viewMode, setViewMode] = useState<'cards' | 'grid'>('cards');
 
   // Price History Modal State
@@ -354,6 +355,10 @@ export const DashboardView: React.FC = () => {
 
         {activeTab === 'alerts' && (
           <OutboxAlertsList alerts={outboxAlerts} onRefresh={fetchTrackingRules} />
+        )}
+
+        {activeTab === 'paypal' && (
+          <PayPalChatInterface />
         )}
 
         {activeTab === 'simulation' && (

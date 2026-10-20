@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       sellerName: offer?.sellerName || 'Verified Merchant',
       sellerRating: offer?.sellerRating || 4.9,
       dealScore: evalData?.score || 92,
-      condition: offer?.condition || 'Brand New',
+      condition: (offer as any)?.condition || 'Brand New',
       trackingRuleId: 'demo-rule-id',
       offerId: offer?.id || 'demo-offer-id',
     };

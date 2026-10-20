@@ -55,7 +55,7 @@ export async function processOutboxJob(job: { data: OutboxJobData; id?: string }
       const attrs = typeof event.offer.variantAttributes === 'string'
         ? JSON.parse(event.offer.variantAttributes)
         : (event.offer.variantAttributes || {});
-      if (attrs.condition === 'refurbished' || event.offer.condition === 'refurbished') {
+      if (attrs.condition === 'refurbished' || (event.offer as any)?.condition === 'refurbished') {
         condition = 'Refurbished';
       }
     } catch {}
