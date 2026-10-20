@@ -2,6 +2,15 @@ export function formatCurrency(amount: number, currency: string = 'INR'): string
   if (currency === 'INR') {
     return `₹${amount.toLocaleString('en-IN')}`;
   }
+  if (currency === 'USD') {
+    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+  }
+  if (currency === 'EUR') {
+    return `€${amount.toLocaleString('en-EU', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+  }
+  if (currency === 'GBP') {
+    return `£${amount.toLocaleString('en-GB', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+  }
   return `${currency} ${amount.toLocaleString()}`;
 }
 

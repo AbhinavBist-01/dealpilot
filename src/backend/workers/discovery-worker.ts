@@ -36,11 +36,14 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
         return [];
       }),
     ]);
-    // Prioritize real live Channel3 commerce offers over mock seeds
+
+    // Use live Channel3 commerce offers directly when available; only fallback to mock if no real products found
     const offers =
       channel3Offers.length > 0
-        ? [...channel3Offers, ...mockOffers]
+        ? channel3Offers
         : mockOffers;
+
+    const upsertedProductIds: string[] = [];
 
     for (const offerData of offers) {
       // 2. Upsert Canonical Product
@@ -59,6 +62,10 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
           imageUrl: offerData.imageUrl || undefined,
         },
       });
+
+      if (!upsertedProductIds.includes(product.id)) {
+        upsertedProductIds.push(product.id);
+      }
 
       // 3. Upsert Retailer Offer
       const offer = await prisma.offer.upsert({
@@ -94,6 +101,7 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
           itemPrice: offerData.price.itemPrice,
           shippingPrice: offerData.price.shippingPrice,
           totalPrice: offerData.price.totalPrice,
+          currency: offerData.price.currency,
           sellerRating: offerData.seller.rating || undefined,
           sellerReviewCount: offerData.seller.reviewCount || undefined,
           availabilityStatus: offerData.availabilityStatus,
@@ -103,7 +111,7 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
       });
 
       // 4. Record Price Observation
-      const obs = await prisma.priceObservation.create({
+      await prisma.priceObservation.create({
         data: {
           offerId: offer.id,
           productId: product.id,
@@ -172,9 +180,9 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
     });
 
     console.log(
-      `[Discovery Worker] Job ${job.id} completed. Ingested ${offers.length} offers.`,
+      `[Discovery Worker] Job ${job.id} completed. Ingested ${offers.length} offers for ${upsertedProductIds.length} products.`,
     );
-    return { success: true, count: offers.length };
+    return { success: true, count: offers.length, productIds: upsertedProductIds };
   } catch (error: any) {
     console.error(`[Discovery Worker] Job ${job.id} failed:`, error);
     await prisma.searchJob.update({
