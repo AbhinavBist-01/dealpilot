@@ -271,8 +271,22 @@ describe('DealPilot Architectural Guardrails & Failure Paths', () => {
 
   // Test 10: Price Shift at Checkout Revalidation
   it('10. If the price changes before checkout, pre-flight revalidation aborts order creation for user re-review', async () => {
-    const mockAdapter = new MockCatalogAdapter();
     const testExtId = 'mock-sony-xm5-black';
+    const mockAdapter = new MockCatalogAdapter([
+      {
+        externalProductId: testExtId,
+        canonicalProductId: 'sony-wh-1000xm5',
+        title: 'Sony WH-1000XM5 Wireless Noise-Canceling Headphones',
+        brand: 'Sony',
+        model: 'WH-1000XM5',
+        category: 'Headphones',
+        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+        variantAttributes: { color: 'Black', condition: 'new' },
+        seller: { id: 'seller-sony', name: 'Sony Store', isAuthorized: true, rating: 4.8, reviewCount: 1200 },
+        price: { itemPrice: 19499, shippingPrice: 0, fees: 0, currency: 'INR', totalPrice: 19499 },
+        availabilityStatus: 'in_stock',
+      },
+    ]);
 
     // Initial offer
     const initialOffer = await mockAdapter.fetchOffer(testExtId);
