@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, Bell, Zap, CreditCard } from 'lucide-react';
+import { UserAuthButton } from './UserAuthButton';
 
 interface HeaderProps {
   activeTab: 'search' | 'watches' | 'alerts' | 'simulation' | 'paypal';
@@ -95,6 +96,11 @@ export const Header: React.FC<HeaderProps> = ({
             <Zap className="w-4 h-4 text-amber-400" />
             Test Lab
           </button>
+
+          <div className="h-5 w-px bg-slate-800 mx-1" />
+
+          {/* Better Auth User Profile & Sign In */}
+          <UserAuthButton />
         </div>
       </div>
     </header>
