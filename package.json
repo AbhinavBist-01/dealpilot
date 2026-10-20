@@ -22,6 +22,7 @@
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
     "@channel3/sdk": "^4.3.0",
+    "@paypal/agent-toolkit": "^1.11.0",
     "@prisma/client": "^6.19.3",
     "ag-grid-community": "^36.2.0",
     "ag-grid-react": "^36.2.0",
@@ -30,9 +31,9 @@
     "dotenv": "^18.0.8",
     "ioredis": "^6.0.0",
     "lucide-react": "^1.59.0",
-    "next": "14.2.24",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.7"
   },

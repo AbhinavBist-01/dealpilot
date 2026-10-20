@@ -3,7 +3,8 @@ import prisma from '@/backend/utils/db';
 import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 import { Channel3CatalogAdapter } from '@/backend/adapters/channel3-catalog';
 import { evaluateDeterministicRules } from '@/backend/engine/deal-rules';
-import { createOutboxEvent } from '@/backend/services/outbox';
+import { createOutboxEvent, processOutboxEvent } from '@/backend/services/outbox';
+import { outboxQueue } from '@/backend/queue/queues';
 import { NormalizedOffer } from '@/backend/contracts/offer';
 
 export interface MonitoringJobData {
@@ -172,7 +173,7 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
         },
       });
 
-      if (!outboxResult.isDuplicate) {
+      if (!outboxResult.isDuplicate && outboxResult.event) {
         console.log(`[Monitoring Worker] Triggered alert created in outbox for rule ${rule.id}`);
         await prisma.trackingRule.update({
           where: { id: rule.id },
@@ -181,6 +182,18 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
             lastTriggeredAt: new Date(),
           },
         });
+
+        // Enqueue email dispatch in BullMQ outbox queue
+        try {
+          await outboxQueue.add('dispatch-outbox-email', {
+            outboxEventId: outboxResult.event.id,
+          });
+        } catch {
+          // If Redis queue is in standalone mock mode, execute inline
+        }
+
+        // Guaranteed email notification delivery execution
+        await processOutboxEvent(outboxResult.event.id);
       }
     }
 

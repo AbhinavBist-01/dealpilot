@@ -7,6 +7,8 @@ import { MockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 import { PayPalService } from '@/backend/services/paypal';
 import prisma from '@/backend/utils/db';
 import { NormalizedOffer } from '@/backend/contracts/offer';
+import { renderPriceDropEmailHtml, sendPriceDropEmail } from '@/backend/services/email';
+import { processOutboxJob } from '@/backend/workers/outbox-worker';
 
 describe('DealPilot Architectural Guardrails & Failure Paths', () => {
   let sampleOffer: NormalizedOffer;
@@ -356,5 +358,93 @@ describe('DealPilot Architectural Guardrails & Failure Paths', () => {
     expect(capture2.success).toBe(true);
     expect(capture2.idempotent).toBe(true);
     expect(capture2.order.id).toBe(capture1.order.id);
+  });
+
+  // Test 12: Price-Drop Email Notification Service & Transactional Outbox Dispatch
+  it('12. Price-drop triggers transactional outbox event, generates responsive HTML email, and marks notification sent with deduplication guard', async () => {
+    // 12a. Verify pure HTML email template generation
+    const testEmailData = {
+      to: 'shopper@dealpilot.ai',
+      productTitle: 'Sony WH-1000XM5 Wireless Noise-Canceling Headphones',
+      brand: 'Sony',
+      currentPrice: 15499,
+      targetPrice: 18000,
+      savings: 2501,
+      dropPercentage: 14,
+      sellerName: 'Best Buy Official',
+      dealScore: 92,
+      condition: 'Brand New',
+      trackingRuleId: 'rule-test-email',
+      offerId: 'offer-test-email',
+    };
+
+    const html = renderPriceDropEmailHtml(testEmailData);
+    expect(html).toContain('Sony WH-1000XM5 Wireless Noise-Canceling Headphones');
+    expect(html).toContain('₹15,499');
+    expect(html).toContain('₹18,000');
+    expect(html).toContain('Save ₹2,501');
+    expect(html).toContain('Complete Pre-Flight Checkout');
+    expect(html).toContain('DealPilot');
+
+    // 12b. Verify transactional outbox dispatch worker & DB state transition
+    const mockUser = await prisma.user.upsert({
+      where: { email: 'email_outbox_test@dealpilot.ai' },
+      create: { email: 'email_outbox_test@dealpilot.ai', name: 'Email Outbox User' },
+      update: {},
+    });
+
+    const mockProduct = await prisma.product.findFirst();
+    const mockOffer = await prisma.offer.findFirst({
+      where: { productId: mockProduct!.id },
+    });
+
+    const testRule = await prisma.trackingRule.create({
+      data: {
+        userId: mockUser.id,
+        productId: mockProduct!.id,
+        offerId: mockOffer!.id,
+        targetPrice: 18000,
+        strategy: 'target_price',
+        status: 'active',
+      },
+    });
+
+    const outboxEvent = await prisma.notificationOutbox.create({
+      data: {
+        trackingRuleId: testRule.id,
+        offerId: mockOffer!.id,
+        eventType: 'target_hit',
+        deduplicationKey: `test-email-dispatch-${Date.now()}-${Math.random()}`,
+        payload: JSON.stringify({
+          productTitle: mockProduct!.title,
+          observedPrice: 15499,
+          targetPrice: 18000,
+          seller: mockOffer!.sellerName,
+        }),
+        status: 'pending',
+      },
+    });
+
+    // Process outbox dispatch job
+    const dispatchResult = await processOutboxJob({
+      data: { outboxEventId: outboxEvent.id },
+    });
+
+    expect(dispatchResult.success).toBe(true);
+    expect(dispatchResult.emailResult?.recipient).toBe('email_outbox_test@dealpilot.ai');
+    expect(dispatchResult.emailResult?.subject).toContain('Price Drop Alert');
+
+    // Verify DB updated to sent with timestamp
+    const updatedEvent = await prisma.notificationOutbox.findUnique({
+      where: { id: outboxEvent.id },
+    });
+    expect(updatedEvent?.status).toBe('sent');
+    expect(updatedEvent?.processedAt).toBeDefined();
+
+    // 12c. Verify idempotency: repeated execution does not double-dispatch
+    const repeatedResult = await processOutboxJob({
+      data: { outboxEventId: outboxEvent.id },
+    });
+    expect(repeatedResult.alreadyDispatched).toBe(true);
   });
 });

@@ -1,4 +1,5 @@
 import prisma from '@/backend/utils/db';
+import { processOutboxJob } from '../workers/outbox-worker';
 
 export interface EnqueueOutboxParams {
   trackingRuleId: string;
@@ -48,51 +49,11 @@ export async function createOutboxEvent(params: EnqueueOutboxParams) {
 }
 
 export async function processOutboxEvent(outboxEventId: string): Promise<boolean> {
-  const event = await prisma.notificationOutbox.findUnique({
-    where: { id: outboxEventId },
-    include: {
-      offer: {
-        include: { product: true },
-      },
-      trackingRule: {
-        include: { user: true },
-      },
-    },
-  });
-
-  if (!event || event.status === 'sent') {
-    return false;
-  }
-
   try {
-    const payload = JSON.parse(event.payload);
-
-    // Simulated email / push notification dispatch
-    console.log(`[Notification Engine] Dispatched alert for Rule ${event.trackingRuleId}:`);
-    console.log(`  To: ${event.trackingRule.user?.email || 'user@dealpilot.ai'}`);
-    console.log(`  Subject: Price drop on ${event.offer.product.title}`);
-    console.log(`  Price: ₹${event.offer.totalPrice} (Target: ₹${event.trackingRule.targetPrice})`);
-    console.log(`  Review URL: /review?offerId=${event.offerId}&ruleId=${event.trackingRuleId}`);
-
-    await prisma.notificationOutbox.update({
-      where: { id: outboxEventId },
-      data: {
-        status: 'sent',
-        processedAt: new Date(),
-      },
-    });
-
-    return true;
+    const result = await processOutboxJob({ data: { outboxEventId } });
+    return Boolean(result.success);
   } catch (err: any) {
     console.error(`[Notification Engine] Delivery failed for event ${outboxEventId}:`, err);
-    await prisma.notificationOutbox.update({
-      where: { id: outboxEventId },
-      data: {
-        status: 'failed',
-        retryCount: { increment: 1 },
-        lastError: err.message,
-      },
-    });
     return false;
   }
 }

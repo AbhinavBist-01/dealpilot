@@ -2,9 +2,11 @@ import { Worker } from 'bullmq';
 import { createRedisClient, getRedisConnection } from '../queue/redis';
 import { processDiscoveryJob } from './discovery-worker';
 import { processMonitoringJob } from './monitoring-worker';
+import { processOutboxJob } from './outbox-worker';
 
 export * from './discovery-worker';
 export * from './monitoring-worker';
+export * from './outbox-worker';
 
 export function startWorkers() {
   console.log('👷 Initializing DealPilot background BullMQ workers...');
@@ -30,6 +32,15 @@ export function startWorkers() {
     { connection: (isMock ? connection : createRedisClient()) as any, concurrency: 5 }
   );
 
+  const outboxWorker = new Worker(
+    'dealpilot-outbox',
+    async (job) => {
+      console.log(`[OutboxWorker] Processing email alert ${job.id}`);
+      return await processOutboxJob(job as any);
+    },
+    { connection: (isMock ? connection : createRedisClient()) as any, concurrency: 5 }
+  );
+
   discoveryWorker.on('completed', (job) => {
     console.log(`✅ [DiscoveryWorker] Job ${job.id} completed successfully`);
   });
@@ -46,7 +57,15 @@ export function startWorkers() {
     console.error(`❌ [MonitoringWorker] Job ${job?.id} failed:`, err.message);
   });
 
-  console.log('🚀 BullMQ Workers active: [dealpilot-discovery, dealpilot-monitoring] listening on Redis 7');
+  outboxWorker.on('completed', (job) => {
+    console.log(`✅ [OutboxWorker] Email alert job ${job.id} sent successfully`);
+  });
 
-  return { discoveryWorker, monitoringWorker };
+  outboxWorker.on('failed', (job, err) => {
+    console.error(`❌ [OutboxWorker] Email alert job ${job?.id} failed:`, err.message);
+  });
+
+  console.log('🚀 BullMQ Workers active: [dealpilot-discovery, dealpilot-monitoring, dealpilot-outbox] listening on Redis 7');
+
+  return { discoveryWorker, monitoringWorker, outboxWorker };
 }
