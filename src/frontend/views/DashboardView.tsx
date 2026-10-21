@@ -1,7 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, RefreshCw, Sparkles, LayoutGrid, Table, Shield, LogIn, Lock } from 'lucide-react';
+import {
+  Search,
+  RefreshCw,
+  Sparkles,
+  LayoutGrid,
+  Table,
+  Shield,
+  LogIn,
+  Lock,
+  X,
+  SlidersHorizontal,
+  TrendingDown,
+  Tag,
+  ArrowRight,
+  Laptop,
+  Headphones,
+  Monitor,
+} from 'lucide-react';
 import { Header } from '../components/Header';
 import { DealCard } from '../components/DealCard';
 import { DealGrid } from '../components/DealGrid';
@@ -14,13 +31,13 @@ import { PriceHistoryModal } from '../components/PriceHistoryModal';
 import { PayPalChatInterface } from '../components/PayPalChatInterface';
 import { LandingView } from './LandingView';
 import { AuthModal } from '../components/AuthModal';
-import { useSession, signIn } from '@/frontend/utils/auth-client';
+import { useSession } from '@/frontend/utils/auth-client';
 
 export const DashboardView: React.FC = () => {
   const { data: session, isPending: isSessionPending } = useSession();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [query, setQuery] = useState('headphones');
-  const [budget, setBudget] = useState<string>('20000');
+  const [query, setQuery] = useState('Sony WH-1000XM5');
+  const [budget, setBudget] = useState<string>('30000');
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [trackingRules, setTrackingRules] = useState<any[]>([]);
@@ -44,6 +61,21 @@ export const DashboardView: React.FC = () => {
 
   // Status Banner
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+
+  // Required Quick Preset Chips
+  const presetChips = [
+    { label: 'Sony WH-1000XM5', query: 'Sony WH-1000XM5', budget: '30000', icon: '🎧' },
+    { label: 'MacBook Pro M3', query: 'MacBook Pro M3', budget: '175000', icon: '💻' },
+    { label: 'Dell XPS 15', query: 'Dell XPS 15', budget: '145000', icon: '💻' },
+    { label: 'AirPods Max', query: 'AirPods Max', budget: '55000', icon: '🎧' },
+  ];
+
+  const budgetTiers = [
+    { label: '≤ ₹30k', val: '30000' },
+    { label: '≤ ₹60k', val: '60000' },
+    { label: '≤ ₹150k', val: '150000' },
+    { label: '≤ ₹200k', val: '200000' },
+  ];
 
   useEffect(() => {
     handleSearch();
@@ -190,7 +222,7 @@ export const DashboardView: React.FC = () => {
     }
   };
 
-  // Unauthenticated users are served the minimalist landing page
+  // Unauthenticated users are served the landing page
   if (!isSessionPending && !session) {
     return (
       <>
@@ -200,11 +232,14 @@ export const DashboardView: React.FC = () => {
     );
   }
 
+  const budgetNum = Number(budget) || 0;
+  const budgetProgress = Math.min(100, Math.max(5, (budgetNum / 200000) * 100));
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500/30">
       {bannerMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-medium animate-in fade-in slide-in-from-top duration-200">
-          <Sparkles className="w-4 h-4" />
+        <div className="fixed top-4 right-4 z-50 bg-emerald-600/90 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-sm font-semibold border border-emerald-400/40 animate-in fade-in slide-in-from-top duration-200">
+          <Sparkles className="w-4 h-4 text-emerald-200" />
           <span>{bannerMessage}</span>
         </div>
       )}
@@ -224,171 +259,301 @@ export const DashboardView: React.FC = () => {
           <p className="text-slate-400 text-sm mt-1">Checking authentication state with Better Auth</p>
         </div>
       ) : (
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {activeTab === 'search' && (
-          <div>
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl mb-8">
-              <h1 className="text-2xl font-bold mb-2">Find the Best Deals Deterministically</h1>
-              <p className="text-slate-400 text-sm mb-6">
-                DealPilot crawls verified sources, evaluates deal ratings from historical observations, and triggers automated background monitoring.
-              </p>
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          {activeTab === 'search' && (
+            <div>
+              {/* Modernized Search & Filter Command Center */}
+              <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl mb-8 relative overflow-hidden">
+                {/* Subtle Ambient Background Gradient */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-teal-500/5 blur-3xl pointer-events-none" />
 
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-500" />
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search query (e.g. 'I want the best headphones under 20K', 'Sony XM5', 'Dell XPS')"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-emerald-500"
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                </div>
+                <div className="relative z-10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
+                    <div>
+                      <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-100 flex items-center gap-2">
+                        <span>Autonomous Deal Radar</span>
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">
+                          AI Scored
+                        </span>
+                      </h1>
+                      <p className="text-slate-400 text-sm mt-1">
+                        Crawls verified domestic sources, normalizes multi-merchant offers, and applies rubric deal scoring.
+                      </p>
+                    </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="relative w-40">
-                    <span className="absolute left-3 top-3 text-xs text-slate-500 font-semibold">Max ₹</span>
-                    <input
-                      type="number"
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                      placeholder="Budget"
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-14 pr-3 py-3 text-sm focus:outline-none focus:border-emerald-500"
-                    />
+                    {/* Price Range Indicator Pill */}
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs shadow-inner">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-slate-400 font-medium">Price Range:</span>
+                      <span className="font-extrabold text-emerald-400 font-mono">
+                        ₹0 — ₹{budgetNum.toLocaleString('en-IN')}
+                      </span>
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => handleSearch()}
-                    disabled={loading}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-6 py-3 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-50"
-                  >
-                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                    <span>Discover</span>
-                  </button>
+                  {/* Search Bar & Budget Control */}
+                  <div className="flex flex-col lg:flex-row gap-3">
+                    {/* Search Input with Clear Button */}
+                    <div className="relative flex-1 group">
+                      <Search className="w-5 h-5 absolute left-4 top-3.5 text-slate-400 group-focus-within:text-emerald-400 transition-colors" />
+                      <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search product, model, or category (e.g. 'Sony WH-1000XM5', 'MacBook Pro M3')"
+                        className="w-full bg-slate-950/90 border border-slate-700/80 hover:border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl pl-12 pr-12 py-3.5 text-sm text-slate-100 placeholder:text-slate-500 transition-all shadow-inner outline-none font-medium"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                      />
+
+                      {/* Clear Button */}
+                      {query.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuery('');
+                          }}
+                          className="absolute right-3.5 top-3.5 p-1 rounded-full text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition active:scale-90"
+                          title="Clear search input"
+                          aria-label="Clear search"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Budget Input & Filter */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-44">
+                        <span className="absolute left-3.5 top-3.5 text-xs text-slate-400 font-bold">Max ₹</span>
+                        <input
+                          type="number"
+                          value={budget}
+                          onChange={(e) => setBudget(e.target.value)}
+                          placeholder="Budget"
+                          className="w-full bg-slate-950/90 border border-slate-700/80 hover:border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl pl-16 pr-3 py-3.5 text-sm font-semibold font-mono text-slate-100 transition-all shadow-inner outline-none"
+                        />
+                      </div>
+
+                      {/* Discover CTA Button */}
+                      <button
+                        onClick={() => handleSearch()}
+                        disabled={loading}
+                        className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-6 py-3.5 rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/25 active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+                      >
+                        {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                        <span>Discover Deals</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Interactive Price Range Indicator Bar */}
+                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-400 font-semibold shrink-0">Budget Tiers:</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {budgetTiers.map((tier) => (
+                          <button
+                            key={tier.val}
+                            onClick={() => {
+                              setBudget(tier.val);
+                              handleSearch(query, tier.val);
+                            }}
+                            className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition active:scale-95 border ${
+                              budget === tier.val
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
+                            }`}
+                          >
+                            {tier.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Visual Progress Track */}
+                    <div className="flex items-center gap-2.5 w-full md:w-56">
+                      <span className="text-[10px] text-slate-500 font-mono">₹0</span>
+                      <div className="flex-1 h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 rounded-full"
+                          style={{ width: `${budgetProgress}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-emerald-400 font-mono font-bold">
+                        ₹{budgetNum > 1000 ? `${Math.round(budgetNum / 1000)}k` : budgetNum}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Required Quick Preset Chips */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800/60 text-xs">
+                    <span className="text-slate-400 font-semibold flex items-center gap-1 mr-1">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Quick Presets:</span>
+                    </span>
+
+                    {presetChips.map((chip) => {
+                      const isSelected = query.toLowerCase() === chip.query.toLowerCase();
+                      return (
+                        <button
+                          key={chip.label}
+                          onClick={() => {
+                            setQuery(chip.query);
+                            setBudget(chip.budget);
+                            handleSearch(chip.query, chip.budget);
+                          }}
+                          className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 active:scale-95 border shadow-sm ${
+                            isSelected
+                              ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-emerald-500/10'
+                              : 'bg-slate-950/80 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          <span>{chip.icon}</span>
+                          <span>{chip.label}</span>
+                          <span className={`text-[10px] font-mono ml-0.5 ${isSelected ? 'text-emerald-400 font-bold' : 'text-slate-500 group-hover:text-slate-400'}`}>
+                            (≤₹{Number(chip.budget) / 1000}k)
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 mt-4 text-xs">
-                <span className="text-slate-500">Popular queries:</span>
-                <button
-                  onClick={() => { setQuery('headphones'); setBudget('20000'); handleSearch('headphones', '20000'); }}
-                  className="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full text-slate-300"
-                >
-                  🎧 Headphones under ₹20,000
-                </button>
-                <button
-                  onClick={() => { setQuery('Sony WH-1000XM5'); setBudget('20000'); handleSearch('Sony WH-1000XM5', '20000'); }}
-                  className="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full text-slate-300"
-                >
-                  ⚡ Sony WH-1000XM5
-                </button>
-                <button
-                  onClick={() => { setQuery('Bose'); setBudget('25000'); handleSearch('Bose', '25000'); }}
-                  className="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full text-slate-300"
-                >
-                  🎵 Bose QuietComfort
-                </button>
-                <button
-                  onClick={() => { setQuery('Monitor'); setBudget('30000'); handleSearch('Monitor', '30000'); }}
-                  className="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full text-slate-300"
-                >
-                  🖥️ Gaming Monitor under ₹30,000
-                </button>
-              </div>
-            </div>
+              {/* Deal Grid / Cards Header & Toggle */}
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                      <span>Normalized Deals</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                        {products.length} found
+                      </span>
+                    </h2>
+                    <span className="text-xs text-slate-400">Deterministic scoring & live inventory verification</span>
+                  </div>
 
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-300">
-                    Normalized Deals ({products.length} found)
-                  </h2>
-                  <span className="text-xs text-slate-500">Deterministic scoring & live inventory</span>
+                  {products.length > 0 && (
+                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 shadow-inner">
+                      <button
+                        onClick={() => setViewMode('cards')}
+                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 ${
+                          viewMode === 'cards'
+                            ? 'bg-slate-800 text-emerald-400 shadow-sm border border-slate-700'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <LayoutGrid className="w-3.5 h-3.5" />
+                        <span>Cards View</span>
+                      </button>
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 ${
+                          viewMode === 'grid'
+                            ? 'bg-slate-800 text-emerald-400 shadow-sm border border-slate-700'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <Table className="w-3.5 h-3.5" />
+                        <span>AG Grid Table</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {products.length > 0 && (
-                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                    <button
-                      onClick={() => setViewMode('cards')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                        viewMode === 'cards'
-                          ? 'bg-slate-800 text-emerald-400 shadow'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <LayoutGrid className="w-3.5 h-3.5" />
-                      <span>Cards</span>
-                    </button>
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                        viewMode === 'grid'
-                          ? 'bg-slate-800 text-emerald-400 shadow'
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <Table className="w-3.5 h-3.5" />
-                      <span>AG Grid Table</span>
-                    </button>
+                {products.length === 0 && !loading && (
+                  <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-12 text-center text-slate-400 backdrop-blur-sm shadow-xl">
+                    <p className="text-base font-semibold text-slate-300 mb-1">No deals found matching your query.</p>
+                    <p className="text-xs text-slate-500">
+                      Try selecting one of the quick presets above: "Sony WH-1000XM5", "MacBook Pro M3", or "AirPods Max".
+                    </p>
                   </div>
                 )}
+
+                {viewMode === 'cards' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {products.map((product) => (
+                      <DealCard
+                        key={product.id}
+                        product={product}
+                        onTrack={(p, o) => {
+                          setTrackModalProduct(p);
+                          setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
+                        }}
+                        onBuy={(p, o) => initiateCheckout(p, o)}
+                        onViewHistory={(p) => setHistoryModalProductId(p.id)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <DealGrid
+                    products={products}
+                    onTrack={(p, o) => {
+                      setTrackModalProduct(p);
+                      setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
+                    }}
+                    onBuy={(p, o) => initiateCheckout(p, o)}
+                    onViewHistory={(p) => setHistoryModalProductId(p.id)}
+                  />
+                )}
               </div>
-
-              {products.length === 0 && !loading && (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
-                  No deals found matching your query. Try searching for "Headphones" or "Sony".
-                </div>
-              )}
-
-              {viewMode === 'cards' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product) => (
-                    <DealCard
-                      key={product.id}
-                      product={product}
-                      onTrack={(p, o) => {
-                        setTrackModalProduct(p);
-                        setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
-                      }}
-                      onBuy={(p, o) => initiateCheckout(p, o)}
-                      onViewHistory={(p) => setHistoryModalProductId(p.id)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <DealGrid
-                  products={products}
-                  onTrack={(p, o) => {
-                    setTrackModalProduct(p);
-                    setTargetPriceInput(Math.round((o?.totalPrice || 20000) * 0.9));
-                  }}
-                  onBuy={(p, o) => initiateCheckout(p, o)}
-                  onViewHistory={(p) => setHistoryModalProductId(p.id)}
-                />
-              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {activeTab === 'watches' && (
-          <WatchesList rules={trackingRules} onRefresh={fetchTrackingRules} />
-        )}
+          {activeTab === 'watches' && (
+            <WatchesList
+              rules={trackingRules}
+              onRefresh={fetchTrackingRules}
+            />
+          )}
 
-        {activeTab === 'alerts' && (
-          <OutboxAlertsList alerts={outboxAlerts} onRefresh={fetchTrackingRules} />
-        )}
+          {activeTab === 'alerts' && (
+            <OutboxAlertsList
+              alerts={outboxAlerts}
+              onRefresh={fetchTrackingRules}
+            />
+          )}
 
-        {activeTab === 'paypal' && (
-          <PayPalChatInterface />
-        )}
+          {activeTab === 'paypal' && (
+            <PayPalChatInterface />
+          )}
 
-        {activeTab === 'simulation' && (
-          <TestLabPanel onSimulate={runSimulation} />
-        )}
-      </main>
+          {activeTab === 'simulation' && (
+            <TestLabPanel
+              onSimulate={runSimulation}
+            />
+          )}
+        </main>
       )}
 
+      {/* Tracking Modal */}
+      {trackModalProduct && (
+        <TrackingModal
+          product={trackModalProduct}
+          targetPrice={targetPriceInput}
+          setTargetPrice={setTargetPriceInput}
+          onClose={() => setTrackModalProduct(null)}
+          onConfirm={createTrackingRule}
+        />
+      )}
+
+      {/* Checkout Modal */}
+      {checkoutOffer && checkoutProduct && (
+        <PayPalModal
+          product={checkoutProduct}
+          step={checkoutStep}
+          order={createdOrder}
+          error={checkoutError}
+          onClose={() => {
+            setCheckoutOffer(null);
+            setCheckoutProduct(null);
+          }}
+          onAuthorize={confirmPayPalCapture}
+        />
+      )}
+
+      {/* Price History & Multi-Merchant Comparison Modal */}
       {historyModalProductId && (
         <PriceHistoryModal
           productId={historyModalProductId}
@@ -398,27 +563,6 @@ export const DashboardView: React.FC = () => {
             setTargetPriceInput(targetPrice);
           }}
           onBuy={(p, o) => initiateCheckout(p, o)}
-        />
-      )}
-
-      {trackModalProduct && (
-        <TrackingModal
-          product={trackModalProduct}
-          targetPrice={targetPriceInput}
-          setTargetPrice={setTargetPriceInput}
-          onConfirm={createTrackingRule}
-          onClose={() => setTrackModalProduct(null)}
-        />
-      )}
-
-      {checkoutOffer && (
-        <PayPalModal
-          step={checkoutStep}
-          product={checkoutProduct}
-          order={createdOrder}
-          error={checkoutError}
-          onAuthorize={confirmPayPalCapture}
-          onClose={() => setCheckoutOffer(null)}
         />
       )}
     </div>
