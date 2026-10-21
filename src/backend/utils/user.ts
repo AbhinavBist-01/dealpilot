@@ -27,5 +27,5 @@ export async function getCurrentUser(request?: Request) {
       // Fallback if session validation is not available or in headless worker mode
     }
   }
-  return getOrCreateDemoUser();
+  return null;
 }

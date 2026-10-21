@@ -4,7 +4,9 @@ const path = require('path');
 const nextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ['bullmq', 'ioredis', '@prisma/client', 'prisma'],
-  turbopack: {},
+  turbopack: {
+    root: path.resolve(__dirname, '../..'),
+  },
   images: {
     remotePatterns: [
       {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/backend/utils/db';
-import { getOrCreateDemoUser } from '@/backend/utils/user';
+import { getCurrentUser } from '@/backend/utils/user';
 import { monitoringQueue } from '@/backend/queue/queues';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,10 @@ const TrackingRuleCreateSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getOrCreateDemoUser();
+    const user = await getCurrentUser(req);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized. Please sign in to create price tracking rules.' }, { status: 401 });
+    }
     const body = await req.json();
     const parsed = TrackingRuleCreateSchema.safeParse(body);
 
@@ -69,9 +72,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const user = await getOrCreateDemoUser();
+    const user = await getCurrentUser(req);
+    if (!user) {
+      return NextResponse.json({ rules: [] });
+    }
     const rules = await prisma.trackingRule.findMany({
       where: { userId: user.id },
       include: {

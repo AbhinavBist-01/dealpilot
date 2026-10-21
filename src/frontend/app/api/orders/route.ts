@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getOrCreateDemoUser } from '@/backend/utils/user';
+import { getCurrentUser } from '@/backend/utils/user';
 import { payPalService } from '@/backend/services/paypal';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,10 @@ const CreateOrderSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getOrCreateDemoUser();
+    const user = await getCurrentUser(req);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized. Please sign in to initiate checkout.' }, { status: 401 });
+    }
     const body = await req.json();
     const parsed = CreateOrderSchema.safeParse(body);
 
