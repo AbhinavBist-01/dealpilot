@@ -26,6 +26,8 @@ export async function getCurrentUser(request?: Request) {
     } catch {
       // Fallback if session validation is not available or in headless worker mode
     }
+    return null;
   }
-  return null;
+  // When called without request (e.g. background worker, test runner, CLI session), return demo user fallback
+  return getOrCreateDemoUser();
 }

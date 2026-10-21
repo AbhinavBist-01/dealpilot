@@ -4,6 +4,7 @@ import { mockCatalogAdapter } from "@/backend/adapters/mock-catalog";
 import { Channel3CatalogAdapter } from "@/backend/adapters/channel3-catalog";
 import { calculateDealScore } from "@/backend/engine/deal-scorer";
 import { generateDealExplanation } from "@/backend/services/llm";
+import { withRetry } from "@/backend/utils/retry";
 
 export interface DiscoveryJobData {
   searchJobId: string;
@@ -26,18 +27,25 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
   });
 
   try {
-    // 1. Query catalog adapters in parallel (Mock Catalog + Channel3 Commerce Feed)
+    // 1. Query catalog adapters with retries and resilient fallback
     const channel3Adapter = new Channel3CatalogAdapter();
     const searchFilter = { query, maxPrice: budget, country, currency };
-    const [mockOffers, channel3Offers] = await Promise.all([
-      mockCatalogAdapter.search(searchFilter),
-      channel3Adapter.search(searchFilter).catch((err) => {
+
+    const fetchChannel3WithRetries = () =>
+      withRetry(() => channel3Adapter.search(searchFilter), {
+        maxRetries: 2,
+        initialDelayMs: 400,
+      }).catch((err) => {
         console.warn(
-          "[Discovery Worker] Channel3 adapter failed, continuing with mock offers:",
-          err,
+          "[Discovery Worker] Channel3 adapter failed after retries, falling back to mock catalog:",
+          err?.message || err,
         );
         return [];
-      }),
+      });
+
+    const [mockOffers, channel3Offers] = await Promise.all([
+      mockCatalogAdapter.search(searchFilter),
+      fetchChannel3WithRetries(),
     ]);
 
     // Use live Channel3 commerce offers directly when available; only fallback to mock if no real products found
