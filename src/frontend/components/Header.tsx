@@ -1,7 +1,8 @@
 import React from 'react';
-import { Clock, Bell, Zap, CreditCard, Search, Activity, Shield, Sparkles } from 'lucide-react';
+import { Clock, Bell, Zap, CreditCard, Search, Activity, Shield, Sparkles, Globe } from 'lucide-react';
 import { UserAuthButton } from './UserAuthButton';
 import { useSession } from '@/frontend/utils/auth-client';
+import { SUPPORTED_COUNTRIES, CountryConfig } from '@/backend/contracts/countries';
 
 interface HeaderProps {
   activeTab: 'search' | 'watches' | 'alerts' | 'simulation' | 'paypal';
@@ -9,6 +10,8 @@ interface HeaderProps {
   activeWatchesCount: number;
   alertsCount: number;
   onRefreshWatches: () => void;
+  selectedCountry?: CountryConfig;
+  onCountryChange?: (country: CountryConfig) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
   activeWatchesCount,
   alertsCount,
   onRefreshWatches,
+  selectedCountry = SUPPORTED_COUNTRIES[0],
+  onCountryChange,
 }) => {
   const { data: session } = useSession();
   const sessionUser = (session as any)?.user;
@@ -193,6 +198,27 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-[11px] font-semibold text-slate-200">Pilot Guest</span>
                 <span className="text-[9px] text-emerald-400/80 font-mono">Sandbox Mode</span>
               </div>
+            </div>
+          )}
+
+          {/* Country & Currency Selector Dropdown */}
+          {onCountryChange && (
+            <div className="relative flex items-center">
+              <select
+                value={selectedCountry.code}
+                onChange={(e) => {
+                  const found = SUPPORTED_COUNTRIES.find((c) => c.code === e.target.value);
+                  if (found) onCountryChange(found);
+                }}
+                className="appearance-none bg-slate-800/80 hover:bg-slate-700/80 text-xs font-semibold text-slate-200 border border-slate-700/80 hover:border-emerald-500/40 rounded-xl pl-2.5 pr-7 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-400 transition"
+              >
+                {SUPPORTED_COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code} className="bg-slate-900 text-slate-200">
+                    {c.flag} {c.code} ({c.currency})
+                  </option>
+                ))}
+              </select>
+              <Globe className="w-3.5 h-3.5 absolute right-2 text-slate-400 pointer-events-none" />
             </div>
           )}
 

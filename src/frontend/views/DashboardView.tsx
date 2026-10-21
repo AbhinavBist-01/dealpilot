@@ -32,10 +32,12 @@ import { PayPalChatInterface } from '../components/PayPalChatInterface';
 import { LandingView } from './LandingView';
 import { AuthModal } from '../components/AuthModal';
 import { useSession } from '@/frontend/utils/auth-client';
+import { SUPPORTED_COUNTRIES, CountryConfig, DEFAULT_COUNTRY } from '@/backend/contracts/countries';
 
 export const DashboardView: React.FC = () => {
   const { data: session, isPending: isSessionPending } = useSession();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<CountryConfig>(DEFAULT_COUNTRY);
   const [query, setQuery] = useState('Sony WH-1000XM5');
   const [budget, setBudget] = useState<string>('30000');
   const [loading, setLoading] = useState(false);
@@ -87,10 +89,11 @@ export const DashboardView: React.FC = () => {
     setTimeout(() => setBannerMessage(null), 4000);
   };
 
-  const handleSearch = async (overrideQuery?: string, overrideBudget?: string) => {
+  const handleSearch = async (overrideQuery?: string, overrideBudget?: string, overrideCountry?: CountryConfig) => {
     setLoading(true);
     const q = overrideQuery !== undefined ? overrideQuery : query;
     const b = overrideBudget !== undefined ? overrideBudget : budget;
+    const activeCountry = overrideCountry || selectedCountry;
 
     try {
       const res = await fetch('/api/search', {
@@ -99,6 +102,8 @@ export const DashboardView: React.FC = () => {
         body: JSON.stringify({
           query: q,
           budget: b ? parseFloat(b) : undefined,
+          country: activeCountry.code,
+          currency: activeCountry.currency,
         }),
       });
       const data = await res.json();
@@ -110,6 +115,18 @@ export const DashboardView: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCountrySelect = (newCountry: CountryConfig) => {
+    setSelectedCountry(newCountry);
+    // Adjust default budget scale when switching between high-denomination INR and USD/GBP/EUR
+    if (newCountry.currency === 'INR' && Number(budget) < 1000) {
+      setBudget('30000');
+    } else if (newCountry.currency !== 'INR' && Number(budget) > 5000) {
+      setBudget('500');
+    }
+    showBanner(`Localized to ${newCountry.name} (${newCountry.currency})`);
+    handleSearch(query, undefined, newCountry);
   };
 
   const fetchTrackingRules = async () => {
@@ -250,6 +267,8 @@ export const DashboardView: React.FC = () => {
         activeWatchesCount={trackingRules.length}
         alertsCount={outboxAlerts.length}
         onRefreshWatches={fetchTrackingRules}
+        selectedCountry={selectedCountry}
+        onCountryChange={handleCountrySelect}
       />
 
       {isSessionPending ? (
@@ -285,9 +304,10 @@ export const DashboardView: React.FC = () => {
                     {/* Price Range Indicator Pill */}
                     <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs shadow-inner">
                       <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-slate-400 font-medium">Price Range:</span>
-                      <span className="font-extrabold text-emerald-400 font-mono">
-                        ₹0 — ₹{budgetNum.toLocaleString('en-IN')}
+                      <span className="text-slate-400 font-medium">Market:</span>
+                      <span className="font-extrabold text-emerald-400 font-mono flex items-center gap-1">
+                        <span>{selectedCountry.flag}</span>
+                        <span>0 — {selectedCountry.symbol}{budgetNum.toLocaleString(selectedCountry.locale)}</span>
                       </span>
                     </div>
                   </div>
@@ -301,7 +321,7 @@ export const DashboardView: React.FC = () => {
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search product, model, or category (e.g. 'Sony WH-1000XM5', 'MacBook Pro M3')"
+                        placeholder={`Search product or model for ${selectedCountry.name} (${selectedCountry.currency})...`}
                         className="w-full bg-slate-950/90 border border-slate-700/80 hover:border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl pl-12 pr-12 py-3.5 text-sm text-slate-100 placeholder:text-slate-500 transition-all shadow-inner outline-none font-medium"
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                       />
@@ -325,7 +345,7 @@ export const DashboardView: React.FC = () => {
                     {/* Budget Input & Filter */}
                     <div className="flex items-center gap-2">
                       <div className="relative w-44">
-                        <span className="absolute left-3.5 top-3.5 text-xs text-slate-400 font-bold">Max ₹</span>
+                        <span className="absolute left-3.5 top-3.5 text-xs text-slate-400 font-bold">Max {selectedCountry.symbol}</span>
                         <input
                           type="number"
                           value={budget}

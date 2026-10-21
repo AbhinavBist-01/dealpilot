@@ -6,6 +6,8 @@ export interface CatalogSearchFilter {
   maxPrice?: number;
   minPrice?: number;
   condition?: 'new' | 'refurbished' | 'open_box';
+  country?: string;
+  currency?: string;
 }
 
 export interface CatalogAdapter {

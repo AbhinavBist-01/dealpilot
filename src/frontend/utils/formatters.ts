@@ -1,17 +1,24 @@
 export function formatCurrency(amount: number, currency: string = 'INR'): string {
-  if (currency === 'INR') {
+  const cur = currency?.toUpperCase() || 'INR';
+  if (cur === 'INR') {
     return `₹${amount.toLocaleString('en-IN')}`;
   }
-  if (currency === 'USD') {
+  if (cur === 'USD') {
     return `$${amount.toLocaleString('en-US', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
   }
-  if (currency === 'EUR') {
-    return `€${amount.toLocaleString('en-EU', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+  if (cur === 'EUR') {
+    return `€${amount.toLocaleString('de-DE', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
   }
-  if (currency === 'GBP') {
+  if (cur === 'GBP') {
     return `£${amount.toLocaleString('en-GB', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
   }
-  return `${currency} ${amount.toLocaleString()}`;
+  if (cur === 'CAD') {
+    return `CA$${amount.toLocaleString('en-CA', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+  }
+  if (cur === 'AUD') {
+    return `A$${amount.toLocaleString('en-AU', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+  }
+  return `${cur} ${amount.toLocaleString()}`;
 }
 
 export function formatDateTime(date: Date | string): string {

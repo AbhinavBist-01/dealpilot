@@ -2,6 +2,7 @@ import { Channel3 } from "@channel3/sdk";
 import { CatalogAdapter, CatalogSearchFilter } from "./catalog-adapter";
 import { NormalizedOffer } from "../contracts/offer";
 import { verifyProductMatch } from "../engine/product-verifier";
+import { getCountryByCode } from "../contracts/countries";
 
 export class Channel3CatalogAdapter implements CatalogAdapter {
   readonly sourceId = "channel3";
@@ -20,9 +21,21 @@ export class Channel3CatalogAdapter implements CatalogAdapter {
     if (this.client) {
       try {
         const queryTerm = filter.query ?? "";
+        const countryConf = getCountryByCode(filter.country);
+
+        // Configure request with country and currency constraints if supported by Channel3
+        const searchConfig: any = {};
+        if (countryConf.channel3Country) {
+          searchConfig.country = countryConf.channel3Country;
+        }
+        if (countryConf.channel3Currency) {
+          searchConfig.currency = countryConf.channel3Currency;
+        }
+
         const page = await this.client.products.search({
           query: queryTerm,
           limit: 10,
+          config: Object.keys(searchConfig).length > 0 ? searchConfig : undefined,
         });
 
         const products = page.data || [];
@@ -60,7 +73,8 @@ export class Channel3CatalogAdapter implements CatalogAdapter {
             const rawPrice = Number(rawOffer.price?.price || 0);
             if (rawPrice <= 0) continue;
 
-            const currency = rawOffer.price?.currency || "USD";
+            const rawCurrency = rawOffer.price?.currency;
+            const currency = filter.currency || (rawCurrency && rawCurrency !== 'USD' ? rawCurrency : countryConf.currency);
             const itemPrice = Math.round(rawPrice);
 
             if (filter.maxPrice && itemPrice > filter.maxPrice) {

@@ -10,12 +10,14 @@ export interface DiscoveryJobData {
   query: string;
   budget?: number;
   targetPrice?: number;
+  country?: string;
+  currency?: string;
 }
 
 export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
-  const { searchJobId, query, budget, targetPrice } = job.data;
+  const { searchJobId, query, budget, targetPrice, country, currency } = job.data;
   console.log(
-    `[Discovery Worker] Processing job ${job.id} for query "${query}"`,
+    `[Discovery Worker] Processing job ${job.id} for query "${query}" (Country: ${country || 'IN'}, Currency: ${currency || 'INR'})`,
   );
 
   await prisma.searchJob.update({
@@ -26,9 +28,10 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
   try {
     // 1. Query catalog adapters in parallel (Mock Catalog + Channel3 Commerce Feed)
     const channel3Adapter = new Channel3CatalogAdapter();
+    const searchFilter = { query, maxPrice: budget, country, currency };
     const [mockOffers, channel3Offers] = await Promise.all([
-      mockCatalogAdapter.search({ query, maxPrice: budget }),
-      channel3Adapter.search({ query, maxPrice: budget }).catch((err) => {
+      mockCatalogAdapter.search(searchFilter),
+      channel3Adapter.search(searchFilter).catch((err) => {
         console.warn(
           "[Discovery Worker] Channel3 adapter failed, continuing with mock offers:",
           err,

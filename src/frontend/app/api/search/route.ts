@@ -11,6 +11,8 @@ const SearchRequestSchema = z.object({
   query: z.string().min(1),
   budget: z.number().positive().optional(),
   targetPrice: z.number().positive().optional(),
+  country: z.string().optional(),
+  currency: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid search request', details: parsed.error.format() }, { status: 400 });
     }
 
-    const { query, budget, targetPrice } = parsed.data;
+    const { query, budget, targetPrice, country, currency } = parsed.data;
 
     // Create search job
     const searchJob = await prisma.searchJob.create({
@@ -41,6 +43,8 @@ export async function POST(req: NextRequest) {
         query,
         budget,
         targetPrice,
+        country,
+        currency,
       });
     } catch {
       // In case BullMQ redis queue is running in standalone mock mode, process directly
@@ -54,6 +58,8 @@ export async function POST(req: NextRequest) {
         query,
         budget,
         targetPrice,
+        country,
+        currency,
       },
     } as any);
 
@@ -93,8 +99,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Filter offers strictly by country currency when country or currency is specified
+    const targetCurrency = currency || (country ? (country === 'US' ? 'USD' : country === 'GB' ? 'GBP' : country === 'EU' ? 'EUR' : country === 'CA' ? 'CAD' : country === 'AU' ? 'AUD' : 'INR') : undefined);
+
+    const countryFilteredProducts = targetCurrency
+      ? rawProducts.map((p) => ({
+          ...p,
+          offers: p.offers.filter((o) => o.currency.toUpperCase() === targetCurrency.toUpperCase()),
+        })).filter((p) => p.offers.length > 0)
+      : rawProducts;
+
+    const baseProducts = countryFilteredProducts.length > 0 ? countryFilteredProducts : rawProducts;
+
     // Verification Gatekeeper: score relevance and filter out accessory mismatches or unrelated items
-    const verifiedProducts = rawProducts
+    const verifiedProducts = baseProducts
       .map((product) => {
         const lowestOfferPrice = product.offers[0]?.totalPrice || product.offers[0]?.itemPrice || 0;
         const verification = verifyProductMatch({
@@ -118,7 +136,7 @@ export async function POST(req: NextRequest) {
       .filter((p) => p.verification.isMatch && !p.verification.isAccessoryMismatch)
       .sort((a, b) => b.compositeScore - a.compositeScore);
 
-    const finalProducts = verifiedProducts.length > 0 ? verifiedProducts : rawProducts;
+    const finalProducts = verifiedProducts.length > 0 ? verifiedProducts : baseProducts;
 
     return NextResponse.json({
       job: updatedJob,
