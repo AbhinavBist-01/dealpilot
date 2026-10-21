@@ -95,8 +95,55 @@ export class PayPalService {
       };
     }
 
-    // 2. Generate PayPal Sandbox Order ID
-    const paypalOrderId = `PAYPAL-SANDBOX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    // 2. Generate or Create authoritative PayPal Sandbox Order
+    let paypalOrderId = `PAYPAL-SANDBOX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    let approveUrl: string | undefined = undefined;
+
+    // Call live PayPal API if credentials exist
+    try {
+      if (this.clientId && this.clientSecret && !this.clientId.includes('mock_')) {
+        const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+        const tokenRes = await fetch(`${this.apiBase}/v1/oauth2/token`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'grant_type=client_credentials',
+        });
+        if (tokenRes.ok) {
+          const tokenData = await tokenRes.json();
+          const liveOrderRes = await fetch(`${this.apiBase}/v2/checkout/orders`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${tokenData.access_token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              intent: 'CAPTURE',
+              purchase_units: [{
+                amount: {
+                  currency_code: ['USD', 'EUR', 'GBP', 'CAD', 'AUD'].includes(offer.currency) ? offer.currency : 'USD',
+                  value: offer.totalPrice.toFixed(2),
+                },
+                description: offer.product.title.slice(0, 120),
+              }],
+              application_context: {
+                return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/orders/return`,
+                cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/orders/cancel`,
+              },
+            }),
+          });
+          if (liveOrderRes.ok) {
+            const liveOrder = await liveOrderRes.json();
+            paypalOrderId = liveOrder.id;
+            approveUrl = liveOrder.links?.find((l: any) => l.rel === 'approve')?.href;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[PayPal Service] Live sandbox order creation fallback to simulated sandbox order:', err);
+    }
 
     // 3. Create Order record in database with initial state 'awaiting_approval'
     const order = await prisma.order.create({
@@ -118,6 +165,7 @@ export class PayPalService {
         amount: order.quotedTotal,
         currency: order.currency,
         status: order.status,
+        approveUrl,
       },
     };
 

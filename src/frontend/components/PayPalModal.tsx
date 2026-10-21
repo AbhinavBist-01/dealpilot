@@ -56,12 +56,25 @@ export const PayPalModal: React.FC<PayPalModalProps> = ({
               </button>
               <button
                 onClick={onAuthorize}
-                className="w-1/2 bg-[#0070ba] hover:bg-[#005ea6] text-white py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 flex items-center justify-center gap-1.5"
+                className="w-1/2 bg-[#0070ba] hover:bg-[#005ea6] text-white py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <CreditCard className="w-3.5 h-3.5" />
-                <span>Authorize & Pay</span>
+                <span>Simulate Instant Capture</span>
               </button>
             </div>
+
+            {order?.approveUrl && (
+              <div className="mt-3 pt-3 border-t border-slate-800 text-center">
+                <a
+                  href={order.approveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-400 hover:text-blue-300 underline font-medium inline-flex items-center gap-1"
+                >
+                  <span>Or test real interactive PayPal Sandbox login page ↗</span>
+                </a>
+              </div>
+            )}
           </div>
         )}
 
