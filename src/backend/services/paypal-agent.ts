@@ -136,6 +136,7 @@ Provide concise, clear transaction details including order ID, currency, and pay
       return {
         response: `Created PayPal Sandbox Order **${fakeId}** for DealPilot checkout. Awaiting buyer authorization.`,
         toolCalled: 'create_order',
+        toolArgs: { intent: 'CAPTURE' },
         toolResult: { id: fakeId, status: 'CREATED', intent: 'CAPTURE' },
       };
     }
@@ -145,6 +146,7 @@ Provide concise, clear transaction details including order ID, currency, and pay
       return {
         response: `Successfully captured and authorized payment via PayPal Sandbox! Transaction ID: **${fakeCaptureId}**. Order status: **COMPLETED**.`,
         toolCalled: 'pay_order',
+        toolArgs: { orderId: 'ORDER-SANDBOX-LATEST' },
         toolResult: { id: fakeCaptureId, status: 'COMPLETED' },
       };
     }
@@ -153,6 +155,7 @@ Provide concise, clear transaction details including order ID, currency, and pay
       return {
         response: `Retrieved order status: Status is **APPROVED** / **COMPLETED** in PayPal Sandbox v2. Ready for server settlement.`,
         toolCalled: 'get_order',
+        toolArgs: { orderId: 'ORDER-SANDBOX-LATEST' },
         toolResult: { status: 'APPROVED' },
       };
     }

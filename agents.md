@@ -2,7 +2,7 @@
 
 > **Autonomous Deal-Hunting & Price-Monitoring Agent System**  
 > **Last Updated**: 2026-10-21T01:35:00+05:30  
-> **Status**: ✅ All 20 Milestones (M0–M20) Verified — Next.js 16.4.2 (Turbopack), React 19.3.1, Live PostgreSQL 16 & Redis 7 Docker Containers, Better Auth (Google & GitHub), Product Verification Engine, Channel3 SDK 4.3.0, PayPal Agent Toolkit, AG Grid & 35/35 Passing Tests (13 Guardrails + 22 System Evals)
+> **Status**: ✅ All 23 Milestones (M0–M23) Verified — Next.js 16.4.2 (Turbopack), React 19.3.1, Live PostgreSQL 16 & Redis 7 Docker Containers, Better Auth (Google & GitHub), Autonomous Agent Buy Directives ("Buy Now" & "Leave"), Product Verification Engine, Channel3 SDK 4.3.0, PayPal Agent Toolkit with Retries & Fallbacks, AG Grid & 35/35 Passing Tests (13 Guardrails + 22 System Evals)
 
 ---
 
@@ -81,6 +81,8 @@ dealpilot/
 | **M19: Better Auth (Google & GitHub OAuth)** | Better Auth integrated with PostgreSQL Prisma adapter (`User`, `Session`, `Account`, `Verification`), Next.js App Router handler `/api/auth/[...all]`, and `UserAuthButton` UI component | ✅ Complete | `src/backend/utils/auth.ts`, `auth-client.ts`, `UserAuthButton.tsx`, `/api/auth/[...all]/route.ts`, verified in Eval 8. |
 | **M20: Product Search Verification & Intent Guard** | Model spec extractor, accessory exclusion guard (filters cases/cables/cushions), token relevance scoring, and verified deal badge presentation | ✅ Complete | `src/backend/engine/product-verifier.ts`, `channel3-catalog.ts`, `route.ts`, `DealCard.tsx`, `DealGrid.tsx`, verified in Eval 7. |
 | **M21: Real Worker Data Pipeline** | Direct worker ingestion of live product attributes: original merchant domains, real Channel3 ratings & review counts, exact prices & currencies, and search endpoint returning exclusively the worker's discovered products | ✅ Complete | `src/backend/adapters/channel3-catalog.ts`, `discovery-worker.ts`, `/api/search/route.ts`, verified across all 35 tests. |
+| **M22: Multi-Merchant Outbox Webhooks & Resilient Agent Fallback** | Automated multi-merchant incoming webhooks for price updates (`/api/webhooks/merchants`) and resilient retry/jitter fallback wrappers for LLM agents | ✅ Complete | `src/frontend/app/api/webhooks/merchants/route.ts`, `src/backend/services/agent-fallback.ts`, `paypal-agent.ts`. |
+| **M23: Autonomous Agent Buy Directive Interface** | Natural language buy directive modal + radar action button allowing users to command the agent to watch target prices; displays live match card with strictly two actions: **Buy Now** and **Leave** | ✅ Complete | `AgentBuyDirectiveModal.tsx`, `/api/agent/watch/route.ts`, integrated into `DashboardView.tsx`, verified across all 35 tests. |
 
 ---
 

@@ -29,6 +29,7 @@ import { TrackingModal } from '../components/TrackingModal';
 import { PayPalModal } from '../components/PayPalModal';
 import { PriceHistoryModal } from '../components/PriceHistoryModal';
 import { PayPalChatInterface } from '../components/PayPalChatInterface';
+import { AgentBuyDirectiveModal } from '../components/AgentBuyDirectiveModal';
 import { LandingView } from './LandingView';
 import { AuthModal } from '../components/AuthModal';
 import { useSession } from '@/frontend/utils/auth-client';
@@ -585,6 +586,14 @@ export const DashboardView: React.FC = () => {
           onBuy={(p, o) => initiateCheckout(p, o)}
         />
       )}
+
+      {/* Autonomous Agent Buy Directive Interface */}
+      <AgentBuyDirectiveModal
+        country={selectedCountry.code}
+        currency={selectedCountry.currency}
+        onInitiateCheckout={(product, offer) => initiateCheckout(product, offer)}
+        onRefreshWatches={fetchTrackingRules}
+      />
     </div>
   );
 };
