@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '@/backend/utils/db';
 import { getCurrentUser } from '@/backend/utils/user';
 import { processDiscoveryJob } from '@/backend/workers/discovery-worker';
+import { normalizeOfferPricing } from '@/backend/utils/currency';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,7 +78,9 @@ export async function POST(req: NextRequest) {
       }, { status: 404 });
     }
 
-    const currentBestPrice = product.offers[0]?.itemPrice || targetPrice;
+    const rawOffer = product.offers[0];
+    const normalizedOffer = rawOffer ? normalizeOfferPricing(rawOffer, currency, product.title) : null;
+    const currentBestPrice = normalizedOffer ? normalizedOffer.itemPrice : targetPrice;
     const isTargetMetInstantly = currentBestPrice <= targetPrice;
 
     // 3. Create or update active tracking rule for user
@@ -155,7 +158,7 @@ export async function POST(req: NextRequest) {
         brand: product.brand,
         imageUrl: product.imageUrl,
         currentBestPrice,
-        bestOffer: product.offers[0],
+        bestOffer: normalizedOffer ? { ...product.offers[0], ...normalizedOffer } : product.offers[0],
       },
       isTargetMet: isTargetMetInstantly,
       notificationCreated,

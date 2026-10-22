@@ -3,6 +3,7 @@ import { CatalogAdapter, CatalogSearchFilter } from "./catalog-adapter";
 import { NormalizedOffer } from "../contracts/offer";
 import { verifyProductMatch } from "../engine/product-verifier";
 import { getCountryByCode } from "../contracts/countries";
+import { convertCurrency } from "../utils/currency";
 
 export class Channel3CatalogAdapter implements CatalogAdapter {
   readonly sourceId = "channel3";
@@ -73,9 +74,10 @@ export class Channel3CatalogAdapter implements CatalogAdapter {
             const rawPrice = Number(rawOffer.price?.price || 0);
             if (rawPrice <= 0) continue;
 
-            const rawCurrency = rawOffer.price?.currency;
-            const currency = filter.currency || (rawCurrency && rawCurrency !== 'USD' ? rawCurrency : countryConf.currency);
-            const itemPrice = Math.round(rawPrice);
+            const rawCurrency = rawOffer.price?.currency || "USD";
+            const targetCurrency = filter.currency || countryConf.currency || "INR";
+            const itemPrice = convertCurrency(rawPrice, rawCurrency, targetCurrency);
+            const currency = targetCurrency;
 
             if (filter.maxPrice && itemPrice > filter.maxPrice) {
               continue;
@@ -322,35 +324,39 @@ export class Channel3CatalogAdapter implements CatalogAdapter {
         }
         return true;
       })
-      .map((item) => ({
-        sourceId: this.sourceId,
-        externalProductId: item.id,
-        offerUrl: item.url,
-        canonicalProductId: item.canonicalId,
-        title: item.title,
-        brand: item.brand,
-        model: item.model,
-        category: item.category,
-        imageUrl: item.imageUrl,
-        variantAttributes: {
-          condition: "new" as const,
-        },
-        seller: {
-          id: `seller-${item.id}`,
-          name: item.seller,
-          isAuthorized: true,
-          rating: 4.8,
-        },
-        price: {
-          itemPrice: item.price,
-          shippingPrice: 0,
-          fees: 0,
-          currency: "INR",
-          totalPrice: item.price,
-        },
-        availabilityStatus: "in_stock" as const,
-        sourceConfidence: 0.95,
-        observedAt: new Date(),
-      }));
+      .map((item) => {
+        const targetCurrency = (filter.currency || "INR").toUpperCase();
+        const convertedPrice = convertCurrency(item.price, "INR", targetCurrency);
+        return {
+          sourceId: this.sourceId,
+          externalProductId: item.id,
+          offerUrl: item.url,
+          canonicalProductId: item.canonicalId,
+          title: item.title,
+          brand: item.brand,
+          model: item.model,
+          category: item.category,
+          imageUrl: item.imageUrl,
+          variantAttributes: {
+            condition: "new" as const,
+          },
+          seller: {
+            id: `seller-${item.id}`,
+            name: item.seller,
+            isAuthorized: true,
+            rating: 4.8,
+          },
+          price: {
+            itemPrice: convertedPrice,
+            shippingPrice: 0,
+            fees: 0,
+            currency: targetCurrency,
+            totalPrice: convertedPrice,
+          },
+          availabilityStatus: "in_stock" as const,
+          sourceConfidence: 0.95,
+          observedAt: new Date(),
+        };
+      });
   }
 }

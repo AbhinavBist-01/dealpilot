@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/backend/utils/db';
+import { normalizeOfferPricing, convertCurrency } from '@/backend/utils/currency';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,14 +28,17 @@ export async function GET(
     }
 
     const primaryOffer = product.offers[0];
+    const targetCurrency = (req.nextUrl.searchParams.get('currency') || primaryOffer?.currency || 'INR').toUpperCase();
+    const normalizedPrimary = primaryOffer ? normalizeOfferPricing(primaryOffer, targetCurrency, product.title) : null;
+
     const rawObs = await prisma.priceObservation.findMany({
       where: { productId: id },
       orderBy: { observedAt: 'asc' },
       take: 100,
     });
 
-    const currentPrice = primaryOffer?.totalPrice || 20000;
-    const lowestRecorded = primaryOffer?.lowestPrice || Math.round(currentPrice * 0.94);
+    const currentPrice = normalizedPrimary?.totalPrice || (targetCurrency === 'INR' ? 20000 : 250);
+    const lowestRecorded = normalizedPrimary?.lowestPrice || Math.round(currentPrice * 0.94);
 
     // If observation count is low, generate realistic historical trajectory backwards from current price
     let timeline: { date: string; price: number; merchant: string }[] = [];
@@ -42,7 +46,7 @@ export async function GET(
     if (rawObs.length >= 5) {
       timeline = rawObs.map((o) => ({
         date: new Date(o.observedAt).toISOString().split('T')[0],
-        price: o.totalPrice,
+        price: convertCurrency(o.totalPrice, o.currency || primaryOffer?.currency || 'USD', targetCurrency),
         merchant: primaryOffer?.sellerName || 'Verified Retailer',
       }));
     } else {
@@ -85,6 +89,7 @@ export async function GET(
 
     // Multi-merchant breakdown
     const merchantOffers = product.offers.map((o) => {
+      const normalizedOffer = normalizeOfferPricing(o, targetCurrency, product.title);
       let variantAttrs: any = {};
       try {
         variantAttrs = typeof o.variantAttributes === 'string'
@@ -96,7 +101,8 @@ export async function GET(
 
       return {
         merchant: o.sellerName,
-        price: o.totalPrice,
+        price: normalizedOffer.totalPrice,
+        currency: targetCurrency,
         condition: variantAttrs.condition || 'new',
         isAuthorized: o.isAuthorizedSeller,
         rating: o.sellerRating || 4.8,
@@ -113,7 +119,7 @@ export async function GET(
         model: product.model,
         category: product.category,
         imageUrl: product.imageUrl,
-        currency: primaryOffer?.currency || 'INR',
+        currency: targetCurrency,
       },
       stats: {
         currentPrice,

@@ -4,6 +4,7 @@ import prisma from '@/backend/utils/db';
 import { discoveryQueue } from '@/backend/queue/queues';
 import { processDiscoveryJob } from '@/backend/workers/discovery-worker';
 import { verifyProductMatch } from '@/backend/engine/product-verifier';
+import { normalizeOfferPricing } from '@/backend/utils/currency';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,17 +100,25 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Filter offers strictly by country currency when country or currency is specified
-    const targetCurrency = currency || (country ? (country === 'US' ? 'USD' : country === 'GB' ? 'GBP' : country === 'EU' ? 'EUR' : country === 'CA' ? 'CAD' : country === 'AU' ? 'AUD' : 'INR') : undefined);
+    // Dynamic Currency Normalization: Convert all offers to the requested country currency
+    const targetCurrency = (currency || (country ? (country === 'US' ? 'USD' : country === 'GB' ? 'GBP' : country === 'EU' ? 'EUR' : country === 'CA' ? 'CAD' : country === 'AU' ? 'AUD' : 'INR') : 'INR')).toUpperCase();
 
-    const countryFilteredProducts = targetCurrency
-      ? rawProducts.map((p) => ({
-          ...p,
-          offers: p.offers.filter((o) => o.currency.toUpperCase() === targetCurrency.toUpperCase()),
-        })).filter((p) => p.offers.length > 0)
-      : rawProducts;
+    const normalizedProducts = rawProducts.map((product) => {
+      const convertedOffers = product.offers.map((offer) => {
+        const normalized = normalizeOfferPricing(offer, targetCurrency, product.title);
+        return {
+          ...offer,
+          ...normalized,
+        };
+      });
 
-    const baseProducts = countryFilteredProducts.length > 0 ? countryFilteredProducts : rawProducts;
+      return {
+        ...product,
+        offers: convertedOffers,
+      };
+    });
+
+    const baseProducts = normalizedProducts;
 
     // Verification Gatekeeper: score relevance and filter out accessory mismatches or unrelated items
     const verifiedProducts = baseProducts

@@ -2,6 +2,8 @@ import { Job } from "bullmq";
 import prisma from "@/backend/utils/db";
 import { mockCatalogAdapter } from "@/backend/adapters/mock-catalog";
 import { Channel3CatalogAdapter } from "@/backend/adapters/channel3-catalog";
+import { buyhatkeCatalogAdapter } from "@/backend/adapters/buyhatke-catalog";
+import { getCountryByCode } from "@/backend/contracts/countries";
 import { calculateDealScore } from "@/backend/engine/deal-scorer";
 import { generateDealExplanation } from "@/backend/services/llm";
 import { withRetry } from "@/backend/utils/retry";
@@ -27,7 +29,12 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
   });
 
   try {
-    // 1. Query catalog adapters with retries and resilient fallback
+    // 1. Query catalog adapters according to country routing policy
+    // Use Channel3 for Channel3-supported countries (US, GB, EU, CA, AU);
+    // Use Buyhatke Domestic Intelligence for India and non-Channel3 markets.
+    const countryConf = getCountryByCode(country);
+    const isChannel3Country = Boolean(countryConf.channel3Country);
+
     const channel3Adapter = new Channel3CatalogAdapter();
     const searchFilter = { query, maxPrice: budget, country, currency };
 
@@ -37,22 +44,23 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
         initialDelayMs: 400,
       }).catch((err) => {
         console.warn(
-          "[Discovery Worker] Channel3 adapter failed after retries, falling back to mock catalog:",
+          "[Discovery Worker] Channel3 adapter failed after retries:",
           err?.message || err,
         );
         return [];
       });
 
-    const [mockOffers, channel3Offers] = await Promise.all([
-      mockCatalogAdapter.search(searchFilter),
-      fetchChannel3WithRetries(),
-    ]);
+    let primaryOffers: any[] = [];
+    if (isChannel3Country) {
+      primaryOffers = await fetchChannel3WithRetries();
+    } else {
+      primaryOffers = await buyhatkeCatalogAdapter.search(searchFilter);
+    }
 
-    // Use live Channel3 commerce offers directly when available; only fallback to mock if no real products found
-    const offers =
-      channel3Offers.length > 0
-        ? channel3Offers
-        : mockOffers;
+    // Resilient fallback to mock catalog only if primary source yielded no items
+    const offers = primaryOffers.length > 0
+      ? primaryOffers
+      : await mockCatalogAdapter.search(searchFilter);
 
     const upsertedProductIds: string[] = [];
 

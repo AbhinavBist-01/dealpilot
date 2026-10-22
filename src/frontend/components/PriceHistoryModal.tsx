@@ -21,6 +21,7 @@ import { formatCurrency } from '../utils/formatters';
 
 interface PriceHistoryModalProps {
   productId: string | null;
+  currency?: string;
   onClose: () => void;
   onTrack: (product: any, targetPrice: number) => void;
   onBuy: (product: any, offer: any) => void;
@@ -28,6 +29,7 @@ interface PriceHistoryModalProps {
 
 export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
   productId,
+  currency = 'INR',
   onClose,
   onTrack,
   onBuy,
@@ -40,7 +42,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
   useEffect(() => {
     if (!productId) return;
     setLoading(true);
-    fetch(`/api/products/${productId}/price-history`)
+    fetch(`/api/products/${productId}/price-history?currency=${encodeURIComponent(currency)}`)
       .then((res) => res.json())
       .then((resData) => {
         setData(resData);
@@ -50,7 +52,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
         console.error('Failed to load price history:', err);
         setLoading(false);
       });
-  }, [productId]);
+  }, [productId, currency]);
 
   // Filter timeline based on timeframe
   const activeTimeline = useMemo(() => {

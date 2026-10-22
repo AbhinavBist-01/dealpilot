@@ -578,6 +578,7 @@ export const DashboardView: React.FC = () => {
       {historyModalProductId && (
         <PriceHistoryModal
           productId={historyModalProductId}
+          currency={selectedCountry.currency}
           onClose={() => setHistoryModalProductId(null)}
           onTrack={(p, targetPrice) => {
             setTrackModalProduct(p);
