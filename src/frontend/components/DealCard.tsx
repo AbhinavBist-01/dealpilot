@@ -150,10 +150,17 @@ export const DealCard: React.FC<DealCardProps> = ({
                 <span>{conditionDisplay}</span>
               </span>
 
-              {offer?.sourceId === 'channel3' && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg border backdrop-blur-md bg-indigo-950/90 text-indigo-300 border-indigo-700/60 flex items-center gap-1 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                  <span>Channel3 Live</span>
+              {offer?.sellerName?.toLowerCase().includes('blinkit') ||
+              offer?.sellerName?.toLowerCase().includes('zepto') ||
+              offer?.sellerName?.toLowerCase().includes('instamart') ? (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg border backdrop-blur-md bg-amber-950/90 text-amber-300 border-amber-600/60 flex items-center gap-1 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span>⚡ Quick Commerce</span>
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg border backdrop-blur-md bg-emerald-950/90 text-emerald-300 border-emerald-600/60 flex items-center gap-1 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>📦 Verified Store</span>
                 </span>
               )}
             </div>

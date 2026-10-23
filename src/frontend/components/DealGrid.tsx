@@ -261,9 +261,13 @@ export const DealGrid: React.FC<DealGridProps> = ({
                   </span>
                 )}
                 <span className="truncate">{data.seller}</span>
-                {data.source === 'channel3' && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 shrink-0">
-                    Channel3
+                {data.seller?.toLowerCase().includes('blinkit') || data.seller?.toLowerCase().includes('zepto') || data.seller?.toLowerCase().includes('instamart') ? (
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700/60 shrink-0">
+                    ⚡ Quick
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 shrink-0">
+                    📦 Store
                   </span>
                 )}
               </div>

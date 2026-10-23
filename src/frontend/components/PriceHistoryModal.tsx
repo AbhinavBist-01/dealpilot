@@ -387,13 +387,17 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                           <div className="flex items-center gap-1.5 font-bold text-sm text-slate-200">
                             <span>{m.merchant}</span>
                             {m.isAuthorized && (
-                              <span title="Verified Authorized Dealer">
+                              <span title="Verified Indian Retailer">
                                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                               </span>
                             )}
-                            {m.sourceId === 'channel3' && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60">
-                                Channel3
+                            {m.merchant?.toLowerCase().includes('blinkit') || m.merchant?.toLowerCase().includes('zepto') || m.merchant?.toLowerCase().includes('instamart') ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                                ⚡ Quick Commerce
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                                📦 E-Commerce
                               </span>
                             )}
                           </div>

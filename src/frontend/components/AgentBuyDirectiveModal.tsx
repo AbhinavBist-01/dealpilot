@@ -36,9 +36,9 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const examplePrompts = [
-    { text: 'Buy Sony WH-1000XM5 when price drops to 18000', query: 'Sony WH-1000XM5', target: 18000 },
-    { text: 'Buy AirPods Max when price is under 45000', query: 'AirPods Max', target: 45000 },
-    { text: 'Buy Dell XPS 15 when price reaches 120000', query: 'Dell XPS 15', target: 120000 },
+    { text: 'Buy Sony WH-1000XM5 when price drops to 30000', query: 'Sony WH-1000XM5', target: 30000 },
+    { text: 'Buy AirPods Pro 2 if under 18500', query: 'AirPods Pro 2', target: 18500 },
+    { text: 'Buy Dell XPS 15 when price reaches 140000', query: 'Dell XPS 15', target: 140000 },
   ];
 
   const handleParseAndSubmit = async (customPrompt?: string) => {
@@ -49,42 +49,14 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
     setError(null);
     setResult(null);
 
-    // Natural Language Parser: extract product name and target price
-    // Matches patterns like "buy [product] when [price]" or "[product] at [price]" or "under [price]"
-    let targetPrice: number | null = null;
-    let query: string = rawText;
-
-    const priceMatch = rawText.match(/(?:under|below|drops to|reach(?:es)?|to|at|<=?)\s*(?:[₹$€£]|inr|usd)?\s*([0-9]+(?:,[0-9]+)?)/i);
-    if (priceMatch && priceMatch[1]) {
-      targetPrice = parseFloat(priceMatch[1].replace(/,/g, ''));
-      // Clean query by removing "buy", "when drops to...", etc.
-      query = rawText
-        .replace(/(?:buy|purchase|get|order|pilot|watch)\s+/i, '')
-        .replace(/(?:when|if|once|under|below|drops to|reach(?:es)?|to|at|<=?)\s*(?:[₹$€£]|inr|usd)?\s*[0-9]+(?:,[0-9]+)?.*/i, '')
-        .trim();
-    }
-
-    if (!targetPrice || targetPrice <= 0) {
-      setError('Please specify a target price. (e.g. "Buy Sony WH-1000XM5 when drops to 18000")');
-      setSubmitting(false);
-      return;
-    }
-
-    if (!query || query.length < 2) {
-      setError('Please provide a specific product model to watch.');
-      setSubmitting(false);
-      return;
-    }
-
     try {
       const res = await fetch('/api/agent/watch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query,
-          targetPrice,
-          country,
-          currency,
+          prompt: rawText,
+          country: 'IN',
+          currency: 'INR',
         }),
       });
 
@@ -98,6 +70,9 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
     } catch (err: any) {
       setError(err.message || 'Failed to communicate with Autonomous Agent');
     } finally {
+      setSubmitting(false);
+    }
+  };
       setSubmitting(false);
     }
   };
@@ -253,8 +228,38 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
                       <span>•</span>
                       <span>Target: <strong className="text-slate-200 font-mono">{formatCurrency(result.rule?.targetPrice, currency)}</strong></span>
                     </div>
+
+                    {result.product?.bestOffer?.sellerName && (
+                      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-300">
+                        <span className="font-semibold text-slate-400">Best Store:</span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-emerald-400 font-medium">
+                          {result.product.bestOffer.sellerName}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* Agent Tool Executions Audit */}
+                {result.toolsExecuted && result.toolsExecuted.length > 0 && (
+                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-[11px]">
+                    <div className="text-[10px] uppercase font-bold text-slate-400 mb-1.5 tracking-wider flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                      <span>Autonomous Tools Executed ({result.toolsExecuted.length}):</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {result.toolsExecuted.map((t: any, i: number) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono text-[10px]"
+                          title={t.resultSummary}
+                        >
+                          ✓ {t.tool}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Required Action Buttons: BUY NOW vs LEAVE */}
                 <div className="flex items-center gap-3 pt-2">
