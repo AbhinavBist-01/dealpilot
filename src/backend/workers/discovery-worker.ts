@@ -2,8 +2,7 @@ import { Job } from "bullmq";
 import prisma from "@/backend/utils/db";
 import { mockCatalogAdapter } from "@/backend/adapters/mock-catalog";
 import { Channel3CatalogAdapter } from "@/backend/adapters/channel3-catalog";
-import { buyhatkeCatalogAdapter } from "@/backend/adapters/buyhatke-catalog";
-import { getCountryByCode } from "@/backend/contracts/countries";
+import { indiaCommerceAdapter } from "@/backend/adapters/india-commerce-catalog";
 import { calculateDealScore } from "@/backend/engine/deal-scorer";
 import { generateDealExplanation } from "@/backend/services/llm";
 import { withRetry } from "@/backend/utils/retry";
@@ -29,33 +28,10 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
   });
 
   try {
-    // 1. Query catalog adapters according to country routing policy
-    // Use Channel3 for Channel3-supported countries (US, GB, EU, CA, AU);
-    // Use Buyhatke Domestic Intelligence for India and non-Channel3 markets.
-    const countryConf = getCountryByCode(country);
-    const isChannel3Country = Boolean(countryConf.channel3Country);
-
-    const channel3Adapter = new Channel3CatalogAdapter();
-    const searchFilter = { query, maxPrice: budget, country, currency };
-
-    const fetchChannel3WithRetries = () =>
-      withRetry(() => channel3Adapter.search(searchFilter), {
-        maxRetries: 2,
-        initialDelayMs: 400,
-      }).catch((err) => {
-        console.warn(
-          "[Discovery Worker] Channel3 adapter failed after retries:",
-          err?.message || err,
-        );
-        return [];
-      });
-
-    let primaryOffers: any[] = [];
-    if (isChannel3Country) {
-      primaryOffers = await fetchChannel3WithRetries();
-    } else {
-      primaryOffers = await buyhatkeCatalogAdapter.search(searchFilter);
-    }
+    // 1. Query Indian E-Commerce & Quick Commerce catalog network
+    // Compares live prices across Blinkit, Zepto, Swiggy Instamart, Amazon, Flipkart, Croma, Reliance Digital
+    const searchFilter = { query, maxPrice: budget, country: 'IN', currency: 'INR' };
+    const primaryOffers = await indiaCommerceAdapter.search(searchFilter);
 
     // Resilient fallback to mock catalog only if primary source yielded no items
     const offers = primaryOffers.length > 0

@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "DealPilot — India Price Comparison & Quick Commerce Radar",
+  "version": "1.0.0",
+  "description": "Real-time price tracker and comparison assistant across Amazon India, Flipkart, Croma, Blinkit, and Zepto.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "*://*.amazon.in/*",
+    "*://*.flipkart.com/*",
+    "*://*.croma.com/*",
+    "*://*.blinkit.com/*",
+    "*://*.zeptonow.com/*",
+    "*://*.tatacliq.com/*",
+    "*://*.reliancedigital.in/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.amazon.in/*",
+        "*://*.flipkart.com/*",
+        "*://*.croma.com/*",
+        "*://*.blinkit.com/*",
+        "*://*.zeptonow.com/*",
+        "*://*.tatacliq.com/*",
+        "*://*.reliancedigital.in/*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "DealPilot India Price Radar"
+  }
+}
