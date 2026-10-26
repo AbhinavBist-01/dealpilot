@@ -79,6 +79,22 @@ function extractModelTokens(text: string): string[] {
   return tokens.map((t) => t.toLowerCase()).filter((t) => t.length >= 2);
 }
 
+const BRAND_GROUPS: Record<string, string[]> = {
+  apple: ['apple', 'iphone', 'ipad', 'macbook', 'airpods', 'iwatch'],
+  dell: ['dell', 'alienware', 'xps', 'inspiron'],
+  sony: ['sony', 'bravia', 'playstation', 'ps5', 'ps4'],
+  samsung: ['samsung', 'galaxy'],
+  lenovo: ['lenovo', 'thinkpad', 'legion', 'yoga'],
+  hp: ['hp', 'hewlett', 'omen', 'pavilion'],
+  asus: ['asus', 'rog', 'zenbook', 'tuf'],
+  bose: ['bose', 'quietcomfort'],
+  boat: ['boat', 'airdopes', 'rockerz'],
+  oneplus: ['oneplus'],
+  google: ['google', 'pixel'],
+  microsoft: ['microsoft', 'surface', 'xbox'],
+  nintendo: ['nintendo', 'switch'],
+};
+
 /**
  * Deterministically checks if candidate is an accessory when user wanted the core device
  */
@@ -134,6 +150,39 @@ export function verifyProductMatch(input: ProductVerificationInput): ProductVeri
     };
   }
 
+  const queryLower = query.toLowerCase();
+  const brandLower = brand.toLowerCase();
+  const titleLower = title.toLowerCase();
+
+  // Brand conflict detection (e.g. query asked for Apple iPhone, candidate is Dell laptop)
+  let queryBrandGroup: string | null = null;
+  for (const [groupName, keywords] of Object.entries(BRAND_GROUPS)) {
+    if (keywords.some((k) => queryLower.includes(k))) {
+      queryBrandGroup = groupName;
+      break;
+    }
+  }
+
+  let targetBrandGroup: string | null = null;
+  for (const [groupName, keywords] of Object.entries(BRAND_GROUPS)) {
+    if (keywords.some((k) => brandLower.includes(k) || titleLower.includes(k))) {
+      targetBrandGroup = groupName;
+      break;
+    }
+  }
+
+  if (queryBrandGroup && targetBrandGroup && queryBrandGroup !== targetBrandGroup) {
+    reasons.push(`Brand conflict: query asked for ${queryBrandGroup} ecosystem, but product belongs to ${targetBrandGroup}`);
+    return {
+      isMatch: false,
+      relevanceScore: 0.05,
+      matchQuality: 'irrelevant',
+      isAccessoryMismatch: false,
+      matchedTokens: [],
+      reasons,
+    };
+  }
+
   const queryTokens = tokenize(query);
   const targetTokens = new Set(tokenize(`${title} ${brand} ${model} ${category}`));
 
@@ -144,6 +193,13 @@ export function verifyProductMatch(input: ProductVerificationInput): ProductVeri
     }
   }
 
+  // Brand verification
+  const brandMatched = brandLower ? (queryLower.includes(brandLower) || titleLower.includes(brandLower)) : false;
+
+  if (brandMatched && brandLower) {
+    reasons.push(`Verified brand: ${brand}`);
+  }
+
   // Model number verification (highest precision signal)
   const queryModels = extractModelTokens(query);
   const titleModels = extractModelTokens(`${title} ${model}`);
@@ -151,22 +207,17 @@ export function verifyProductMatch(input: ProductVerificationInput): ProductVeri
 
   if (queryModels.length > 0) {
     for (const qm of queryModels) {
+      // If qm is a pure short number (e.g. "15", "14"), require brand confirmation if multiple tokens exist
+      const isPureShortNumber = /^\d{1,2}$/.test(qm);
+      if (isPureShortNumber && !brandMatched && queryTokens.length > 1) {
+        continue;
+      }
       if (titleModels.some((tm) => tm.includes(qm) || qm.includes(tm))) {
         modelMatched = true;
         reasons.push(`Direct model spec matched: ${qm}`);
         break;
       }
     }
-  }
-
-  // Brand verification
-  const queryLower = query.toLowerCase();
-  const brandLower = brand.toLowerCase();
-  const titleLower = title.toLowerCase();
-  const brandMatched = brandLower ? (queryLower.includes(brandLower) || titleLower.includes(brandLower)) : false;
-
-  if (brandMatched && brandLower) {
-    reasons.push(`Verified brand: ${brand}`);
   }
 
   // Token overlap ratio

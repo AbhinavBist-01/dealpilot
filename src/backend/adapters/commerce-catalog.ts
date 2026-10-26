@@ -2,7 +2,7 @@ import { CatalogAdapter, CatalogSearchFilter } from "./catalog-adapter";
 import { NormalizedOffer } from "../contracts/offer";
 import { verifyProductMatch } from "../engine/product-verifier";
 
-export type MerchantCategory = 'quick_commerce' | 'ecommerce';
+export type MerchantCategory = "quick_commerce" | "ecommerce";
 
 export interface IndianMerchantListing {
   name: string;
@@ -13,7 +13,7 @@ export interface IndianMerchantListing {
   rating: number;
   reviews: number;
   url: string;
-  condition?: 'new' | 'refurbished' | 'open_box';
+  condition?: "new" | "refurbished" | "open_box";
   inStock: boolean;
 }
 
@@ -421,20 +421,278 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         },
       ],
     },
+    {
+      id: "in_apple_iphone_15",
+      canonicalId: "apple-iphone-15",
+      title: "Apple iPhone 15 (128 GB) - Black",
+      brand: "Apple",
+      model: "iPhone 15",
+      category: "Smartphones",
+      mrp: 79900,
+      imageUrl: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80",
+      merchants: [
+        {
+          name: "Blinkit",
+          domain: "blinkit.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 10 mins Delivery",
+          price: 68990,
+          rating: 4.9,
+          reviews: 5400,
+          url: "https://blinkit.com/prn/apple-iphone-15-128gb",
+          inStock: true,
+        },
+        {
+          name: "Zepto",
+          domain: "zeptonow.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 12 mins Delivery",
+          price: 69490,
+          rating: 4.8,
+          reviews: 4200,
+          url: "https://zeptonow.com/pn/apple-iphone-15-128gb",
+          inStock: true,
+        },
+        {
+          name: "Amazon India",
+          domain: "amazon.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Tomorrow by 11 AM",
+          price: 69999,
+          rating: 4.9,
+          reviews: 48000,
+          url: "https://www.amazon.in/dp/B0CHX1W1XY",
+          inStock: true,
+        },
+        {
+          name: "Flipkart",
+          domain: "flipkart.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 2 Days Delivery",
+          price: 70490,
+          rating: 4.7,
+          reviews: 32000,
+          url: "https://www.flipkart.com/apple-iphone-15-black-128-gb",
+          inStock: true,
+        },
+        {
+          name: "Croma Retail",
+          domain: "croma.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 Same Day In-Store",
+          price: 71990,
+          rating: 4.8,
+          reviews: 6200,
+          url: "https://www.croma.com/apple-iphone-15-128gb",
+          inStock: true,
+        },
+        {
+          name: "Swiggy Instamart",
+          domain: "swiggy.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 15 mins Delivery",
+          price: 72990,
+          rating: 4.7,
+          reviews: 2100,
+          url: "https://www.swiggy.com/instamart/apple-iphone-15",
+          inStock: true,
+        },
+      ],
+    },
+    {
+      id: "in_samsung_galaxy_s24_ultra",
+      canonicalId: "samsung-galaxy-s24-ultra",
+      title: "Samsung Galaxy S24 Ultra 5G (Titanium Gray, 12GB RAM, 256GB Storage)",
+      brand: "Samsung",
+      model: "Galaxy S24 Ultra",
+      category: "Smartphones",
+      mrp: 134999,
+      imageUrl: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80",
+      merchants: [
+        {
+          name: "Amazon India",
+          domain: "amazon.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Tomorrow",
+          price: 121999,
+          rating: 4.8,
+          reviews: 14200,
+          url: "https://www.amazon.in/dp/B0CS5X6BWB",
+          inStock: true,
+        },
+        {
+          name: "Blinkit",
+          domain: "blinkit.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 11 mins Delivery",
+          price: 124999,
+          rating: 4.9,
+          reviews: 1800,
+          url: "https://blinkit.com/prn/samsung-s24-ultra",
+          inStock: true,
+        },
+        {
+          name: "Croma Retail",
+          domain: "croma.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 Same Day",
+          price: 126999,
+          rating: 4.7,
+          reviews: 2400,
+          url: "https://www.croma.com/samsung-galaxy-s24-ultra",
+          inStock: true,
+        },
+        {
+          name: "Flipkart",
+          domain: "flipkart.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 2 Days",
+          price: 127999,
+          rating: 4.6,
+          reviews: 8900,
+          url: "https://www.flipkart.com/samsung-galaxy-s24-ultra",
+          inStock: true,
+        },
+      ],
+    },
+    {
+      id: "in_playstation_5",
+      canonicalId: "sony-playstation-5",
+      title: "Sony PlayStation 5 Console (Slim) Disc Edition with DualSense Wireless Controller",
+      brand: "Sony",
+      model: "PlayStation 5",
+      category: "Gaming Consoles",
+      mrp: 54990,
+      imageUrl: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800&q=80",
+      merchants: [
+        {
+          name: "Blinkit",
+          domain: "blinkit.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 10 mins Delivery",
+          price: 49990,
+          rating: 4.9,
+          reviews: 3200,
+          url: "https://blinkit.com/prn/ps5-slim-console",
+          inStock: true,
+        },
+        {
+          name: "Amazon India",
+          domain: "amazon.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Tomorrow by 9 AM",
+          price: 49990,
+          rating: 4.9,
+          reviews: 22000,
+          url: "https://www.amazon.in/dp/B0D18FZZT9",
+          inStock: true,
+        },
+        {
+          name: "Zepto",
+          domain: "zeptonow.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 12 mins Delivery",
+          price: 50990,
+          rating: 4.8,
+          reviews: 1900,
+          url: "https://zeptonow.com/pn/ps5-slim-console",
+          inStock: true,
+        },
+        {
+          name: "Flipkart",
+          domain: "flipkart.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 2 Days",
+          price: 52490,
+          rating: 4.7,
+          reviews: 16000,
+          url: "https://www.flipkart.com/sony-playstation-5-slim",
+          inStock: true,
+        },
+        {
+          name: "Croma Retail",
+          domain: "croma.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 Same Day",
+          price: 52990,
+          rating: 4.8,
+          reviews: 3800,
+          url: "https://www.croma.com/playstation-5-slim",
+          inStock: true,
+        },
+      ],
+    },
+    {
+      id: "in_boat_airdopes_141",
+      canonicalId: "boat-airdopes-141",
+      title: "boAt Airdopes 141 Bluetooth Truly Wireless in Ear Earbuds with 42H Playtime",
+      brand: "boAt",
+      model: "Airdopes 141",
+      category: "Audio",
+      mrp: 4490,
+      imageUrl: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&q=80",
+      merchants: [
+        {
+          name: "Blinkit",
+          domain: "blinkit.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 9 mins Delivery",
+          price: 1199,
+          rating: 4.9,
+          reviews: 14200,
+          url: "https://blinkit.com/prn/boat-airdopes-141",
+          inStock: true,
+        },
+        {
+          name: "Zepto",
+          domain: "zeptonow.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 10 mins Delivery",
+          price: 1249,
+          rating: 4.8,
+          reviews: 9800,
+          url: "https://zeptonow.com/pn/boat-airdopes-141",
+          inStock: true,
+        },
+        {
+          name: "Amazon India",
+          domain: "amazon.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Tomorrow",
+          price: 1299,
+          rating: 4.7,
+          reviews: 94000,
+          url: "https://www.amazon.in/dp/B09N3ZNHTY",
+          inStock: true,
+        },
+        {
+          name: "Flipkart",
+          domain: "flipkart.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 2 Days",
+          price: 1349,
+          rating: 4.6,
+          reviews: 82000,
+          url: "https://www.flipkart.com/boat-airdopes-141",
+          inStock: true,
+        },
+      ],
+    },
   ];
 
   async search(filter: CatalogSearchFilter): Promise<NormalizedOffer[]> {
-    const query = (filter.query || '').trim().toLowerCase();
+    const query = (filter.query || "").trim().toLowerCase();
     const offers: NormalizedOffer[] = [];
 
     // 1. Search benchmarked products
+    const queryTokens = query.split(/\s+/).filter((t) => t.length > 2 && !/^\d+$/.test(t));
     for (const benchmark of this.benchmarks) {
       const matchesQuery =
         !query ||
         benchmark.title.toLowerCase().includes(query) ||
         benchmark.brand.toLowerCase().includes(query) ||
         benchmark.model.toLowerCase().includes(query) ||
-        query.split(/\s+/).some((token) => benchmark.title.toLowerCase().includes(token));
+        (queryTokens.length > 0 && queryTokens.some((token) => benchmark.title.toLowerCase().includes(token)));
 
       if (!matchesQuery) continue;
 
@@ -454,12 +712,14 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
 
         if (!verification.isMatch) continue;
 
-        const isQuickCommerce = m.type === 'quick_commerce';
-        const sellerBadge = isQuickCommerce ? `${m.name} (${m.deliverySpeed})` : `${m.name} (${m.deliverySpeed})`;
+        const isQuickCommerce = m.type === "quick_commerce";
+        const sellerBadge = isQuickCommerce
+          ? `${m.name} (${m.deliverySpeed})`
+          : `${m.name} (${m.deliverySpeed})`;
 
         offers.push({
           sourceId: this.sourceId,
-          externalProductId: `${benchmark.id}_${m.domain.replace(/[^a-zA-Z0-9]/g, '')}`,
+          externalProductId: `${benchmark.id}_${m.domain.replace(/[^a-zA-Z0-9]/g, "")}`,
           offerUrl: m.url,
           canonicalProductId: benchmark.canonicalId,
           title: benchmark.title,
@@ -468,10 +728,10 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
           category: benchmark.category,
           imageUrl: benchmark.imageUrl,
           variantAttributes: {
-            condition: m.condition || 'new',
+            condition: m.condition || "new",
             deliverySpeed: m.deliverySpeed,
             merchantType: m.type,
-            mrp: benchmark.mrp,
+            mrp: String(benchmark.mrp),
           },
           seller: {
             id: `in-${m.domain}`,
@@ -484,10 +744,10 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
             itemPrice: m.price,
             shippingPrice: 0,
             fees: 0,
-            currency: 'INR',
+            currency: "INR",
             totalPrice: m.price,
           },
-          availabilityStatus: m.inStock ? 'in_stock' : 'out_of_stock',
+          availabilityStatus: m.inStock ? "in_stock" : "out_of_stock",
           sourceConfidence: 0.99,
           observedAt: new Date(),
         });
@@ -504,23 +764,25 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
 
   private generateDynamicIndianOffers(
     query: string,
-    filter: CatalogSearchFilter
+    filter: CatalogSearchFilter,
   ): NormalizedOffer[] {
     const titleCase = query
-      .split(' ')
+      .split(" ")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
+      .join(" ");
 
-    const slug = query.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-    const basePrice = filter.maxPrice ? Math.round(filter.maxPrice * 0.9) : 24999;
+    const slug = query.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const basePrice = filter.maxPrice
+      ? Math.round(filter.maxPrice * 0.9)
+      : 24999;
     const mrp = Math.round(basePrice * 1.25);
 
     const merchants: IndianMerchantListing[] = [
       {
-        name: 'Amazon India',
-        domain: 'amazon.in',
-        type: 'ecommerce',
-        deliverySpeed: '📦 Tomorrow by 11 AM',
+        name: "Amazon India",
+        domain: "amazon.in",
+        type: "ecommerce",
+        deliverySpeed: "📦 Tomorrow by 11 AM",
         price: basePrice,
         rating: 4.8,
         reviews: 5800,
@@ -528,10 +790,10 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         inStock: true,
       },
       {
-        name: 'Blinkit',
-        domain: 'blinkit.com',
-        type: 'quick_commerce',
-        deliverySpeed: '⚡ 10 mins Delivery',
+        name: "Blinkit",
+        domain: "blinkit.com",
+        type: "quick_commerce",
+        deliverySpeed: "⚡ 10 mins Delivery",
         price: Math.round(basePrice * 1.03),
         rating: 4.9,
         reviews: 2100,
@@ -539,10 +801,10 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         inStock: true,
       },
       {
-        name: 'Zepto',
-        domain: 'zeptonow.com',
-        type: 'quick_commerce',
-        deliverySpeed: '⚡ 12 mins Delivery',
+        name: "Zepto",
+        domain: "zeptonow.com",
+        type: "quick_commerce",
+        deliverySpeed: "⚡ 12 mins Delivery",
         price: Math.round(basePrice * 1.04),
         rating: 4.8,
         reviews: 1900,
@@ -550,10 +812,10 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         inStock: true,
       },
       {
-        name: 'Flipkart',
-        domain: 'flipkart.com',
-        type: 'ecommerce',
-        deliverySpeed: '📦 2 Days Delivery',
+        name: "Flipkart",
+        domain: "flipkart.com",
+        type: "ecommerce",
+        deliverySpeed: "📦 2 Days Delivery",
         price: Math.round(basePrice * 1.02),
         rating: 4.6,
         reviews: 7400,
@@ -561,10 +823,10 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         inStock: true,
       },
       {
-        name: 'Croma Retail',
-        domain: 'croma.com',
-        type: 'ecommerce',
-        deliverySpeed: '📦 Same Day Delivery',
+        name: "Croma Retail",
+        domain: "croma.com",
+        type: "ecommerce",
+        deliverySpeed: "📦 Same Day Delivery",
         price: Math.round(basePrice * 1.05),
         rating: 4.7,
         reviews: 1800,
@@ -572,10 +834,10 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         inStock: true,
       },
       {
-        name: 'Swiggy Instamart',
-        domain: 'swiggy.com',
-        type: 'quick_commerce',
-        deliverySpeed: '⚡ 15 mins Delivery',
+        name: "Swiggy Instamart",
+        domain: "swiggy.com",
+        type: "quick_commerce",
+        deliverySpeed: "⚡ 15 mins Delivery",
         price: Math.round(basePrice * 1.06),
         rating: 4.7,
         reviews: 1400,
@@ -586,19 +848,20 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
 
     return merchants.map((m) => ({
       sourceId: this.sourceId,
-      externalProductId: `in_${slug}_${m.domain.replace(/[^a-zA-Z0-9]/g, '')}`,
+      externalProductId: `in_${slug}_${m.domain.replace(/[^a-zA-Z0-9]/g, "")}`,
       offerUrl: m.url,
       canonicalProductId: `in-${slug}`,
       title: `${titleCase} (India Retail Edition)`,
-      brand: query.split(' ')[0] || 'Verified Brand',
+      brand: query.split(" ")[0] || "Verified Brand",
       model: titleCase,
-      category: 'Electronics & Gadgets',
-      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80',
+      category: "Electronics & Gadgets",
+      imageUrl:
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
       variantAttributes: {
-        condition: 'new' as const,
+        condition: "new" as const,
         deliverySpeed: m.deliverySpeed,
         merchantType: m.type,
-        mrp,
+        mrp: String(mrp),
       },
       seller: {
         id: `in-${m.domain}`,
@@ -611,17 +874,17 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         itemPrice: m.price,
         shippingPrice: 0,
         fees: 0,
-        currency: 'INR',
+        currency: "INR",
         totalPrice: m.price,
       },
-      availabilityStatus: 'in_stock' as const,
+      availabilityStatus: "in_stock" as const,
       sourceConfidence: 0.95,
       observedAt: new Date(),
     }));
   }
 
   async fetchOffer(externalProductId: string): Promise<NormalizedOffer | null> {
-    const all = await this.search({ query: '' });
+    const all = await this.search({ query: "" });
     return all.find((o) => o.externalProductId === externalProductId) || null;
   }
 
@@ -643,7 +906,7 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
 
     return {
       offer,
-      isAvailable: offer.availabilityStatus === 'in_stock',
+      isAvailable: offer.availabilityStatus === "in_stock",
       priceChanged: false,
       currentTotalPrice: offer.price.totalPrice,
     };

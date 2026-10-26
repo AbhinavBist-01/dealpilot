@@ -40,8 +40,12 @@ export const emailDispatchHistory: SendEmailResult[] = [];
 export function renderPriceDropEmailHtml(data: PriceDropEmailData): string {
   const currency = data.currency || 'INR';
   const currencySymbol = currency === 'INR' ? '₹' : '$';
-  const savings = data.savings ?? Math.max(0, data.targetPrice - data.currentPrice);
-  const dropPct = data.dropPercentage ?? (data.targetPrice > 0 ? Math.round((savings / data.targetPrice) * 100) : 0);
+  const currentPrice = Number.isFinite(Number(data.currentPrice)) ? Number(data.currentPrice) : 0;
+  const targetPrice = Number.isFinite(Number(data.targetPrice)) ? Number(data.targetPrice) : currentPrice;
+  const savings = Number.isFinite(Number(data.savings)) ? Number(data.savings) : Math.max(0, targetPrice - currentPrice);
+  const dropPct = Number.isFinite(Number(data.dropPercentage))
+    ? Number(data.dropPercentage)
+    : (targetPrice > 0 ? Math.round((savings / targetPrice) * 100) : 0);
   const score = data.dealScore || 85;
   const condition = data.condition || 'Brand New';
   const seller = data.sellerName || 'Verified Merchant';
@@ -284,9 +288,11 @@ export function renderPriceDropEmailHtml(data: PriceDropEmailData): string {
  */
 export async function sendPriceDropEmail(data: PriceDropEmailData): Promise<SendEmailResult> {
   const currencySymbol = (data.currency || 'INR') === 'INR' ? '₹' : '$';
-  const savings = data.savings ?? Math.max(0, data.targetPrice - data.currentPrice);
-  const subject = `🚨 Price Drop Alert: ${data.productTitle} dropped to ${currencySymbol}${data.currentPrice.toLocaleString()} (Save ${currencySymbol}${savings.toLocaleString()})!`;
-  const html = renderPriceDropEmailHtml(data);
+  const currentPrice = Number.isFinite(Number(data.currentPrice)) ? Number(data.currentPrice) : 0;
+  const targetPrice = Number.isFinite(Number(data.targetPrice)) ? Number(data.targetPrice) : currentPrice;
+  const savings = Number.isFinite(Number(data.savings)) ? Number(data.savings) : Math.max(0, targetPrice - currentPrice);
+  const subject = `🚨 Price Drop Alert: ${data.productTitle} dropped to ${currencySymbol}${currentPrice.toLocaleString()} (Save ${currencySymbol}${savings.toLocaleString()})!`;
+  const html = renderPriceDropEmailHtml({ ...data, currentPrice, targetPrice, savings });
 
   const resendApiKey = process.env.RESEND_API_KEY;
   const isResendConfigured = Boolean(resendApiKey && !resendApiKey.includes('your_resend'));

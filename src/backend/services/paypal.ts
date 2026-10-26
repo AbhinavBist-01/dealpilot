@@ -1,6 +1,7 @@
 import prisma from '@/backend/utils/db';
 import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
 import { Channel3CatalogAdapter } from '@/backend/adapters/channel3-catalog';
+import { indiaCommerceAdapter } from '@/backend/adapters/commerce-catalog';
 
 export interface CreateOrderParams {
   userId: string;
@@ -58,8 +59,10 @@ export class PayPalService {
       return { valid: false, reason: 'Offer does not exist' };
     }
 
-    // 1. Revalidate live price and inventory using matching adapter (Channel3 or Mock)
-    const adapter = offer.sourceId === 'channel3'
+    // 1. Revalidate live price and inventory using matching adapter (IndiaCommerce, Channel3 or Mock)
+    const adapter = offer.sourceId === 'india_commerce'
+      ? indiaCommerceAdapter
+      : offer.sourceId === 'channel3'
       ? new Channel3CatalogAdapter()
       : mockCatalogAdapter;
 

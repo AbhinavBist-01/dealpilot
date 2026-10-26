@@ -1,10 +1,10 @@
 /**
  * DealPilot — Backend Subsystem & Entrypoint
  */
+//This is the main entrypoint for the backend system .
 
 import { prisma } from "./utils/db";
 import { getRedisConnection } from "./queue/redis";
-import { discoveryQueue, monitoringQueue, outboxQueue } from "./queue/queues";
 import { mockCatalogAdapter } from "./adapters/mock-catalog";
 import { startWorkers } from "./workers";
 

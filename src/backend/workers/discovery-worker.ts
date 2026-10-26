@@ -1,11 +1,12 @@
+// Here the wokers are responsible for processing the jobs for searching the searched products only and not random products with the name name . The products will be the sites like amazon,flipkart and all the major sales company companies and also all the major quick commerce companies . The workers will find these products
+
 import { Job } from "bullmq";
 import prisma from "@/backend/utils/db";
 import { mockCatalogAdapter } from "@/backend/adapters/mock-catalog";
-import { Channel3CatalogAdapter } from "@/backend/adapters/channel3-catalog";
-import { indiaCommerceAdapter } from "@/backend/adapters/india-commerce-catalog";
+
+import { indiaCommerceAdapter } from "@/backend/adapters/commerce-catalog";
 import { calculateDealScore } from "@/backend/engine/deal-scorer";
 import { generateDealExplanation } from "@/backend/services/llm";
-import { withRetry } from "@/backend/utils/retry";
 
 export interface DiscoveryJobData {
   searchJobId: string;
@@ -17,9 +18,10 @@ export interface DiscoveryJobData {
 }
 
 export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
-  const { searchJobId, query, budget, targetPrice, country, currency } = job.data;
+  const { searchJobId, query, budget, targetPrice, country, currency } =
+    job.data;
   console.log(
-    `[Discovery Worker] Processing job ${job.id} for query "${query}" (Country: ${country || 'IN'}, Currency: ${currency || 'INR'})`,
+    `[Discovery Worker] Processing job ${job.id} for query "${query}" (Country: ${country || "IN"}, Currency: ${currency || "INR"})`,
   );
 
   await prisma.searchJob.update({
@@ -30,13 +32,19 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
   try {
     // 1. Query Indian E-Commerce & Quick Commerce catalog network
     // Compares live prices across Blinkit, Zepto, Swiggy Instamart, Amazon, Flipkart, Croma, Reliance Digital
-    const searchFilter = { query, maxPrice: budget, country: 'IN', currency: 'INR' };
+    const searchFilter = {
+      query,
+      maxPrice: budget,
+      country: "IN",
+      currency: "INR",
+    };
     const primaryOffers = await indiaCommerceAdapter.search(searchFilter);
 
     // Resilient fallback to mock catalog only if primary source yielded no items
-    const offers = primaryOffers.length > 0
-      ? primaryOffers
-      : await mockCatalogAdapter.search(searchFilter);
+    const offers =
+      primaryOffers.length > 0
+        ? primaryOffers
+        : await mockCatalogAdapter.search(searchFilter);
 
     const upsertedProductIds: string[] = [];
 
@@ -177,7 +185,11 @@ export async function processDiscoveryJob(job: Job<DiscoveryJobData>) {
     console.log(
       `[Discovery Worker] Job ${job.id} completed. Ingested ${offers.length} offers for ${upsertedProductIds.length} products.`,
     );
-    return { success: true, count: offers.length, productIds: upsertedProductIds };
+    return {
+      success: true,
+      count: offers.length,
+      productIds: upsertedProductIds,
+    };
   } catch (error: any) {
     console.error(`[Discovery Worker] Job ${job.id} failed:`, error);
     await prisma.searchJob.update({

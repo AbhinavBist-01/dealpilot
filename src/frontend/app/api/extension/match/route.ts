@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { indiaCommerceAdapter } from '@/backend/adapters/india-commerce-catalog';
-import { getApplicableCoupons } from '@/backend/services/coupons';
-import { recordSanitizedTelemetry } from '@/backend/services/privacy-analytics';
-import { getCurrentUser } from '@/backend/utils/user';
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { indiaCommerceAdapter } from "@/backend/adapters/commerce-catalog";
+import { getApplicableCoupons } from "@/backend/services/coupons";
+import { recordSanitizedTelemetry } from "@/backend/services/privacy-analytics";
+import { getCurrentUser } from "@/backend/utils/user";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const ExtensionMatchSchema = z.object({
   url: z.string().url(),
@@ -22,15 +22,27 @@ export async function POST(req: NextRequest) {
     const parsed = ExtensionMatchSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid product information', details: parsed.error.format() }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid product information",
+          details: parsed.error.format(),
+        },
+        { status: 400 },
+      );
     }
 
-    const { url, title, price, domain = 'amazon.in', merchant = 'Online Store' } = parsed.data;
+    const {
+      url,
+      title,
+      price,
+      domain = "amazon.in",
+      merchant = "Online Store",
+    } = parsed.data;
 
     // Record privacy-sanitized telemetry
     recordSanitizedTelemetry({
       userId: user?.id,
-      eventType: 'price_check',
+      eventType: "price_check",
       storeDomain: domain,
       priceObserved: price,
     });
@@ -38,30 +50,40 @@ export async function POST(req: NextRequest) {
     // Query all Indian E-Commerce and Quick Commerce competitors
     const allOffers = await indiaCommerceAdapter.search({
       query: title,
-      currency: 'INR',
+      currency: "INR",
     });
 
     // Group into Quick Commerce vs Major E-Commerce
-    const quickCommerceOffers = allOffers.filter((o) =>
-      o.seller.name.toLowerCase().includes('blinkit') ||
-      o.seller.name.toLowerCase().includes('zepto') ||
-      o.seller.name.toLowerCase().includes('swiggy') ||
-      o.seller.name.toLowerCase().includes('instamart')
+    const quickCommerceOffers = allOffers.filter(
+      (o) =>
+        o.seller.name.toLowerCase().includes("blinkit") ||
+        o.seller.name.toLowerCase().includes("zepto") ||
+        o.seller.name.toLowerCase().includes("swiggy") ||
+        o.seller.name.toLowerCase().includes("instamart"),
     );
 
-    const ecommerceOffers = allOffers.filter((o) =>
-      !quickCommerceOffers.some((q) => q.externalProductId === o.externalProductId)
+    const ecommerceOffers = allOffers.filter(
+      (o) =>
+        !quickCommerceOffers.some(
+          (q) => q.externalProductId === o.externalProductId,
+        ),
     );
 
     // Find best competitor price
     const otherOffers = allOffers.filter((o) => !o.offerUrl.includes(domain));
-    const bestCompetitor = otherOffers.length > 0
-      ? otherOffers.reduce((best, curr) => curr.price.itemPrice < best.price.itemPrice ? curr : best, otherOffers[0])
-      : null;
+    const bestCompetitor =
+      otherOffers.length > 0
+        ? otherOffers.reduce(
+            (best, curr) =>
+              curr.price.itemPrice < best.price.itemPrice ? curr : best,
+            otherOffers[0],
+          )
+        : null;
 
-    const potentialSavings = bestCompetitor && bestCompetitor.price.itemPrice < price
-      ? price - bestCompetitor.price.itemPrice
-      : 0;
+    const potentialSavings =
+      bestCompetitor && bestCompetitor.price.itemPrice < price
+        ? price - bestCompetitor.price.itemPrice
+        : 0;
 
     // Check applicable coupons for the current viewing store
     const couponData = getApplicableCoupons(domain, price);
@@ -69,12 +91,15 @@ export async function POST(req: NextRequest) {
     // 30-day realistic historical price trend
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
-    const lowestPrice = bestCompetitor ? Math.min(price, bestCompetitor.price.itemPrice) : Math.round(price * 0.94);
+    const lowestPrice = bestCompetitor
+      ? Math.min(price, bestCompetitor.price.itemPrice)
+      : Math.round(price * 0.94);
     const highestPrice = Math.round(price * 1.15);
 
     const priceTrend = [30, 20, 15, 10, 5, 0].map((daysAgo) => ({
-      date: new Date(now - daysAgo * dayMs).toISOString().split('T')[0],
-      price: daysAgo === 15 ? lowestPrice : daysAgo === 30 ? highestPrice : price,
+      date: new Date(now - daysAgo * dayMs).toISOString().split("T")[0],
+      price:
+        daysAgo === 15 ? lowestPrice : daysAgo === 30 ? highestPrice : price,
     }));
 
     return NextResponse.json({
@@ -82,14 +107,16 @@ export async function POST(req: NextRequest) {
       currentProduct: {
         title,
         price,
-        currency: 'INR',
+        currency: "INR",
         merchant,
         domain,
         url,
       },
       comparison: {
         totalStoresFound: allOffers.length,
-        bestPriceOverall: bestCompetitor ? Math.min(price, bestCompetitor.price.itemPrice) : price,
+        bestPriceOverall: bestCompetitor
+          ? Math.min(price, bestCompetitor.price.itemPrice)
+          : price,
         potentialSavings,
         hasCheaperAlternative: potentialSavings > 0,
         bestCompetitor,
@@ -106,7 +133,10 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Extension match error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to match product' }, { status: 500 });
+    console.error("Extension match error:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to match product" },
+      { status: 500 },
+    );
   }
 }

@@ -54,7 +54,7 @@ export async function generateDealExplanation(
             Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           },
           body: JSON.stringify({
-            model: process.env.OPENAI_MODEL ?? "gpt-6-luna",
+            model: (process.env.OPENAI_MODEL && process.env.OPENAI_MODEL !== 'gpt-6-luna') ? process.env.OPENAI_MODEL : 'gpt-4o-mini',
             messages: [
               {
                 role: "system",
@@ -144,6 +144,10 @@ export async function generateDealExplanation(
   return await withFallback(
     primaryCall,
     () => deterministicFallback(),
-    { maxRetries: 2, initialDelayMs: 300 }
+    {
+      maxRetries: 1,
+      initialDelayMs: 200,
+      retryOn: (err: any) => !err?.message?.includes('status 400'),
+    }
   );
 }

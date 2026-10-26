@@ -73,9 +73,6 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
       setSubmitting(false);
     }
   };
-      setSubmitting(false);
-    }
-  };
 
   return (
     <>

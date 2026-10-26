@@ -7,6 +7,8 @@
  * 3. Chrome system notifications for price drops & quick commerce alerts.
  */
 
+declare const chrome: any;
+
 export interface ExtensionMessageRequest {
   type: 'CHECK_PRODUCT_DEALS' | 'GET_COUPONS' | 'CREATE_BUY_DIRECTIVE' | 'GET_EXTENSION_STATE';
   payload: any;

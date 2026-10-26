@@ -166,6 +166,10 @@ export const OutboxAlertsList: React.FC<OutboxAlertsListProps> = ({ alerts, onRe
             }
 
             const isSent = alert.status === 'sent';
+            const observedPrice = payload.observedPrice ?? payload.currentPrice ?? payload.price ?? 0;
+            const targetPrice = payload.targetPrice ?? payload.target ?? 0;
+            const currency = payload.currency || 'INR';
+            const savings = payload.savings ?? ((targetPrice > observedPrice) ? targetPrice - observedPrice : 0);
 
             return (
               <div
@@ -186,15 +190,15 @@ export const OutboxAlertsList: React.FC<OutboxAlertsListProps> = ({ alerts, onRe
                   <div className="text-xs text-slate-300 flex flex-wrap items-center gap-2">
                     <span>
                       Observed Price:{' '}
-                      <strong className="text-emerald-400">{formatCurrency(payload.observedPrice)}</strong>
+                      <strong className="text-emerald-400">{formatCurrency(observedPrice, currency)}</strong>
                     </span>
                     <span className="text-slate-500">·</span>
                     <span className="text-slate-400">
-                      Target: {formatCurrency(payload.targetPrice)}
+                      Target: {formatCurrency(targetPrice, currency)}
                     </span>
                     <span className="text-slate-500">·</span>
                     <span className="text-emerald-400 font-semibold">
-                      Save {formatCurrency((payload.targetPrice || 0) - (payload.observedPrice || 0))}
+                      Save {formatCurrency(savings, currency)}
                     </span>
                   </div>
 

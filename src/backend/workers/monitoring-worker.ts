@@ -1,11 +1,13 @@
-import { Job } from 'bullmq';
-import prisma from '@/backend/utils/db';
-import { mockCatalogAdapter } from '@/backend/adapters/mock-catalog';
-import { Channel3CatalogAdapter } from '@/backend/adapters/channel3-catalog';
-import { evaluateDeterministicRules } from '@/backend/engine/deal-rules';
-import { createOutboxEvent, processOutboxEvent } from '@/backend/services/outbox';
-import { outboxQueue } from '@/backend/queue/queues';
-import { NormalizedOffer } from '@/backend/contracts/offer';
+import { Job } from "bullmq";
+import prisma from "@/backend/utils/db";
+import { mockCatalogAdapter } from "@/backend/adapters/mock-catalog";
+import { evaluateDeterministicRules } from "@/backend/engine/deal-rules";
+import {
+  createOutboxEvent,
+  processOutboxEvent,
+} from "@/backend/services/outbox";
+import { outboxQueue } from "@/backend/queue/queues";
+import { NormalizedOffer } from "@/backend/contracts/offer";
 
 export interface MonitoringJobData {
   trackingRuleId: string;
@@ -15,31 +17,35 @@ export function computeNextCheck(params: {
   currentPrice: number;
   targetPrice: number;
   consecutiveFailures: number;
-}): { nextCheckAt: Date; policy: 'normal' | 'near_target' | 'backoff' } {
+}): { nextCheckAt: Date; policy: "normal" | "near_target" | "backoff" } {
   const now = Date.now();
 
   // If failures, back off exponentially
   if (params.consecutiveFailures > 0) {
-    const backoffMs = Math.min(Math.pow(2, params.consecutiveFailures) * 5 * 60 * 1000, 12 * 60 * 60 * 1000);
+    const backoffMs = Math.min(
+      Math.pow(2, params.consecutiveFailures) * 5 * 60 * 1000,
+      12 * 60 * 60 * 1000,
+    );
     return {
       nextCheckAt: new Date(now + backoffMs),
-      policy: 'backoff',
+      policy: "backoff",
     };
   }
 
   // If within 5% of target price, poll every 30 minutes
-  const deltaPct = (params.currentPrice - params.targetPrice) / params.targetPrice;
+  const deltaPct =
+    (params.currentPrice - params.targetPrice) / params.targetPrice;
   if (deltaPct <= 0.05) {
     return {
       nextCheckAt: new Date(now + 30 * 60 * 1000), // 30 minutes
-      policy: 'near_target',
+      policy: "near_target",
     };
   }
 
   // Normal schedule: 2 hours
   return {
     nextCheckAt: new Date(now + 2 * 60 * 60 * 1000),
-    policy: 'normal',
+    policy: "normal",
   };
 }
 
@@ -56,8 +62,10 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
     },
   });
 
-  if (!rule || rule.status !== 'active') {
-    console.log(`[Monitoring Worker] Rule ${trackingRuleId} is inactive or not found.`);
+  if (!rule || rule.status !== "active") {
+    console.log(
+      `[Monitoring Worker] Rule ${trackingRuleId} is inactive or not found.`,
+    );
     return { skipped: true };
   }
 
@@ -68,23 +76,30 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
       : rule.product.offers[0];
 
     if (!offer) {
-      console.warn(`[Monitoring Worker] No offer found for rule ${trackingRuleId}`);
+      console.warn(
+        `[Monitoring Worker] No offer found for rule ${trackingRuleId}`,
+      );
       return { skipped: true };
     }
 
     // 1. Fetch live status from matching adapter (Channel3 or Mock)
-    const channel3Adapter = new Channel3CatalogAdapter();
-    const adapter = offer.sourceId === 'channel3' ? channel3Adapter : mockCatalogAdapter;
-    let live = await adapter.revalidateOffer(offer.externalProductId).catch(() => null);
+
+    const adapter = mockCatalogAdapter;
+    let live = await adapter
+      .revalidateOffer(offer.externalProductId)
+      .catch(() => null);
 
     // Fallback: If live source is temporarily unavailable (outage guardrail), preserve last observation
     if (!live || !live.offer) {
-      console.warn(`[Monitoring Worker] Source refresh unavailable for ${offer.externalProductId}, using last known state.`);
+      console.warn(
+        `[Monitoring Worker] Source refresh unavailable for ${offer.externalProductId}, using last known state.`,
+      );
       let variantAttrs: any = {};
       try {
-        variantAttrs = typeof offer.variantAttributes === 'string'
-          ? JSON.parse(offer.variantAttributes)
-          : (offer.variantAttributes || {});
+        variantAttrs =
+          typeof offer.variantAttributes === "string"
+            ? JSON.parse(offer.variantAttributes)
+            : offer.variantAttributes || {};
       } catch {
         variantAttrs = {};
       }
@@ -99,10 +114,10 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
           brand: rule.product.brand,
           model: rule.product.model,
           category: rule.product.category,
-          imageUrl: rule.product.imageUrl || '',
+          imageUrl: rule.product.imageUrl || "",
           variantAttributes: variantAttrs,
           seller: {
-            id: offer.sellerId || 'seller',
+            id: offer.sellerId || "seller",
             name: offer.sellerName,
             isAuthorized: offer.isAuthorizedSeller,
             rating: offer.sellerRating || 4.8,
@@ -119,7 +134,7 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
           sourceConfidence: offer.sourceConfidence,
           observedAt: new Date(),
         },
-        isAvailable: offer.availabilityStatus === 'in_stock',
+        isAvailable: offer.availabilityStatus === "in_stock",
         priceChanged: false,
         currentTotalPrice: offer.totalPrice,
       };
@@ -144,7 +159,7 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
       data: {
         totalPrice: live.offer.price.totalPrice,
         availabilityStatus: live.offer.availabilityStatus,
-        freshnessStatus: 'fresh',
+        freshnessStatus: "fresh",
         lastCheckedAt: new Date(),
       },
     });
@@ -161,7 +176,7 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
       const outboxResult = await createOutboxEvent({
         trackingRuleId: rule.id,
         offerId: offer.id,
-        eventType: 'target_hit',
+        eventType: "target_hit",
         observationId: observation.id,
         payload: {
           productTitle: rule.product.title,
@@ -174,18 +189,20 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
       });
 
       if (!outboxResult.isDuplicate && outboxResult.event) {
-        console.log(`[Monitoring Worker] Triggered alert created in outbox for rule ${rule.id}`);
+        console.log(
+          `[Monitoring Worker] Triggered alert created in outbox for rule ${rule.id}`,
+        );
         await prisma.trackingRule.update({
           where: { id: rule.id },
           data: {
-            status: 'triggered',
+            status: "triggered",
             lastTriggeredAt: new Date(),
           },
         });
 
         // Enqueue email dispatch in BullMQ outbox queue
         try {
-          await outboxQueue.add('dispatch-outbox-email', {
+          await outboxQueue.add("dispatch-outbox-email", {
             outboxEventId: outboxResult.event.id,
           });
         } catch {
@@ -214,9 +231,17 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
       },
     });
 
-    return { success: true, triggered: evaluation.triggered, nextCheckAt, policy };
+    return {
+      success: true,
+      triggered: evaluation.triggered,
+      nextCheckAt,
+      policy,
+    };
   } catch (error: any) {
-    console.error(`[Monitoring Worker] Error monitoring rule ${trackingRuleId}:`, error.message);
+    console.error(
+      `[Monitoring Worker] Error monitoring rule ${trackingRuleId}:`,
+      error.message,
+    );
 
     const { nextCheckAt, policy } = computeNextCheck({
       currentPrice: rule.targetPrice * 2,

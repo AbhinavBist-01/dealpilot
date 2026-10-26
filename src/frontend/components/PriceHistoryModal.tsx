@@ -29,7 +29,7 @@ interface PriceHistoryModalProps {
 
 export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
   productId,
-  currency = 'INR',
+  currency: propCurrency = 'INR',
   onClose,
   onTrack,
   onBuy,
@@ -42,7 +42,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
   useEffect(() => {
     if (!productId) return;
     setLoading(true);
-    fetch(`/api/products/${productId}/price-history?currency=${encodeURIComponent(currency)}`)
+    fetch(`/api/products/${productId}/price-history?currency=${encodeURIComponent(propCurrency)}`)
       .then((res) => res.json())
       .then((resData) => {
         setData(resData);
@@ -52,7 +52,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
         console.error('Failed to load price history:', err);
         setLoading(false);
       });
-  }, [productId, currency]);
+  }, [productId, propCurrency]);
 
   // Filter timeline based on timeframe
   const activeTimeline = useMemo(() => {
@@ -103,7 +103,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
   const product = data?.product;
   const stats = data?.stats;
   const merchants = data?.merchants || [];
-  const currency = product?.currency || 'INR';
+  const currency = product?.currency || propCurrency || 'INR';
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">

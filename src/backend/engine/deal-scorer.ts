@@ -1,5 +1,10 @@
-import { NormalizedOffer } from '../contracts/offer';
-import { DealEvaluationResult, DealRecommendation, ConfidenceLevel, DealSignals } from '../contracts/evaluation';
+import { NormalizedOffer } from "../contracts/offer";
+import {
+  DealEvaluationResult,
+  DealRecommendation,
+  ConfidenceLevel,
+  DealSignals,
+} from "../contracts/evaluation";
 
 export interface ScoreInput {
   offer: NormalizedOffer;
@@ -12,7 +17,7 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
   const { offer, targetPrice, historicalPrices = [] } = input;
   const missingEvidence: string[] = [];
 
-  let score = 50; // baseline
+  let score = 0; // baseline
   const price = offer.price.totalPrice;
 
   // 1. Historical Delta component (up to 35 points)
@@ -22,7 +27,8 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
   const hasSufficientHistory = historicalPrices.length >= 5;
 
   if (hasSufficientHistory) {
-    const avgPrice = historicalPrices.reduce((a, b) => a + b, 0) / historicalPrices.length;
+    const avgPrice =
+      historicalPrices.reduce((a, b) => a + b, 0) / historicalPrices.length;
     percentBelow30DayAvg = ((avgPrice - price) / avgPrice) * 100;
 
     const minPrice = Math.min(...historicalPrices);
@@ -41,7 +47,7 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
       score += 10;
     }
   } else {
-    missingEvidence.push('Sparse historical price observations (< 5 samples)');
+    missingEvidence.push("Sparse historical price observations (< 5 samples)");
   }
 
   // 2. Target Price Delta component (up to 25 points)
@@ -56,7 +62,7 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
       score -= Math.min(25, Math.round(overPct * 1.5));
     }
   } else {
-    missingEvidence.push('No user target price set');
+    missingEvidence.push("No user target price set");
   }
 
   // 3. Seller Reliability (up to 20 points)
@@ -68,17 +74,17 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
     else if (offer.seller.rating >= 4.0) score += 5;
     else if (offer.seller.rating < 3.5) score -= 10;
   } else {
-    missingEvidence.push('Seller rating not available');
+    missingEvidence.push("Seller rating not available");
   }
 
   // 4. Stock and Freshness (up to 20 points)
-  if (offer.availabilityStatus === 'in_stock') {
+  if (offer.availabilityStatus === "in_stock") {
     score += 5;
   } else {
     score -= 30;
   }
 
-  if (offer.freshnessStatus === 'fresh') {
+  if (offer.freshnessStatus === "fresh") {
     score += 5;
   } else {
     score -= 15;
@@ -89,17 +95,17 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   // Recommendation logic
-  let recommendation: DealRecommendation = 'fair';
-  if (score >= 80) recommendation = 'strong_buy';
-  else if (score >= 65) recommendation = 'buy';
-  else if (score < 40) recommendation = 'pass';
+  let recommendation: DealRecommendation = "fair";
+  if (score >= 80) recommendation = "strong_buy";
+  else if (score >= 65) recommendation = "buy";
+  else if (score < 40) recommendation = "pass";
 
   // Confidence level
-  let confidenceLevel: ConfidenceLevel = 'high';
+  let confidenceLevel: ConfidenceLevel = "high";
   if (missingEvidence.length >= 2 || !hasSufficientHistory) {
-    confidenceLevel = 'low';
+    confidenceLevel = "low";
   } else if (missingEvidence.length === 1) {
-    confidenceLevel = 'medium';
+    confidenceLevel = "medium";
   }
 
   const signals: DealSignals = {
@@ -111,13 +117,13 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
     isAuthorizedSeller: offer.seller.isAuthorized,
     sellerRating: offer.seller.rating,
     sellerReviewCount: offer.seller.reviewCount,
-    stockConfirmed: offer.availabilityStatus === 'in_stock',
-    freshnessStatus: offer.freshnessStatus || 'fresh',
+    stockConfirmed: offer.availabilityStatus === "in_stock",
+    freshnessStatus: offer.freshnessStatus || "fresh",
     hasSufficientHistory,
   };
 
   // Generate clear factual explanation
-  let explanation = `Deal rating ${score}/100 (${recommendation.replace('_', ' ').toUpperCase()}). `;
+  let explanation = `Deal rating ${score}/100 (${recommendation.replace("_", " ").toUpperCase()}). `;
   if (isHistoricalLow) {
     explanation += `Matches or beats all-time observed low! `;
   } else if (percentBelow30DayAvg && percentBelow30DayAvg > 0) {
@@ -130,12 +136,12 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult {
     explanation += `Sold by authorized retailer (${offer.seller.name}). `;
   }
   if (missingEvidence.length > 0) {
-    explanation += `Note: ${missingEvidence.join(', ')}.`;
+    explanation += `Note: ${missingEvidence.join(", ")}.`;
   }
 
   return {
     score,
-    scoreVersion: 'rubric_v1',
+    scoreVersion: "rubric_v1",
     recommendation,
     confidenceLevel,
     signals,

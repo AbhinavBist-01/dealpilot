@@ -1,24 +1,25 @@
-export function formatCurrency(amount: number, currency: string = 'INR'): string {
+export function formatCurrency(amount?: number | null, currency: string = 'INR'): string {
+  const val = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
   const cur = currency?.toUpperCase() || 'INR';
   if (cur === 'INR') {
-    return `₹${amount.toLocaleString('en-IN')}`;
+    return `₹${val.toLocaleString('en-IN')}`;
   }
   if (cur === 'USD') {
-    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+    return `$${val.toLocaleString('en-US', { minimumFractionDigits: val % 1 === 0 ? 0 : 2 })}`;
   }
   if (cur === 'EUR') {
-    return `€${amount.toLocaleString('de-DE', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+    return `€${val.toLocaleString('de-DE', { minimumFractionDigits: val % 1 === 0 ? 0 : 2 })}`;
   }
   if (cur === 'GBP') {
-    return `£${amount.toLocaleString('en-GB', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+    return `£${val.toLocaleString('en-GB', { minimumFractionDigits: val % 1 === 0 ? 0 : 2 })}`;
   }
   if (cur === 'CAD') {
-    return `CA$${amount.toLocaleString('en-CA', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+    return `CA$${val.toLocaleString('en-CA', { minimumFractionDigits: val % 1 === 0 ? 0 : 2 })}`;
   }
   if (cur === 'AUD') {
-    return `A$${amount.toLocaleString('en-AU', { minimumFractionDigits: amount % 1 === 0 ? 0 : 2 })}`;
+    return `A$${val.toLocaleString('en-AU', { minimumFractionDigits: val % 1 === 0 ? 0 : 2 })}`;
   }
-  return `${cur} ${amount.toLocaleString()}`;
+  return `${cur} ${val.toLocaleString()}`;
 }
 
 export function formatDateTime(date: Date | string): string {
