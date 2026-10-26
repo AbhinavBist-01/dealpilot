@@ -39,8 +39,8 @@ export const DashboardView: React.FC = () => {
   const { data: session, isPending: isSessionPending } = useSession();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<CountryConfig>(DEFAULT_COUNTRY);
-  const [query, setQuery] = useState('Sony WH-1000XM5');
-  const [budget, setBudget] = useState<string>('30000');
+  const [query, setQuery] = useState('');
+  const [budget, setBudget] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [trackingRules, setTrackingRules] = useState<any[]>([]);
@@ -65,12 +65,12 @@ export const DashboardView: React.FC = () => {
   // Status Banner
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
 
-  // Required Quick Preset Chips
+  // Trending Indian Consumer Electronics & Quick Commerce items
   const presetChips = [
-    { label: 'Sony WH-1000XM5', query: 'Sony WH-1000XM5', budget: '30000', icon: '🎧' },
-    { label: 'MacBook Pro M3', query: 'MacBook Pro M3', budget: '175000', icon: '💻' },
-    { label: 'Dell XPS 15', query: 'Dell XPS 15', budget: '145000', icon: '💻' },
-    { label: 'AirPods Max', query: 'AirPods Max', budget: '55000', icon: '🎧' },
+    { label: 'iPhone 16 Pro', query: 'iPhone 16 Pro', budget: '119900', icon: '📱' },
+    { label: 'MacBook Air M3', query: 'MacBook Air M3', budget: '114900', icon: '💻' },
+    { label: 'Sony PS5 Slim', query: 'PlayStation 5 Slim', budget: '54990', icon: '🎮' },
+    { label: 'boAt Earbuds', query: 'boAt Airdopes', budget: '1999', icon: '🎧' },
   ];
 
   const budgetTiers = [
@@ -81,8 +81,8 @@ export const DashboardView: React.FC = () => {
   ];
 
   useEffect(() => {
-    handleSearch();
     fetchTrackingRules();
+    fetchOutboxAlerts();
   }, []);
 
   const showBanner = (msg: string) => {
@@ -484,11 +484,35 @@ export const DashboardView: React.FC = () => {
                 </div>
 
                 {products.length === 0 && !loading && (
-                  <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-12 text-center text-slate-400 backdrop-blur-sm shadow-xl">
-                    <p className="text-base font-semibold text-slate-300 mb-1">No deals found matching your query.</p>
-                    <p className="text-xs text-slate-500">
-                      Try selecting one of the quick presets above: "Sony WH-1000XM5", "MacBook Pro M3", or "AirPods Max".
-                    </p>
+                  <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-10 md:p-14 text-center text-slate-400 backdrop-blur-sm shadow-2xl relative overflow-hidden">
+                    <div className="max-w-2xl mx-auto">
+                      <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-4 shadow-inner">
+                        <Sparkles className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl md:text-2xl font-bold text-slate-100 mb-2">
+                        Real-Time Indian Price Comparison & Quick Commerce Radar
+                      </h3>
+                      <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                        Enter any product to crawl live offers across <strong className="text-slate-200">Amazon India, Flipkart, Croma, Reliance Digital</strong> alongside 10-minute Quick Commerce on <strong className="text-slate-200">Blinkit, Zepto & Swiggy Instamart</strong>.
+                      </p>
+
+                      <div className="flex flex-wrap items-center justify-center gap-3">
+                        {presetChips.map((chip) => (
+                          <button
+                            key={chip.label}
+                            onClick={() => {
+                              setQuery(chip.query);
+                              setBudget(chip.budget);
+                              handleSearch(chip.query, chip.budget);
+                            }}
+                            className="px-4 py-2.5 rounded-2xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 text-slate-200 hover:text-emerald-400 text-xs font-semibold flex items-center gap-2 transition active:scale-95 shadow-sm"
+                          >
+                            <span>{chip.icon}</span>
+                            <span>{chip.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
 

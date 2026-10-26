@@ -52,11 +52,24 @@ export async function processOutboxJob(job: {
       payload = {};
     }
 
-    const recipient =
+    let recipient =
       event.trackingRule?.user?.email ||
       payload.userEmail ||
-      payload.email ||
-      "shopper@dealpilot.ai";
+      payload.email;
+
+    // If no specific user email was attached or generic fallback, resolve the active signed-in user
+    if (!recipient || recipient === "shopper@dealpilot.ai") {
+      try {
+        const activeUser = await getOrCreateDemoUser();
+        if (activeUser?.email) {
+          recipient = activeUser.email;
+        }
+      } catch {}
+    }
+
+    if (!recipient) {
+      recipient = "shopper@dealpilot.ai";
+    }
     const product = event.offer?.product || event.trackingRule?.product;
     const currentPrice = Number(
       payload.observedPrice ??
