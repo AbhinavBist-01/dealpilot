@@ -772,9 +772,42 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
       .join(" ");
 
     const slug = query.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const qLower = query.toLowerCase();
+
+    // Smart domestic pricing & category heuristic
+    let estimatedPrice = 24999;
+    let inferredCategory = "Electronics & Gadgets";
+    let inferredBrand = query.split(" ")[0] || "Verified Brand";
+
+    if (qLower.includes("macbook") || qLower.includes("laptop") || qLower.includes("thinkpad") || qLower.includes("xps")) {
+      estimatedPrice = 89990;
+      inferredCategory = "Computers & Laptops";
+    } else if (qLower.includes("iphone") || qLower.includes("galaxy ultra") || qLower.includes("pro max")) {
+      estimatedPrice = 69999;
+      inferredCategory = "Smartphones";
+    } else if (qLower.includes("phone") || qLower.includes("oneplus") || qLower.includes("redmi") || qLower.includes("realme") || qLower.includes("pixel")) {
+      estimatedPrice = 29999;
+      inferredCategory = "Smartphones";
+    } else if (qLower.includes("headphone") || qLower.includes("earphone") || qLower.includes("earbud") || qLower.includes("airdopes") || qLower.includes("tws") || qLower.includes("airpods")) {
+      estimatedPrice = qLower.includes("sony") || qLower.includes("bose") || qLower.includes("apple") ? 24990 : 1899;
+      inferredCategory = "Audio";
+    } else if (qLower.includes("ps5") || qLower.includes("playstation") || qLower.includes("xbox") || qLower.includes("nintendo")) {
+      estimatedPrice = 49990;
+      inferredCategory = "Gaming Consoles";
+    } else if (qLower.includes("watch") || qLower.includes("band")) {
+      estimatedPrice = qLower.includes("apple") || qLower.includes("galaxy") ? 29990 : 2999;
+      inferredCategory = "Wearables";
+    } else if (qLower.includes("shoe") || qLower.includes("sneaker") || qLower.includes("nike") || qLower.includes("adidas")) {
+      estimatedPrice = 4999;
+      inferredCategory = "Fashion & Footwear";
+    } else if (qLower.includes("milk") || qLower.includes("bread") || qLower.includes("soap") || qLower.includes("grocery")) {
+      estimatedPrice = 299;
+      inferredCategory = "Quick Commerce Grocery";
+    }
+
     const basePrice = filter.maxPrice
-      ? Math.round(filter.maxPrice * 0.9)
-      : 24999;
+      ? Math.min(filter.maxPrice, estimatedPrice)
+      : estimatedPrice;
     const mrp = Math.round(basePrice * 1.25);
 
     const merchants: IndianMerchantListing[] = [
@@ -852,9 +885,9 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
       offerUrl: m.url,
       canonicalProductId: `in-${slug}`,
       title: `${titleCase} (India Retail Edition)`,
-      brand: query.split(" ")[0] || "Verified Brand",
+      brand: inferredBrand,
       model: titleCase,
-      category: "Electronics & Gadgets",
+      category: inferredCategory,
       imageUrl:
         "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
       variantAttributes: {
