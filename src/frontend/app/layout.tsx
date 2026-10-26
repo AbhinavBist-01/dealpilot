@@ -1,9 +1,10 @@
-import './globals.css';
-import type { Metadata } from 'next';
+import "./globals.css";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'DealPilot — Autonomous Deal-Hunting & Price-Monitoring Agent',
-  description: 'AI-powered deal discovery, background price monitoring, adaptive polling, and verified PayPal checkout.',
+  title: "DealPilot",
+  description:
+    "AI-powered deal discovery, background price monitoring, adaptive polling, and verified PayPal checkout.",
 };
 
 export default function RootLayout({

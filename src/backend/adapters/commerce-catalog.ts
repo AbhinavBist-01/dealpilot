@@ -1,6 +1,7 @@
 import { CatalogAdapter, CatalogSearchFilter } from "./catalog-adapter";
 import { NormalizedOffer } from "../contracts/offer";
 import { verifyProductMatch } from "../engine/product-verifier";
+import { searchLiveWebCommerce } from "../services/live-web-search";
 
 export type MerchantCategory = "quick_commerce" | "ecommerce";
 
@@ -754,9 +755,18 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
       }
     }
 
-    // 2. Dynamic multi-merchant generation for arbitrary Indian queries
+    // 2. Real-time Live Web Search worker for Indian E-Commerce & Quick Commerce
     if (offers.length === 0 && query.length > 2) {
-      offers.push(...this.generateDynamicIndianOffers(query, filter));
+      try {
+        const liveOffers = await searchLiveWebCommerce(query, filter.maxPrice);
+        if (liveOffers.length > 0) {
+          offers.push(...liveOffers);
+        } else {
+          offers.push(...this.generateDynamicIndianOffers(query, filter));
+        }
+      } catch {
+        offers.push(...this.generateDynamicIndianOffers(query, filter));
+      }
     }
 
     return offers;

@@ -1,5 +1,6 @@
 import prisma from "../utils/db";
 import { sendPriceDropEmail } from "../services/email";
+import { getOrCreateDemoUser } from "../utils/user";
 
 export interface OutboxJobData {
   outboxEventId: string;
