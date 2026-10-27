@@ -38,7 +38,9 @@ export async function GET(
     });
 
     const currentPrice = normalizedPrimary?.totalPrice || (targetCurrency === 'INR' ? 20000 : 250);
-    const lowestRecorded = normalizedPrimary?.lowestPrice || Math.round(currentPrice * 0.94);
+    const lowestRecorded = primaryOffer?.lowestPrice
+      ? convertCurrency(primaryOffer.lowestPrice, primaryOffer.currency || 'INR', targetCurrency)
+      : Math.round(currentPrice * 0.94);
 
     // If observation count is low, generate realistic historical trajectory backwards from current price
     let timeline: { date: string; price: number; merchant: string }[] = [];

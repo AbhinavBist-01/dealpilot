@@ -14,8 +14,8 @@ export interface PriceDropEmailData {
   sellerRating?: number;
   dealScore?: number;
   condition?: string;
-  trackingRuleId: string;
-  offerId: string;
+  trackingRuleId?: string;
+  offerId?: string;
   checkoutUrl?: string;
   historyUrl?: string;
 }

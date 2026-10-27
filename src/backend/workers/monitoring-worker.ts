@@ -141,14 +141,15 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
     }
 
     // 2. Record new observation
+    const liveOffer = live.offer!;
     const observation = await prisma.priceObservation.create({
       data: {
         offerId: offer.id,
         productId: rule.productId,
-        itemPrice: live.offer.price.itemPrice,
-        shippingPrice: live.offer.price.shippingPrice,
-        totalPrice: live.offer.price.totalPrice,
-        currency: live.offer.price.currency,
+        itemPrice: liveOffer.price.itemPrice,
+        shippingPrice: liveOffer.price.shippingPrice,
+        totalPrice: liveOffer.price.totalPrice,
+        currency: liveOffer.price.currency,
         observedAt: new Date(),
       },
     });
@@ -157,15 +158,15 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
     await prisma.offer.update({
       where: { id: offer.id },
       data: {
-        totalPrice: live.offer.price.totalPrice,
-        availabilityStatus: live.offer.availabilityStatus,
+        totalPrice: liveOffer.price.totalPrice,
+        availabilityStatus: liveOffer.availabilityStatus,
         freshnessStatus: "fresh",
         lastCheckedAt: new Date(),
       },
     });
 
     // 4. Evaluate Deterministic Rules
-    const evaluation = evaluateDeterministicRules(live.offer, {
+    const evaluation = evaluateDeterministicRules(liveOffer, {
       targetPrice: rule.targetPrice,
       strategy: rule.strategy as any,
       deadline: rule.deadline,
@@ -180,9 +181,9 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
         observationId: observation.id,
         payload: {
           productTitle: rule.product.title,
-          observedPrice: live.offer.price.totalPrice,
+          observedPrice: liveOffer.price.totalPrice,
           targetPrice: rule.targetPrice,
-          seller: live.offer.seller.name,
+          seller: liveOffer.seller.name,
           reason: evaluation.reason,
           observedAt: observation.observedAt,
         },
@@ -216,7 +217,7 @@ export async function processMonitoringJob(job: Job<MonitoringJobData>) {
 
     // 6. Compute adaptive polling next check
     const { nextCheckAt, policy } = computeNextCheck({
-      currentPrice: live.offer.price.totalPrice,
+      currentPrice: liveOffer.price.totalPrice,
       targetPrice: rule.targetPrice,
       consecutiveFailures: 0,
     });

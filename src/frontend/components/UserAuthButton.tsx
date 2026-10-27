@@ -71,7 +71,7 @@ export const UserAuthButton: React.FC = () => {
     const user = sessionData.user;
     const initials = (user.name || user.email || 'U')
       .split(' ')
-      .map((n) => n[0])
+      .map((n: string) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);

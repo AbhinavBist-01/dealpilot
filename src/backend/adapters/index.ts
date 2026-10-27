@@ -1,3 +1,3 @@
 export * from "./catalog-adapter";
 export * from "./mock-catalog";
-export * from "./commerce-catalog-adapter";
+export * from "./commerce-catalog";

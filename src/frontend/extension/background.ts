@@ -121,7 +121,7 @@ export function dispatchPriceDropNotification(
 // Chrome runtime message listener registration
 if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener(
-    (request: ExtensionMessageRequest, _sender, sendResponse) => {
+    (request: ExtensionMessageRequest, _sender: any, sendResponse: (res?: any) => void) => {
       if (request.type === 'CHECK_PRODUCT_DEALS') {
         handleCheckProductDeals(request.payload).then(sendResponse);
         return true; // Keep channel open for async response

@@ -80,6 +80,20 @@ export const DashboardView: React.FC = () => {
     { label: '≤ ₹200k', val: '200000' },
   ];
 
+  const fetchOutboxAlerts = async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.alerts) {
+          setOutboxAlerts(data.alerts);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch outbox alerts:', err);
+    }
+  };
+
   useEffect(() => {
     fetchTrackingRules();
     fetchOutboxAlerts();
@@ -556,7 +570,10 @@ export const DashboardView: React.FC = () => {
           {activeTab === 'alerts' && (
             <OutboxAlertsList
               alerts={outboxAlerts}
-              onRefresh={fetchTrackingRules}
+              onRefresh={() => {
+                fetchOutboxAlerts();
+                fetchTrackingRules();
+              }}
             />
           )}
 

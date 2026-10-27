@@ -77,7 +77,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
         sellerRating,
         sellerReviewCount,
         isAuthorized: offer?.isAuthorizedSeller,
-        source: offer?.sourceId || 'channel3',
+        source: offer?.sourceId || 'india_commerce',
         price: currentPrice,
         currency: offer?.currency || 'INR',
         historicalLow: lowestObserved,
@@ -91,7 +91,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
           offer?.availabilityStatus === 'in_stock'
             ? 'In Stock'
             : 'Out of Stock',
-        freshness: offer?.freshnessState || 'LIVE',
+        freshness: offer?.freshnessStatus || 'LIVE',
         matchQuality: product.verification?.matchQuality || 'exact_model',
         isMatch: product.verification?.isMatch !== false,
         rawProduct: product,

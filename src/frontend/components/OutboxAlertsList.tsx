@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, CheckCircle2, Mail, Send, Eye, X, Sparkles, Clock, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDateTime } from '../utils/formatters';
+import { useSession } from '../utils/auth-client';
 
 interface OutboxAlertsListProps {
   alerts: any[];
@@ -10,10 +11,17 @@ interface OutboxAlertsListProps {
 }
 
 export const OutboxAlertsList: React.FC<OutboxAlertsListProps> = ({ alerts, onRefresh }) => {
+  const { data: session } = useSession();
   const [testEmailSending, setTestEmailSending] = useState(false);
-  const [recipientInput, setRecipientInput] = useState('shopper@dealpilot.ai');
+  const [recipientInput, setRecipientInput] = useState(session?.user?.email || 'abhinavbist05@gmail.com');
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [bannerNotice, setBannerNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      setRecipientInput(session.user.email);
+    }
+  }, [session?.user?.email]);
 
   const showNotice = (msg: string) => {
     setBannerNotice(msg);

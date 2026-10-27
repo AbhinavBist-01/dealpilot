@@ -108,6 +108,7 @@ describe('🎯 DealPilot Comprehensive System Functionality Evals', () => {
       canonicalProductId: 'eval-sony-xm5',
       title: 'Sony WH-1000XM5 Wireless Headphones',
       brand: 'Sony',
+      model: 'WH-1000XM5',
       category: 'Headphones',
       variantAttributes: { color: 'Black', condition: 'new' },
       seller: { id: 's1', name: 'Official Store', isAuthorized: true, rating: 4.9 },
