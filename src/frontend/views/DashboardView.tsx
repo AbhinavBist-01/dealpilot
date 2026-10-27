@@ -257,21 +257,21 @@ export const DashboardView: React.FC = () => {
   // Initial loading state
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-center p-4">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center p-4 font-sans text-zinc-100">
         <div className="relative flex items-center justify-center mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-2xl text-slate-950 shadow-xl shadow-emerald-500/20 animate-pulse">
-            ✈
+          <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-sm text-zinc-200">
+            DP
           </div>
         </div>
-        <div className="flex items-center gap-2 text-slate-300 font-semibold text-sm">
-          <RefreshCw className="w-4 h-4 text-emerald-400 animate-spin" />
-          <span>Synchronizing DealPilot Radar...</span>
+        <div className="flex items-center gap-2 text-zinc-400 font-mono text-xs">
+          <RefreshCw className="w-3.5 h-3.5 text-zinc-400 animate-spin" />
+          <span>INITIALIZING TELEMETRY RADAR...</span>
         </div>
       </div>
     );
   }
 
-  // Unauthenticated users are served the vibrant landing page
+  // Unauthenticated users are served the clean landing page
   if (!session) {
     return (
       <>

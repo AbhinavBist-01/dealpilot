@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleSignOut = useCallback(async () => {
     try {
-      await signOut();
+      await (signOut as any)();
       setCachedSession(null);
     } catch (err) {
       console.warn('Sign out error:', err);
