@@ -1,11 +1,36 @@
 /**
- * PayPal v6 Web SDK Client Integration
- * Implements window.paypal.createInstance() with client ID and server-generated clientToken.
+ * PayPal v6 Web SDK Integration
+ * 
+ * Official v6 initialization patterns:
+ * 
+ * // Basic initialization
+ * const sdkInstance = await window.paypal.createInstance({
+ *   clientToken: "YOUR_CLIENT_TOKEN",
+ * });
+ * 
+ * // Full configuration
+ * const sdkInstance = await window.paypal.createInstance({
+ *   clientToken: "YOUR_CLIENT_TOKEN",
+ *   components: ["paypal-payments", "venmo-payments"],
+ *   pageType: "checkout",
+ *   locale: "en-US",
+ *   clientMetadataId: crypto.randomUUID(),
+ * });
+ * 
+ * // With error handling
+ * try {
+ *   const sdkInstance = await window.paypal.createInstance({
+ *     clientToken: clientToken,
+ *   });
+ *   console.log("PayPal SDK initialized successfully");
+ * } catch (error) {
+ *   console.error("Failed to initialize PayPal SDK:", error);
+ * }
  */
 
 export interface PayPalV6CreateInstanceOptions {
+  clientToken: string;
   clientId?: string;
-  clientToken?: string;
   components?: (
     | 'paypal-payments'
     | 'venmo-payments'
@@ -22,8 +47,8 @@ export interface PayPalV6CreateInstanceOptions {
 
 export interface PayPalV6SDKInstance {
   findEligibleMethods: () => Promise<string[]>;
-  createPayPalOneTimePaymentSession: (options?: any) => Promise<any>;
-  createFastlane?: (options?: any) => Promise<any>;
+  createPayPalOneTimePaymentSession: (sessionOptions?: any) => Promise<any>;
+  createFastlane?: (fastlaneOptions?: any) => Promise<any>;
   rawInstance?: any;
 }
 
@@ -41,40 +66,39 @@ declare global {
   }
 }
 
-let cachedSDKInstance: PayPalV6SDKInstance | null = null;
-
 /**
- * Loads and initializes the PayPal v6 SDK using window.paypal.createInstance().
- * Supports Option A (clientId) and Option B (clientToken) dynamically.
+ * Retrieves the secure server-generated clientToken and clientId
  */
-export async function initializePayPalV6(
-  customOptions?: Partial<PayPalV6CreateInstanceOptions>
-): Promise<PayPalV6SDKInstance> {
-  if (cachedSDKInstance && !customOptions) {
-    return cachedSDKInstance;
-  }
-
-  // 1. Fetch server-generated clientToken and clientId from /api/paypal/v6-config
-  let config: {
-    clientId: string;
-    clientToken: string;
-    environment: string;
-  } = {
-    clientId: 'Afz0uL8UUf4xTl-6X2f18SvSrXUabPYgj9ffF8Qt9Zhj95Q23fMRuHpfuEtUhvtdhgfg0KVVc40AfcUC',
-    clientToken: '',
-    environment: 'sandbox',
-  };
-
+export async function fetchServerPayPalConfig(): Promise<{
+  clientId: string;
+  clientToken: string;
+  environment: string;
+  sdkUrl: string;
+}> {
   try {
     const res = await fetch('/api/paypal/v6-config');
     if (res.ok) {
-      config = await res.json();
+      return await res.json();
     }
   } catch (err) {
-    console.warn('[PayPal v6] Could not fetch server config, using fallback:', err);
+    console.warn('[PayPal v6] Failed to fetch server PayPal config, using fallback:', err);
   }
 
-  // 2. Ensure script is loaded
+  return {
+    clientId: 'Afz0uL8UUf4xTl-6X2f18SvSrXUabPYgj9ffF8Qt9Zhj95Q23fMRuHpfuEtUhvtdhgfg0KVVc40AfcUC',
+    clientToken: `sandbox_token_${Date.now()}`,
+    environment: 'sandbox',
+    sdkUrl: 'https://www.sandbox.paypal.com/web-sdk/v6/core',
+  };
+}
+
+/**
+ * Creates an SDK instance adhering strictly to the official v6 createInstance method
+ */
+export async function createPayPalSDKInstance(
+  options: PayPalV6CreateInstanceOptions
+): Promise<PayPalV6SDKInstance | null> {
+  // Wait for SDK script to mount on window if needed
   if (typeof window !== 'undefined' && !window.paypal?.createInstance) {
     await new Promise<void>((resolve) => {
       let attempts = 0;
@@ -88,39 +112,27 @@ export async function initializePayPalV6(
     });
   }
 
-  const clientMetadataId =
-    customOptions?.clientMetadataId ||
-    (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `meta-${Date.now()}`);
+  try {
+    if (typeof window !== 'undefined' && window.paypal?.createInstance) {
+      const rawInstance = await window.paypal.createInstance({
+        clientToken: options.clientToken,
+        components: options.components || ['paypal-payments', 'fastlane'],
+        pageType: options.pageType || 'checkout',
+        locale: options.locale || 'en-US',
+        clientMetadataId:
+          options.clientMetadataId ||
+          (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `meta-${Date.now()}`),
+        partnerAttributionId: options.partnerAttributionId,
+      });
 
-  const options: PayPalV6CreateInstanceOptions = {
-    // Both clientToken and clientId are provided to support Option A & Option B
-    clientId: customOptions?.clientId || config.clientId,
-    clientToken: customOptions?.clientToken || config.clientToken,
-    components: customOptions?.components || ['paypal-payments', 'fastlane'],
-    pageType: customOptions?.pageType || 'checkout',
-    locale: customOptions?.locale || 'en-US',
-    clientMetadataId,
-    ...customOptions,
-  };
+      console.log('✅ PayPal SDK initialized successfully');
 
-  console.log('⚡ [PayPal v6 SDK] Initializing createInstance with options:', {
-    hasClientId: Boolean(options.clientId),
-    hasClientToken: Boolean(options.clientToken),
-    components: options.components,
-    pageType: options.pageType,
-  });
-
-  // 3. Initialize with window.paypal.createInstance(options)
-  if (typeof window !== 'undefined' && window.paypal?.createInstance) {
-    try {
-      const rawInstance = await window.paypal.createInstance(options);
-
-      const instance: PayPalV6SDKInstance = {
+      return {
         findEligibleMethods: async () => {
           if (typeof rawInstance.findEligibleMethods === 'function') {
             return rawInstance.findEligibleMethods();
           }
-          return ['paypal', 'paylater', 'card'];
+          return ['paypal', 'paylater', 'fastlane'];
         },
         createPayPalOneTimePaymentSession: async (sessionOpts?: any) => {
           if (typeof rawInstance.createPayPalOneTimePaymentSession === 'function') {
@@ -136,26 +148,42 @@ export async function initializePayPalV6(
         },
         rawInstance,
       };
-
-      cachedSDKInstance = instance;
-      return instance;
-    } catch (err: any) {
-      console.warn('[PayPal v6 SDK] createInstance execution warning:', err.message);
     }
+  } catch (error) {
+    console.error('Failed to initialize PayPal SDK:', error);
   }
 
-  // Resilient fallback mock SDK instance for sandbox tests & SSR
-  const mockInstance: PayPalV6SDKInstance = {
+  // Graceful fallback for headless/SSR or test modes
+  return {
     findEligibleMethods: async () => ['paypal', 'paylater', 'fastlane'],
     createPayPalOneTimePaymentSession: async () => ({
       status: 'READY',
       sessionId: `mock_v6_session_${Date.now()}`,
     }),
-    createFastlane: async () => ({
-      FastlanePaymentComponent: () => null,
-    }),
+    createFastlane: async () => null,
   };
+}
 
-  cachedSDKInstance = mockInstance;
-  return mockInstance;
+/**
+ * High-level initializer that fetches the server token and sets up the SDK
+ */
+export async function initializePayPalV6(
+  customOptions?: Partial<PayPalV6CreateInstanceOptions>
+): Promise<PayPalV6SDKInstance> {
+  const config = await fetchServerPayPalConfig();
+  const clientToken = customOptions?.clientToken || config.clientToken;
+
+  const instance = await createPayPalSDKInstance({
+    clientToken,
+    clientId: customOptions?.clientId || config.clientId,
+    components: customOptions?.components || ['paypal-payments', 'fastlane'],
+    pageType: customOptions?.pageType || 'checkout',
+    locale: customOptions?.locale || 'en-US',
+    clientMetadataId:
+      customOptions?.clientMetadataId ||
+      (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `meta-${Date.now()}`),
+    partnerAttributionId: customOptions?.partnerAttributionId,
+  });
+
+  return instance!;
 }
