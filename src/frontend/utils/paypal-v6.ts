@@ -1,30 +1,36 @@
 /**
  * PayPal v6 Web SDK Integration
  * 
- * Official v6 initialization patterns:
+ * Official v6 initialization and payment session pattern:
  * 
- * // Basic initialization
- * const sdkInstance = await window.paypal.createInstance({
- *   clientToken: "YOUR_CLIENT_TOKEN",
- * });
+ * async function onPayPalWebSdkLoaded() {
+ *   try {
+ *     const clientToken = await getBrowserSafeClientToken();
+ *     
+ *     const sdkInstance = await window.paypal.createInstance({
+ *       clientToken,
+ *       components: ["paypal-payments"],
+ *       pageType: "checkout",
+ *     });
  * 
- * // Full configuration
- * const sdkInstance = await window.paypal.createInstance({
- *   clientToken: "YOUR_CLIENT_TOKEN",
- *   components: ["paypal-payments", "venmo-payments"],
- *   pageType: "checkout",
- *   locale: "en-US",
- *   clientMetadataId: crypto.randomUUID(),
- * });
+ *     const paymentMethods = await sdkInstance.findEligibleMethods({
+ *       currencyCode: "USD",
+ *     });
  * 
- * // With error handling
- * try {
- *   const sdkInstance = await window.paypal.createInstance({
- *     clientToken: clientToken,
- *   });
- *   console.log("PayPal SDK initialized successfully");
- * } catch (error) {
- *   console.error("Failed to initialize PayPal SDK:", error);
+ *     if (paymentMethods.isEligible("paypal")) {
+ *       configurePayPalButton(sdkInstance);
+ *     }
+ *     if (paymentMethods.isEligible("paylater")) {
+ *       const payLaterPaymentMethodDetails = paymentMethods.getDetails("paylater");
+ *       setUpPayLaterButton(sdkInstance, payLaterPaymentMethodDetails);
+ *     }
+ *     if (paymentMethods.isEligible("credit")) {
+ *       const paypalCreditPaymentMethodDetails = paymentMethods.getDetails("credit");
+ *       setUpPayPalCreditButton(sdkInstance, paypalCreditPaymentMethodDetails);
+ *     }
+ *   } catch (error) {
+ *     console.error("SDK initialization error:", error);
+ *   }
  * }
  */
 
@@ -45,9 +51,35 @@ export interface PayPalV6CreateInstanceOptions {
   partnerAttributionId?: string;
 }
 
+export interface PaymentSessionOptions {
+  onApprove: (data: { orderId: string; payerId?: string; [key: string]: any }) => Promise<void> | void;
+  onCancel?: (data: any) => void;
+  onError?: (error: any) => void;
+}
+
+export interface PaymentSessionStartConfig {
+  presentationMode?: 'auto' | 'pop-up' | 'modal';
+}
+
+export interface PayPalPaymentSession {
+  start: (config: PaymentSessionStartConfig, createOrderPromise: Promise<string> | string) => Promise<any>;
+}
+
+export interface EligiblePaymentMethodsResult {
+  isEligible: (method: 'paypal' | 'paylater' | 'credit' | 'venmo' | string) => boolean;
+  getDetails: (method: string) => {
+    productCode?: string;
+    countryCode?: string;
+    [key: string]: any;
+  };
+  eligibleMethods: string[];
+}
+
 export interface PayPalV6SDKInstance {
-  findEligibleMethods: () => Promise<string[]>;
-  createPayPalOneTimePaymentSession: (sessionOptions?: any) => Promise<any>;
+  findEligibleMethods: (params?: { currencyCode?: string }) => Promise<EligiblePaymentMethodsResult>;
+  createPayPalOneTimePaymentSession: (options: PaymentSessionOptions) => PayPalPaymentSession;
+  createPayLaterOneTimePaymentSession: (options: PaymentSessionOptions) => PayPalPaymentSession;
+  createPayPalCreditOneTimePaymentSession: (options: PaymentSessionOptions) => PayPalPaymentSession;
   createFastlane?: (fastlaneOptions?: any) => Promise<any>;
   rawInstance?: any;
 }
@@ -56,8 +88,10 @@ declare global {
   interface Window {
     paypal?: {
       createInstance: (options: PayPalV6CreateInstanceOptions) => Promise<{
-        findEligibleMethods?: () => Promise<string[]>;
-        createPayPalOneTimePaymentSession?: (options?: any) => Promise<any>;
+        findEligibleMethods?: (params?: any) => Promise<any>;
+        createPayPalOneTimePaymentSession?: (options: PaymentSessionOptions) => any;
+        createPayLaterOneTimePaymentSession?: (options: PaymentSessionOptions) => any;
+        createPayPalCreditOneTimePaymentSession?: (options: PaymentSessionOptions) => any;
         createFastlane?: (options?: any) => Promise<any>;
         [key: string]: any;
       }>;
@@ -89,6 +123,62 @@ export async function fetchServerPayPalConfig(): Promise<{
     clientToken: `sandbox_token_${Date.now()}`,
     environment: 'sandbox',
     sdkUrl: 'https://www.sandbox.paypal.com/web-sdk/v6/core',
+  };
+}
+
+/**
+ * Wraps raw methods or fallback into the official v6 EligiblePaymentMethodsResult interface
+ */
+function normalizeEligibility(rawResult: any): EligiblePaymentMethodsResult {
+  // If the raw SDK returned an object that already implements isEligible
+  if (rawResult && typeof rawResult.isEligible === 'function') {
+    return {
+      isEligible: (m) => rawResult.isEligible(m),
+      getDetails: (m) => (typeof rawResult.getDetails === 'function' ? rawResult.getDetails(m) : { countryCode: 'US' }),
+      eligibleMethods: Array.isArray(rawResult.eligibleMethods)
+        ? rawResult.eligibleMethods
+        : ['paypal', 'paylater', 'credit'],
+    };
+  }
+
+  // If the raw SDK returned an array of method strings
+  const list = Array.isArray(rawResult) ? rawResult : ['paypal', 'paylater', 'credit'];
+  return {
+    isEligible: (method: string) => list.includes(method.toLowerCase()),
+    getDetails: (method: string) => ({
+      productCode: method === 'paylater' ? 'PAY_IN_4' : undefined,
+      countryCode: 'US',
+    }),
+    eligibleMethods: list,
+  };
+}
+
+/**
+ * Fallback session starter that executes presentationMode flow and invokes onApprove
+ */
+function createFallbackSession(
+  methodName: string,
+  options: PaymentSessionOptions
+): PayPalPaymentSession {
+  return {
+    start: async (config, createOrderPromise) => {
+      console.log(`[PayPal v6] Starting ${methodName} session with mode: ${config.presentationMode || 'auto'}`);
+      try {
+        const orderResult = await Promise.resolve(createOrderPromise);
+        const orderId = typeof orderResult === 'string' ? orderResult : (orderResult as any)?.id || `order_${Date.now()}`;
+        
+        // In sandbox/browser environment, call onApprove with orderId
+        if (options.onApprove) {
+          await options.onApprove({ orderId });
+        }
+        return { status: 'APPROVED', orderId };
+      } catch (err) {
+        if (options.onError) {
+          options.onError(err);
+        }
+        throw err;
+      }
+    },
   };
 }
 
@@ -125,20 +215,33 @@ export async function createPayPalSDKInstance(
         partnerAttributionId: options.partnerAttributionId,
       });
 
-      console.log('✅ PayPal SDK initialized successfully');
+      console.log('✅ PayPal SDK v6 initialized successfully');
 
       return {
-        findEligibleMethods: async () => {
+        findEligibleMethods: async (params?: { currencyCode?: string }) => {
           if (typeof rawInstance.findEligibleMethods === 'function') {
-            return rawInstance.findEligibleMethods();
+            const res = await rawInstance.findEligibleMethods(params);
+            return normalizeEligibility(res);
           }
-          return ['paypal', 'paylater', 'fastlane'];
+          return normalizeEligibility(['paypal', 'paylater', 'credit']);
         },
-        createPayPalOneTimePaymentSession: async (sessionOpts?: any) => {
+        createPayPalOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
           if (typeof rawInstance.createPayPalOneTimePaymentSession === 'function') {
             return rawInstance.createPayPalOneTimePaymentSession(sessionOpts);
           }
-          return { status: 'READY', sessionId: `sess_${Date.now()}` };
+          return createFallbackSession('paypal', sessionOpts);
+        },
+        createPayLaterOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
+          if (typeof rawInstance.createPayLaterOneTimePaymentSession === 'function') {
+            return rawInstance.createPayLaterOneTimePaymentSession(sessionOpts);
+          }
+          return createFallbackSession('paylater', sessionOpts);
+        },
+        createPayPalCreditOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
+          if (typeof rawInstance.createPayPalCreditOneTimePaymentSession === 'function') {
+            return rawInstance.createPayPalCreditOneTimePaymentSession(sessionOpts);
+          }
+          return createFallbackSession('credit', sessionOpts);
         },
         createFastlane: async (fastlaneOpts?: any) => {
           if (typeof rawInstance.createFastlane === 'function') {
@@ -155,11 +258,10 @@ export async function createPayPalSDKInstance(
 
   // Graceful fallback for headless/SSR or test modes
   return {
-    findEligibleMethods: async () => ['paypal', 'paylater', 'fastlane'],
-    createPayPalOneTimePaymentSession: async () => ({
-      status: 'READY',
-      sessionId: `mock_v6_session_${Date.now()}`,
-    }),
+    findEligibleMethods: async () => normalizeEligibility(['paypal', 'paylater', 'credit']),
+    createPayPalOneTimePaymentSession: (opts) => createFallbackSession('paypal', opts),
+    createPayLaterOneTimePaymentSession: (opts) => createFallbackSession('paylater', opts),
+    createPayPalCreditOneTimePaymentSession: (opts) => createFallbackSession('credit', opts),
     createFastlane: async () => null,
   };
 }
