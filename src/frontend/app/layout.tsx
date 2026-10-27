@@ -1,9 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Script from "next/script";
+import { AuthProvider } from "@/frontend/utils/auth-context";
 
 export const metadata: Metadata = {
-  title: "DealPilot",
+  title: "DealPilot — Autonomous Shopping & Price Intelligence Radar",
   description:
     "AI-powered deal discovery, background price monitoring, adaptive polling, and verified PayPal checkout.",
 };
@@ -23,7 +24,9 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

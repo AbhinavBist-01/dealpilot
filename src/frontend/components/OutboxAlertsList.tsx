@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, CheckCircle2, Mail, Send, Eye, X, Sparkles, Clock, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDateTime } from '../utils/formatters';
-import { useSession } from '../utils/auth-client';
+import { useAuth } from '../utils/auth-context';
 
 interface OutboxAlertsListProps {
   alerts: any[];
@@ -11,7 +11,7 @@ interface OutboxAlertsListProps {
 }
 
 export const OutboxAlertsList: React.FC<OutboxAlertsListProps> = ({ alerts, onRefresh }) => {
-  const { data: session } = useSession();
+  const { session } = useAuth();
   const [testEmailSending, setTestEmailSending] = useState(false);
   const [recipientInput, setRecipientInput] = useState(session?.user?.email || 'abhinavbist05@gmail.com');
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);

@@ -13,19 +13,25 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingDown,
-  TrendingUp,
   ShoppingBag,
   Store,
   Star,
   Activity,
   Cpu,
-  Filter,
   Bell,
   Check,
   ArrowUpRight,
   RefreshCw,
-  Server,
-  Shield
+  Shield,
+  Smartphone,
+  Laptop,
+  Gamepad2,
+  Headphones,
+  Flame,
+  CreditCard,
+  Mail,
+  Sliders,
+  DollarSign
 } from 'lucide-react';
 import { signIn } from '@/frontend/utils/auth-client';
 
@@ -37,11 +43,14 @@ interface DemoProduct {
   id: string;
   name: string;
   category: string;
+  badge: string;
+  icon: string;
   msrp: number;
   targetPrice: number;
   currentLowest: number;
   currency: string;
   dropPercent: number;
+  dealScore: number;
   points: { day: string; price: number; note?: string }[];
   merchants: {
     name: string;
@@ -50,1004 +59,749 @@ interface DemoProduct {
     rating: number;
     reviews: number;
     stock: string;
+    deliveryTime?: string;
     badge?: string;
     isLowest?: boolean;
     color: string;
   }[];
 }
 
-const DEMO_PRODUCTS: DemoProduct[] = [
+const VIBRANT_PRODUCTS: DemoProduct[] = [
   {
-    id: 'sony-wh1000xm5',
-    name: 'Sony WH-1000XM5 Wireless Noise-Cancelling Headphones',
-    category: 'Audio & Premium Electronics',
-    msrp: 29990,
-    targetPrice: 22000,
-    currentLowest: 19990,
+    id: 'iphone-16-pro',
+    name: 'Apple iPhone 16 Pro (128GB, Desert Titanium)',
+    category: 'Flagship Smartphone',
+    badge: '⚡ Trending Radar',
+    icon: '📱',
+    msrp: 119900,
+    targetPrice: 112000,
+    currentLowest: 109900,
     currency: '₹',
-    dropPercent: 33,
+    dropPercent: 8.3,
+    dealScore: 96,
     points: [
-      { day: 'Oct 14', price: 29990, note: 'MSRP Catalog Ingest' },
-      { day: 'Oct 16', price: 27499, note: 'Mid-week Promo' },
-      { day: 'Oct 18', price: 25990 },
-      { day: 'Oct 19', price: 23500, note: 'Near Target (Escalating Polling to 30m)' },
-      { day: 'Oct 20', price: 22000, note: 'Target Hit Threshold' },
-      { day: 'Today', price: 19990, note: 'Flash Drop (Amazon Verified Offer)' },
+      { day: 'Day 1', price: 119900, note: 'Official Launch MRP' },
+      { day: 'Day 3', price: 118499, note: 'Card Discount' },
+      { day: 'Day 5', price: 115900 },
+      { day: 'Day 7', price: 113500, note: 'Escalating Polling to 30m' },
+      { day: 'Day 9', price: 111990, note: 'Target Hit Threshold' },
+      { day: 'Live', price: 109900, note: 'Quick Commerce Flash Deal' },
     ],
     merchants: [
       {
-        name: 'Amazon',
-        domain: 'amazon.com',
-        price: 19990,
-        rating: 4.8,
-        reviews: 18420,
-        stock: 'In Stock (Direct Sold by Amazon)',
-        badge: 'Lowest Price',
-        isLowest: true,
-        color: 'emerald'
-      },
-      {
-        name: 'Best Buy',
-        domain: 'bestbuy.com',
-        price: 21999,
-        rating: 4.7,
-        reviews: 6310,
-        stock: 'In Stock (Curbside Pick-up)',
-        badge: 'Official Retailer',
-        color: 'sky'
-      },
-      {
-        name: "Macy's",
-        domain: 'macys.com',
-        price: 24499,
-        rating: 4.6,
-        reviews: 2180,
-        stock: 'Low Stock: 4 units remaining',
-        badge: 'Promo Eligible',
-        color: 'purple'
-      }
-    ]
-  },
-  {
-    id: 'apple-airpods-max',
-    name: 'Apple AirPods Max Wireless Over-Ear Headphones (Space Gray)',
-    category: 'Personal Audio',
-    msrp: 59900,
-    targetPrice: 48000,
-    currentLowest: 44990,
-    currency: '₹',
-    dropPercent: 25,
-    points: [
-      { day: 'Oct 14', price: 59900 },
-      { day: 'Oct 16', price: 56900 },
-      { day: 'Oct 18', price: 52000 },
-      { day: 'Oct 19', price: 49500, note: 'Pre-sale Drop' },
-      { day: 'Oct 20', price: 47990, note: 'Target Hit' },
-      { day: 'Today', price: 44990, note: 'All-Time Record Low' },
-    ],
-    merchants: [
-      {
-        name: 'Amazon',
-        domain: 'amazon.com',
-        price: 44990,
+        name: 'Blinkit',
+        domain: 'blinkit.com',
+        price: 109900,
         rating: 4.9,
-        reviews: 24150,
-        stock: 'In Stock (Prime Next-Day)',
+        reviews: 8420,
+        stock: 'In Stock (⚡ 10-Min Delivery)',
+        deliveryTime: '10 mins',
         badge: 'Lowest Price',
         isLowest: true,
         color: 'emerald'
       },
       {
-        name: 'Best Buy',
-        domain: 'bestbuy.com',
-        price: 47999,
+        name: 'Amazon India',
+        domain: 'amazon.in',
+        price: 112999,
         rating: 4.8,
-        reviews: 8900,
-        stock: 'In Stock (Store Pickup)',
-        badge: 'Price Match',
+        reviews: 24310,
+        stock: 'In Stock (Prime Next-Day)',
+        deliveryTime: 'Tomorrow',
+        badge: 'Authorized Apple Store',
         color: 'sky'
       },
       {
-        name: "Macy's",
-        domain: 'macys.com',
-        price: 54990,
-        rating: 4.5,
-        reviews: 1420,
-        stock: 'In Stock',
-        badge: 'Member Exclusive',
+        name: 'Flipkart',
+        domain: 'flipkart.com',
+        price: 114900,
+        rating: 4.7,
+        reviews: 19400,
+        stock: 'In Stock (F-Assured)',
+        deliveryTime: '2 Days',
+        badge: 'Exchange Bonus',
+        color: 'blue'
+      },
+      {
+        name: 'Croma',
+        domain: 'croma.com',
+        price: 119900,
+        rating: 4.6,
+        reviews: 6200,
+        stock: 'Store Pickup Ready',
+        deliveryTime: 'Same Day',
+        badge: 'Tata Guarantee',
         color: 'purple'
       }
     ]
   },
   {
-    id: 'bose-qc-ultra',
-    name: 'Bose QuietComfort Ultra Noise Cancelling Headphones',
-    category: 'Flagship Audio',
-    msrp: 35900,
-    targetPrice: 28000,
-    currentLowest: 24999,
+    id: 'macbook-air-m3',
+    name: 'Apple MacBook Air 13" M3 (16GB Unified Memory, 512GB SSD)',
+    category: 'Pro Ultrabook',
+    badge: '🔥 High Savings',
+    icon: '💻',
+    msrp: 134900,
+    targetPrice: 122000,
+    currentLowest: 118990,
     currency: '₹',
-    dropPercent: 30,
+    dropPercent: 11.8,
+    dealScore: 98,
     points: [
-      { day: 'Oct 14', price: 35900 },
-      { day: 'Oct 16', price: 33990 },
-      { day: 'Oct 18', price: 30500 },
-      { day: 'Oct 19', price: 28900 },
-      { day: 'Oct 20', price: 27999, note: 'Target Reached' },
-      { day: 'Today', price: 24999, note: 'Best Buy Flash Deal' },
+      { day: 'Day 1', price: 134900, note: 'Apple Official Store' },
+      { day: 'Day 3', price: 129900 },
+      { day: 'Day 5', price: 126500, note: 'Croma Price Match' },
+      { day: 'Day 7', price: 123900 },
+      { day: 'Day 9', price: 120990, note: 'Target Price Crossed' },
+      { day: 'Live', price: 118990, note: 'Reliance Digital Instant Rebate' },
     ],
     merchants: [
       {
-        name: 'Best Buy',
-        domain: 'bestbuy.com',
-        price: 24999,
+        name: 'Reliance Digital',
+        domain: 'reliancedigital.in',
+        price: 118990,
         rating: 4.8,
-        reviews: 5200,
-        stock: 'In Stock (Same-Day Delivery)',
+        reviews: 5120,
+        stock: 'In Stock (Express Delivery)',
+        deliveryTime: '3 Hours',
         badge: 'Lowest Price',
         isLowest: true,
         color: 'emerald'
       },
       {
-        name: 'Amazon',
-        domain: 'amazon.com',
-        price: 26490,
-        rating: 4.7,
-        reviews: 11840,
-        stock: 'In Stock (Direct Prime)',
-        badge: 'Verified Merchant',
+        name: 'Amazon India',
+        domain: 'amazon.in',
+        price: 122490,
+        rating: 4.9,
+        reviews: 14200,
+        stock: 'In Stock',
+        deliveryTime: 'Tomorrow',
+        badge: 'Prime Verified',
         color: 'sky'
       },
       {
-        name: "Macy's",
-        domain: 'macys.com',
-        price: 31990,
-        rating: 4.6,
-        reviews: 950,
+        name: 'Croma',
+        domain: 'croma.com',
+        price: 124900,
+        rating: 4.7,
+        reviews: 8300,
         stock: 'In Stock',
-        badge: 'Standard Delivery',
+        deliveryTime: 'Same Day',
+        badge: 'Store Pickup',
         color: 'purple'
+      }
+    ]
+  },
+  {
+    id: 'ps5-slim',
+    name: 'PlayStation 5 Slim Console (Disc Edition with 1TB SSD)',
+    category: 'Next-Gen Gaming',
+    badge: '⚡ 11-Min Delivery',
+    icon: '🎮',
+    msrp: 54990,
+    targetPrice: 50000,
+    currentLowest: 48990,
+    currency: '₹',
+    dropPercent: 10.9,
+    dealScore: 95,
+    points: [
+      { day: 'Day 1', price: 54990, note: 'Sony Official Store' },
+      { day: 'Day 3', price: 53990 },
+      { day: 'Day 5', price: 52490 },
+      { day: 'Day 7', price: 50990, note: 'Target Proximity Alert' },
+      { day: 'Day 9', price: 49990, note: 'Target Hit' },
+      { day: 'Live', price: 48990, note: 'Zepto Quick Drop' },
+    ],
+    merchants: [
+      {
+        name: 'Zepto',
+        domain: 'zepto.in',
+        price: 48990,
+        rating: 4.9,
+        reviews: 4100,
+        stock: 'In Stock (⚡ 11-Min Delivery)',
+        deliveryTime: '11 mins',
+        badge: 'Lowest Price',
+        isLowest: true,
+        color: 'emerald'
+      },
+      {
+        name: 'Flipkart',
+        domain: 'flipkart.com',
+        price: 49990,
+        rating: 4.8,
+        reviews: 32000,
+        stock: 'In Stock (F-Assured)',
+        deliveryTime: 'Tomorrow',
+        badge: 'Official Distributor',
+        color: 'blue'
+      },
+      {
+        name: 'Amazon India',
+        domain: 'amazon.in',
+        price: 51990,
+        rating: 4.8,
+        reviews: 28500,
+        stock: 'In Stock',
+        deliveryTime: 'Tomorrow',
+        badge: 'Sony Warranty',
+        color: 'sky'
+      }
+    ]
+  },
+  {
+    id: 'boat-airdopes',
+    name: 'boAt Airdopes 141 ANC (32dB Hybrid ANC, 42H Playback)',
+    category: 'Audio & Wearables',
+    badge: '💥 Super Steal',
+    icon: '🎧',
+    msrp: 4490,
+    targetPrice: 2000,
+    currentLowest: 1499,
+    currency: '₹',
+    dropPercent: 66.6,
+    dealScore: 99,
+    points: [
+      { day: 'Day 1', price: 4490, note: 'Standard MSRP' },
+      { day: 'Day 3', price: 2999 },
+      { day: 'Day 5', price: 2299 },
+      { day: 'Day 7', price: 1899, note: 'Target Price Met' },
+      { day: 'Day 9', price: 1699 },
+      { day: 'Live', price: 1499, note: 'Swiggy Instamart Blitz' },
+    ],
+    merchants: [
+      {
+        name: 'Swiggy Instamart',
+        domain: 'swiggy.com/instamart',
+        price: 1499,
+        rating: 4.8,
+        reviews: 12400,
+        stock: 'In Stock (⚡ 15-Min Delivery)',
+        deliveryTime: '15 mins',
+        badge: 'Lowest Price',
+        isLowest: true,
+        color: 'emerald'
+      },
+      {
+        name: 'Blinkit',
+        domain: 'blinkit.com',
+        price: 1599,
+        rating: 4.8,
+        reviews: 9800,
+        stock: 'In Stock (⚡ 10-Min Delivery)',
+        deliveryTime: '10 mins',
+        badge: 'Quick In Stock',
+        color: 'amber'
+      },
+      {
+        name: 'Amazon India',
+        domain: 'amazon.in',
+        price: 1799,
+        rating: 4.6,
+        reviews: 84000,
+        stock: 'In Stock',
+        deliveryTime: 'Tomorrow',
+        badge: 'Brand Warranty',
+        color: 'sky'
       }
     ]
   }
 ];
 
 export const LandingView: React.FC<LandingViewProps> = ({ onOpenAuthModal }) => {
-  const [authLoading, setAuthLoading] = useState<string | null>(null);
-  const [selectedProductIndex, setSelectedProductIndex] = useState(0);
-  const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
-  const [activeFeatureTab, setActiveFeatureTab] = useState<'monitoring' | 'intent' | 'paypal' | 'outbox'>('monitoring');
+  const [selectedProductId, setSelectedProductId] = useState<string>('iphone-16-pro');
+  const [activeDirective, setActiveDirective] = useState<'idle' | 'bought' | 'left'>('idle');
 
-  const product = DEMO_PRODUCTS[selectedProductIndex];
-
-  const handleOAuth = async (provider: 'google' | 'github') => {
-    try {
-      setAuthLoading(provider);
-      await (signIn as any).social({
-        provider,
-        callbackURL: '/',
-      });
-    } catch {
-      setAuthLoading(null);
-    }
-  };
-
-  // SVG Chart calculation helpers
-  const chartHeight = 160;
-  const chartWidth = 540;
-  const paddingX = 40;
-  const paddingY = 24;
-
-  const minPrice = useMemo(() => {
-    const prices = product.points.map(p => p.price);
-    return Math.min(...prices, product.targetPrice) * 0.95;
-  }, [product]);
+  const activeProduct = useMemo(() => {
+    return VIBRANT_PRODUCTS.find((p) => p.id === selectedProductId) || VIBRANT_PRODUCTS[0];
+  }, [selectedProductId]);
 
   const maxPrice = useMemo(() => {
-    const prices = product.points.map(p => p.price);
-    return Math.max(...prices, product.targetPrice) * 1.05;
-  }, [product]);
+    return Math.max(...activeProduct.points.map((p) => p.price));
+  }, [activeProduct]);
 
-  const pointsCoordinates = useMemo(() => {
-    const total = product.points.length;
-    return product.points.map((p, i) => {
-      const x = paddingX + (i / (total - 1)) * (chartWidth - paddingX * 2);
-      const y = chartHeight - paddingY - ((p.price - minPrice) / (maxPrice - minPrice)) * (chartHeight - paddingY * 2);
-      return { x, y, price: p.price, day: p.day, note: p.note };
-    });
-  }, [product, minPrice, maxPrice]);
+  const minPrice = useMemo(() => {
+    return Math.min(...activeProduct.points.map((p) => p.price));
+  }, [activeProduct]);
 
-  const targetLineY = useMemo(() => {
-    return chartHeight - paddingY - ((product.targetPrice - minPrice) / (maxPrice - minPrice)) * (chartHeight - paddingY * 2);
-  }, [product, minPrice, maxPrice]);
-
-  // Construct smooth bezier SVG path
-  const svgPathD = useMemo(() => {
-    if (pointsCoordinates.length === 0) return '';
-    let d = `M ${pointsCoordinates[0].x} ${pointsCoordinates[0].y}`;
-    for (let i = 0; i < pointsCoordinates.length - 1; i++) {
-      const current = pointsCoordinates[i];
-      const next = pointsCoordinates[i + 1];
-      const cx = (current.x + next.x) / 2;
-      d += ` C ${cx} ${current.y}, ${cx} ${next.y}, ${next.x} ${next.y}`;
-    }
-    return d;
-  }, [pointsCoordinates]);
-
-  // Closed path for subtle gradient fill under the curve
-  const areaPathD = useMemo(() => {
-    if (pointsCoordinates.length === 0) return '';
-    const last = pointsCoordinates[pointsCoordinates.length - 1];
-    const first = pointsCoordinates[0];
-    const bottom = chartHeight - paddingY;
-    return `${svgPathD} L ${last.x} ${bottom} L ${first.x} ${bottom} Z`;
-  }, [svgPathD, pointsCoordinates]);
+  const savingsAmount = activeProduct.msrp - activeProduct.currentLowest;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500/30 selection:text-emerald-300 relative overflow-hidden font-sans">
-      {/* Background ambient lighting effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-b from-emerald-500/12 via-teal-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-96 left-[-10%] w-[600px] h-[600px] bg-emerald-600/5 rounded-full blur-[160px] pointer-events-none -z-10" />
-      <div className="absolute top-[800px] right-[-10%] w-[550px] h-[550px] bg-sky-500/5 rounded-full blur-[160px] pointer-events-none -z-10" />
+    <div className="min-h-screen bg-[#05070f] text-slate-100 font-sans relative selection:bg-emerald-500 selection:text-black overflow-x-hidden">
+      
+      {/* Dynamic Ambient Neon Lights (Inspired by vibrant.design) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-b from-emerald-500/20 via-teal-500/10 to-transparent blur-[140px] rounded-full" />
+        <div className="absolute top-[30%] -left-48 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/15 via-blue-600/10 to-transparent blur-[160px] rounded-full" />
+        <div className="absolute top-[60%] -right-48 w-[650px] h-[650px] bg-gradient-to-bl from-emerald-500/15 via-indigo-600/10 to-transparent blur-[180px] rounded-full" />
+        {/* Subtle geometric dot grid pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:32px_32px] opacity-25" />
+      </div>
 
-      {/* Modern High-Precision Top Nav */}
-      <header className="border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-xl sticky top-0 z-50 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      {/* Modern Floating Header Bar */}
+      <nav className="sticky top-4 z-50 max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="bg-slate-950/70 backdrop-blur-2xl border border-white/[0.08] rounded-full px-5 py-3 shadow-[0_8px_32px_0_rgba(0,0,0,0.45)] flex items-center justify-between transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-emerald-300 flex items-center justify-center font-black text-slate-950 text-lg shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-400/30">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-400 via-teal-300 to-cyan-400 flex items-center justify-center font-black text-slate-950 text-base shadow-[0_0_20px_rgba(52,211,153,0.5)]">
               ✈
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg tracking-tight text-white">DealPilot</span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold tracking-wider text-emerald-400 uppercase bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Autonomous Engine
+              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                DealPilot
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">
+                v2.0 RADAR
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noreferrer"
-              className="hidden md:flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800"
-            >
-              <span>Channel3 API</span>
-              <ExternalLink className="w-3 h-3 text-slate-500" />
-            </a>
+          <div className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-400">
+            <a href="#radar-preview" className="hover:text-slate-100 transition-colors">Live Radar</a>
+            <a href="#quick-commerce" className="hover:text-slate-100 transition-colors">10-Min Commerce</a>
+            <a href="#architecture" className="hover:text-slate-100 transition-colors">Guardrails</a>
+            <a href="#paypal-v6" className="hover:text-slate-100 transition-colors">PayPal v6 Checkout</a>
+          </div>
+
+          <div className="flex items-center gap-3">
             <button
               onClick={onOpenAuthModal}
-              className="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white transition rounded-xl hover:bg-slate-900 border border-slate-800/80 hover:border-slate-700"
+              className="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors"
             >
               Sign In
             </button>
             <button
               onClick={onOpenAuthModal}
-              className="px-4 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 transition-all rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center gap-1.5 active:scale-[0.98]"
+              className="group relative inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 transition-all shadow-[0_0_25px_rgba(52,211,153,0.4)] active:scale-95 cursor-pointer"
             >
-              <span>Launch Agent</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Launch DealPilot</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>
-      </header>
+      </nav>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-16 text-center relative">
-        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/90 border border-emerald-500/30 text-xs text-slate-300 mb-8 backdrop-blur shadow-inner shadow-emerald-500/5 hover:border-emerald-500/50 transition">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="font-medium text-slate-200">Autonomous Deal-Hunting & Multi-Merchant Telemetry</span>
-          <span className="text-emerald-400 font-mono text-[11px] bg-emerald-500/15 px-2 py-0.5 rounded-full">v2.4 Active</span>
+      <section className="relative z-10 pt-16 md:pt-24 pb-12 px-4 sm:px-6 max-w-7xl mx-auto text-center">
+        
+        {/* Glowing Pill Tag */}
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-emerald-500/[0.08] border border-emerald-400/25 text-emerald-400 text-xs font-bold mb-6 backdrop-blur-md shadow-[0_0_30px_rgba(52,211,153,0.15)] animate-in fade-in duration-500">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+          </span>
+          <span>AUTONOMOUS SHOPPING RADAR • 7 LIVE DOMESTIC NETWORKS</span>
         </div>
 
+        {/* Display Typography */}
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white max-w-5xl mx-auto leading-[1.08] mb-6">
-          Never Overpay. <br />
-          <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
-            Let the Autonomous Agent Pilot Your Deals.
-          </span>
+          Stop Overpaying. <br />
+          <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            Let Autonomous Agents
+          </span>{' '}
+          Capture Record Lows.
         </h1>
 
-        <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-          DealPilot streams real domestic merchant catalog data, filters junk accessories deterministically, monitors prices via adaptive BullMQ workers, and initiates PayPal checkouts the exact second target thresholds are met.
+        <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto font-medium leading-relaxed mb-10">
+          DealPilot continuously crawls verified merchants across 
+          <strong className="text-slate-200"> Amazon, Flipkart, Croma</strong> alongside 
+          <strong className="text-emerald-400"> 10-minute Quick Commerce on Blinkit, Zepto & Swiggy Instamart</strong>. 
+          Evaluates deals with deterministic guardrails and executes instant PayPal v6 checkouts.
         </p>
 
-        {/* Primary CTA Area */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto mb-16">
+        {/* Action CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
           <button
             onClick={onOpenAuthModal}
-            className="w-full sm:w-auto px-7 py-3.5 text-sm font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 transition-all rounded-xl shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 group active:scale-[0.98]"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 text-slate-950 font-black text-sm tracking-wide shadow-[0_0_35px_rgba(52,211,153,0.45)] hover:shadow-[0_0_50px_rgba(52,211,153,0.6)] transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>Launch Deal Dashboard</span>
-            <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            <span>Start Autonomous Hunting Free</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
-          
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              onClick={() => handleOAuth('google')}
-              disabled={authLoading !== null}
-              className="flex-1 sm:flex-initial px-4 py-3.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition rounded-xl flex items-center justify-center gap-2 shadow-sm hover:shadow-emerald-500/10 active:scale-[0.98]"
-              title="Quick Sign in with Google"
-            >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-              </svg>
-              <span>Google</span>
-            </button>
-            <button
-              onClick={() => handleOAuth('github')}
-              disabled={authLoading !== null}
-              className="flex-1 sm:flex-initial px-4 py-3.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition rounded-xl flex items-center justify-center gap-2 shadow-sm hover:shadow-emerald-500/10 active:scale-[0.98]"
-              title="Quick Sign in with GitHub"
-            >
-              <svg className="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-              </svg>
-              <span>GitHub</span>
-            </button>
+          <a
+            href="#radar-preview"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-900/80 hover:bg-slate-800/80 border border-white/10 text-slate-200 font-bold text-sm tracking-wide transition-all backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Activity className="w-4 h-4 text-emerald-400" />
+            <span>Explore Live Deals Radar</span>
+          </a>
+        </div>
+
+        {/* High-Density Ticker Badges */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto mb-16 text-left">
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-4 shadow-lg">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Savings Tracked</div>
+            <div className="text-2xl font-black text-emerald-400 font-mono">₹4.82 Cr+</div>
+            <div className="text-[10px] text-slate-500 mt-1">Across 42,000+ observations</div>
+          </div>
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-4 shadow-lg">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fastest Delivery</div>
+            <div className="text-2xl font-black text-teal-300 font-mono">10 Mins ⚡</div>
+            <div className="text-[10px] text-slate-500 mt-1">Blinkit, Zepto, Instamart</div>
+          </div>
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-4 shadow-lg">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pre-Flight Verification</div>
+            <div className="text-2xl font-black text-cyan-300 font-mono">100% Guarded</div>
+            <div className="text-[10px] text-slate-500 mt-1">Price shift & stock locks</div>
+          </div>
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-4 shadow-lg">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Payment Engine</div>
+            <div className="text-2xl font-black text-blue-400 font-mono">PayPal v6 SDK</div>
+            <div className="text-[10px] text-slate-500 mt-1">Pay in 4 & Credit Line support</div>
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════════
-            FEATURE 1: INTERACTIVE LIVE TELEMETRY PREVIEW MOCKUP
-        ═══════════════════════════════════════════════════════════════ */}
-        <div className="max-w-5xl mx-auto rounded-3xl border border-slate-800 bg-slate-900/70 backdrop-blur-2xl p-4 sm:p-7 shadow-2xl shadow-emerald-950/30 text-left relative ring-1 ring-slate-800/80">
-          {/* Mockup Frame Header */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800/80 mb-5">
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-rose-500/80 ring-2 ring-rose-500/20" />
-              <span className="w-3 h-3 rounded-full bg-amber-500/80 ring-2 ring-amber-500/20" />
-              <span className="w-3 h-3 rounded-full bg-emerald-500/80 ring-2 ring-emerald-500/20" />
-              <div className="h-4 w-px bg-slate-800 mx-1 hidden sm:block" />
-              <span className="font-mono text-[11px] text-slate-400 hidden sm:inline-block">
-                dealpilot://telemetry/live-monitor/stream-01
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[11px]">
-                <Activity className="w-3 h-3 animate-spin text-emerald-400" />
-                Adaptive Poller Active
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-slate-800/90 text-slate-300 font-mono text-[11px]">
-                <Lock className="w-3 h-3 text-emerald-400" />
-                Zero-Trust Preflight
-              </span>
-            </div>
-          </div>
-
-          {/* Interactive SKU Switcher */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mr-1 flex items-center gap-1 shrink-0">
-              <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-              Tracked SKU:
-            </span>
-            {DEMO_PRODUCTS.map((prod, idx) => (
-              <button
-                key={prod.id}
-                onClick={() => setSelectedProductIndex(idx)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all shrink-0 flex items-center gap-2 ${
-                  selectedProductIndex === idx
-                    ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 shadow-sm shadow-emerald-500/10'
-                    : 'bg-slate-950/60 hover:bg-slate-850 border border-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <span>{prod.name.split(' ')[0]} {prod.name.split(' ')[1]}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                  selectedProductIndex === idx ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'
-                }`}>
-                  -{prod.dropPercent}%
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Product Header & Live Metrics */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-            <div className="lg:col-span-7">
-              <div className="flex items-center gap-2 text-xs text-emerald-400 font-medium mb-1">
-                <span>{product.category}</span>
-                <span>•</span>
-                <span className="text-slate-500">Universal Catalog Ingestion</span>
-              </div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight mb-2">
-                {product.name}
-              </h2>
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="text-2xl sm:text-3xl font-black text-emerald-400">
-                  {product.currency}{product.currentLowest.toLocaleString()}
-                </div>
-                <div className="text-xs text-slate-500 line-through">
-                  MSRP {product.currency}{product.msrp.toLocaleString()}
-                </div>
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-xs">
-                  <TrendingDown className="w-3.5 h-3.5" />
-                  <span>Save {product.dropPercent}% ({product.currency}{(product.msrp - product.currentLowest).toLocaleString()})</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Status KPI Cards */}
-            <div className="lg:col-span-5 grid grid-cols-2 gap-2.5">
-              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80">
-                <div className="text-[11px] text-slate-400 mb-1 flex items-center justify-between">
-                  <span>Target Threshold</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-                </div>
-                <div className="text-base font-bold text-teal-300 font-mono">
-                  {product.currency}{product.targetPrice.toLocaleString()}
-                </div>
-                <div className="text-[10px] text-emerald-400 font-medium mt-0.5">
-                  ✓ Target Triggered ({product.currency}{(product.targetPrice - product.currentLowest).toLocaleString()} lower)
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80">
-                <div className="text-[11px] text-slate-400 mb-1 flex items-center justify-between">
-                  <span>Adaptive Polling</span>
-                  <Activity className="w-3 h-3 text-sky-400" />
-                </div>
-                <div className="text-base font-bold text-sky-300 font-mono">
-                  30 mins
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  Escalated from 120m (near target)
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Real-time SVG Price Curve & Trajectory Chart */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/90 border border-slate-800/90 mb-6 relative overflow-hidden">
-            <div className="flex items-center justify-between text-xs mb-3">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                  Live Price Observation Trajectory (Bezier Interpolation)
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-0.5 bg-emerald-400 inline-block" />
-                  Live Price
-                </span>
-                <span className="flex items-center gap-1 ml-2">
-                  <span className="w-2.5 h-0.5 bg-dashed border-t border-teal-400/80 inline-block" />
-                  Target Trigger
-                </span>
-              </div>
-            </div>
-
-            {/* Interactive SVG Viewport */}
-            <div className="w-full overflow-x-auto">
-              <svg 
-                viewBox={`0 0 ${chartWidth} ${chartHeight}`} 
-                className="w-full h-44 select-none overflow-visible"
-              >
-                <defs>
-                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="strokeGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#2dd4bf" />
-                    <stop offset="50%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#34d399" />
-                  </linearGradient>
-                </defs>
-
-                {/* Target Price Threshold Line */}
-                <line 
-                  x1={paddingX} 
-                  y1={targetLineY} 
-                  x2={chartWidth - paddingX} 
-                  y2={targetLineY} 
-                  stroke="#2dd4bf" 
-                  strokeWidth="1.5" 
-                  strokeDasharray="4 4" 
-                  strokeOpacity="0.7"
-                />
-                <text 
-                  x={chartWidth - paddingX + 6} 
-                  y={targetLineY + 3} 
-                  fill="#2dd4bf" 
-                  fontSize="9" 
-                  fontFamily="monospace"
-                >
-                  Target {product.currency}{product.targetPrice.toLocaleString()}
-                </text>
-
-                {/* Subtle horizontal grid lines */}
-                <line x1={paddingX} y1={paddingY} x2={chartWidth - paddingX} y2={paddingY} stroke="#334155" strokeWidth="0.5" strokeDasharray="2 4" strokeOpacity="0.4" />
-                <line x1={paddingX} y1={chartHeight - paddingY} x2={chartWidth - paddingX} y2={chartHeight - paddingY} stroke="#334155" strokeWidth="0.5" strokeOpacity="0.4" />
-
-                {/* Area under curve */}
-                <path d={areaPathD} fill="url(#areaGradient)" />
-
-                {/* Spline path */}
-                <path d={svgPathD} fill="none" stroke="url(#strokeGradient)" strokeWidth="3" strokeLinecap="round" />
-
-                {/* Data Points */}
-                {pointsCoordinates.map((pt, i) => {
-                  const isHovered = hoveredPointIndex === i;
-                  const isCurrent = i === pointsCoordinates.length - 1;
-
-                  return (
-                    <g 
-                      key={i} 
-                      className="cursor-pointer"
-                      onMouseEnter={() => setHoveredPointIndex(i)}
-                      onMouseLeave={() => setHoveredPointIndex(null)}
-                    >
-                      {/* Pulse circle on the current latest drop point */}
-                      {isCurrent && (
-                        <circle cx={pt.x} cy={pt.y} r="8" fill="#10b981" opacity="0.3" className="animate-ping" />
-                      )}
-                      <circle 
-                        cx={pt.x} 
-                        cy={pt.y} 
-                        r={isHovered ? 6 : isCurrent ? 5 : 3.5} 
-                        fill={isCurrent ? '#10b981' : '#0f172a'} 
-                        stroke="#10b981" 
-                        strokeWidth={isHovered ? 2.5 : 2} 
-                        className="transition-all"
-                      />
-                      {/* Day Label */}
-                      <text 
-                        x={pt.x} 
-                        y={chartHeight - 6} 
-                        textAnchor="middle" 
-                        fill="#64748b" 
-                        fontSize="9"
-                        fontFamily="sans-serif"
-                      >
-                        {pt.day}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
-            </div>
-
-            {/* Hovered point telemetry tooltip */}
-            <div className="mt-2 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-slate-400">Inspecting point:</span>
-                <span className="font-semibold text-white">
-                  {hoveredPointIndex !== null 
-                    ? `${pointsCoordinates[hoveredPointIndex].day} — ${product.currency}${pointsCoordinates[hoveredPointIndex].price.toLocaleString()}`
-                    : `Today — ${product.currency}${product.currentLowest.toLocaleString()} (All-Time Low)`}
-                </span>
-                {hoveredPointIndex !== null && pointsCoordinates[hoveredPointIndex].note && (
-                  <span className="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                    {pointsCoordinates[hoveredPointIndex].note}
+        {/* INTERACTIVE RADAR & DEAL COMPARISON SHOWCASE (vibrant.design style) */}
+        <div id="radar-preview" className="relative z-10 max-w-5xl mx-auto scroll-mt-24">
+          <div className="bg-slate-950/85 backdrop-blur-3xl border border-white/[0.1] rounded-3xl p-6 md:p-8 shadow-[0_20px_80px_rgba(0,0,0,0.7)] text-left relative overflow-hidden">
+            
+            {/* Top Toolbar: Product Selection Chips */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5 mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
+                    Live Deal Radar Ticker
                   </span>
-                )}
+                </div>
+                <div className="text-lg font-black text-slate-100">
+                  Select a Product to Observe Live Telemetry:
+                </div>
               </div>
-              <div className="text-[11px] text-slate-500 hidden sm:block font-mono">
-                Observation: Verified Channel3 Catalog Stream
-              </div>
-            </div>
-          </div>
 
-          {/* ═══════════════════════════════════════════════════════════════
-              VERIFIED MERCHANT CARDS (Amazon, Best Buy, Macy's)
-          ═══════════════════════════════════════════════════════════════ */}
-          <div className="mb-2">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Store className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white tracking-tight">
-                  Multi-Merchant Real-Time Offers (Original Merchant Domains)
-                </h3>
-              </div>
-              <span className="text-xs text-slate-400">
-                Sorted deterministically by normalized price
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {product.merchants.map((merchant) => {
-                const diff = merchant.price - product.currentLowest;
-                return (
-                  <div 
-                    key={merchant.name}
-                    className={`p-4 rounded-2xl border transition-all duration-200 relative group flex flex-col justify-between ${
-                      merchant.isLowest 
-                        ? 'bg-gradient-to-b from-emerald-950/30 to-slate-950/80 border-emerald-500/40 shadow-lg shadow-emerald-950/20 ring-1 ring-emerald-500/20'
-                        : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
-                    }`}
-                  >
-                    <div>
-                      {/* Card Header: Store + Badge */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                            merchant.name === 'Amazon' ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' :
-                            merchant.name === 'Best Buy' ? 'bg-sky-500/15 text-sky-300 border border-sky-500/30' :
-                            'bg-rose-500/15 text-rose-300 border border-rose-500/30'
-                          }`}>
-                            {merchant.name[0]}
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
-                              {merchant.name}
-                            </div>
-                            <div className="text-[10px] text-slate-500 font-mono">
-                              {merchant.domain}
-                            </div>
-                          </div>
-                        </div>
-
-                        {merchant.badge && (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            merchant.isLowest 
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                              : 'bg-slate-800 text-slate-300 border border-slate-700'
-                          }`}>
-                            {merchant.badge}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Price & Spread */}
-                      <div className="mb-2">
-                        <div className="text-xl font-black text-white">
-                          {product.currency}{merchant.price.toLocaleString()}
-                        </div>
-                        <div className="text-[11px] font-medium">
-                          {merchant.isLowest ? (
-                            <span className="text-emerald-400">★ Lowest Verified Offer across catalogs</span>
-                          ) : (
-                            <span className="text-slate-400">+{product.currency}{diff.toLocaleString()} vs lowest offer</span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Stock & Rating */}
-                      <div className="space-y-1 text-[11px] text-slate-400 mb-4 pt-2 border-t border-slate-800/60">
-                        <div className="flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                          <span className="truncate">{merchant.stock}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
-                          <span>{merchant.rating} ({merchant.reviews.toLocaleString()} reviews)</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action button */}
+              {/* Product Selector Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                {VIBRANT_PRODUCTS.map((prod) => {
+                  const isSelected = prod.id === selectedProductId;
+                  return (
                     <button
-                      onClick={onOpenAuthModal}
-                      className={`w-full py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                        merchant.isLowest
-                          ? 'bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold shadow-md shadow-emerald-500/20'
-                          : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800'
+                      key={prod.id}
+                      onClick={() => {
+                        setSelectedProductId(prod.id);
+                        setActiveDirective('idle');
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 border cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-[0_0_15px_rgba(52,211,153,0.2)]'
+                          : 'bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-white/[0.06]'
                       }`}
                     >
-                      <span>{merchant.isLowest ? 'Automate Checkout' : 'Monitor Offer'}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <span>{prod.icon}</span>
+                      <span>{prod.category}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Product Details & Stats Bar */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              
+              {/* Product Info Card */}
+              <div className="lg:col-span-2 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    {activeProduct.badge}
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">
+                    Deal Score: <strong className="text-emerald-400">{activeProduct.dealScore}/100</strong>
+                  </span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                  {activeProduct.name}
+                </h3>
+
+                {/* Price Aggregates */}
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-2">
+                  <div>
+                    <div className="text-[11px] text-slate-400 font-semibold uppercase">Standard MSRP</div>
+                    <div className="text-lg font-bold text-slate-500 line-through font-mono">
+                      {activeProduct.currency}{activeProduct.msrp.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-emerald-400 font-semibold uppercase">Current Record Low</div>
+                    <div className="text-3xl font-black text-emerald-400 font-mono">
+                      {activeProduct.currency}{activeProduct.currentLowest.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2 rounded-2xl">
+                    <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">Instant Savings</div>
+                    <div className="text-base font-extrabold text-emerald-400 font-mono">
+                      Save {activeProduct.currency}{savingsAmount.toLocaleString('en-IN')} ({activeProduct.dropPercent}% OFF)
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Autonomous Directive Interactive Showcase */}
+              <div className="bg-slate-900/90 border border-white/[0.08] rounded-2xl p-4 flex flex-col justify-between shadow-inner">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-mono uppercase font-bold text-slate-400">Autonomous Agent Directive</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">
+                      Target: {activeProduct.currency}{activeProduct.targetPrice.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-300 mb-3">
+                    Target hit! Price dropped below threshold. Autonomous directive engine requests confirmation:
+                  </div>
+                </div>
+
+                {/* 2 Exclusive Actions */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveDirective('bought')}
+                      className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer ${
+                        activeDirective === 'bought'
+                          ? 'bg-emerald-500 text-slate-950 font-black shadow-[0_0_20px_rgba(52,211,153,0.5)]'
+                          : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                      }`}
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{activeDirective === 'bought' ? '✓ Order Verified!' : 'Buy Now (Instant)'}</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveDirective('left')}
+                      className={`px-4 py-2.5 rounded-xl font-bold text-xs transition active:scale-95 cursor-pointer ${
+                        activeDirective === 'left'
+                          ? 'bg-rose-500 text-white font-black'
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-400'
+                      }`}
+                    >
+                      <span>{activeDirective === 'left' ? 'Skipped' : 'Leave'}</span>
                     </button>
                   </div>
-                );
-              })}
+                  <div className="text-[10px] text-center text-slate-500 font-mono">
+                    Strictly 2 Autonomous Actions: Instant Capture or Ignore
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          FEATURE 2: INTERACTIVE FEATURE TABS & SUBSYSTEM SHOWCASE
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20 border-t border-slate-800/60">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-            <Cpu className="w-3.5 h-3.5" />
-            <span>Autonomous Agent Core Architecture</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Engineered for Precision & Zero Surprises
-          </h2>
-          <p className="text-slate-400 text-sm mt-3">
-            Click through DealPilot's four core subsystems to preview the deterministic pipeline.
-          </p>
-        </div>
-
-        {/* Feature Tab Selector Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-4xl mx-auto">
-          {[
-            { id: 'monitoring', label: 'Adaptive BullMQ Poller', icon: Activity, tag: 'Background Workers' },
-            { id: 'intent', label: 'Intent Guard & Verifier', icon: ShieldCheck, tag: 'Anti-Noise AI' },
-            { id: 'paypal', label: 'PayPal Agent Toolkit', icon: Zap, tag: 'Orders v2' },
-            { id: 'outbox', label: 'Transactional Outbox', icon: Bell, tag: 'Guaranteed Alerts' },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeFeatureTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveFeatureTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-slate-900 border border-emerald-500/50 text-white shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30'
-                    : 'bg-slate-950/70 hover:bg-slate-900/90 border border-slate-800/80 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
-                <span>{tab.label}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                  isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'
-                }`}>
-                  {tab.tag}
+            {/* Price Drop Curve & Timeline Chart */}
+            <div className="bg-slate-900/60 border border-white/[0.06] rounded-2xl p-5 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-mono font-bold text-slate-300 flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4 text-emerald-400" />
+                  <span>Adaptive Polling Trajectory (Target Threshold Verification)</span>
                 </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Dynamic Feature Tab Details Card */}
-        <div className="max-w-4xl mx-auto rounded-3xl border border-slate-800 bg-slate-900/50 backdrop-blur-xl p-6 sm:p-8 shadow-xl">
-          {activeFeatureTab === 'monitoring' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-400 uppercase tracking-wider mb-2">
-                  <Activity className="w-3.5 h-3.5" />
-                  <span>Subsystem 01: Adaptive Poller</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  BullMQ Background Workers with Dynamic Jitter
-                </h3>
-                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">
-                  Default 2-hour monitoring cycles dynamically escalate to 30-minute intervals as soon as prices get within 5% of your target threshold.
-                </p>
-                <ul className="space-y-2 text-xs text-slate-300 mb-6">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>PostgreSQL 16 & Redis 7 containerized persistence</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Deterministic jitter backoff prevents retailer IP rate-limits</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Automatic price drift tracking and statistical aggregate generation</span>
-                  </li>
-                </ul>
-                <button
-                  onClick={onOpenAuthModal}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
-                >
-                  <span>Configure Custom Polling Rules</span>
-                  <ArrowRight className="w-3 h-3 text-emerald-400" />
-                </button>
+                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">
+                  Adaptive Frequency: 30m Active
+                </span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-2 shadow-inner">
-                <div className="text-slate-500 text-[11px] pb-2 border-b border-slate-800 flex items-center justify-between">
-                  <span>worker.telemetry.log</span>
-                  <span className="text-emerald-400">● LIVE RUNNING</span>
-                </div>
-                <div className="text-slate-400">[00:12:04] Rule #419: Target ₹22,000 | Current ₹22,890</div>
-                <div className="text-amber-400">[00:12:05] SPREAD_DELTA: 3.8% &lt; 5% threshold</div>
-                <div className="text-teal-400">[00:12:05] ADAPTIVE_ESCALATION: Polling 120m → 30m</div>
-                <div className="text-emerald-400">[00:42:05] TARGET_HIT: Offer #8812 drops to ₹19,990</div>
-                <div className="text-slate-300">[00:42:06] Outbox notification enqueued (atomic DB write)</div>
+              {/* Visual Curve Representation */}
+              <div className="relative h-28 flex items-end justify-between gap-2 pt-6 px-2">
+                {activeProduct.points.map((pt, idx) => {
+                  const normalizedHeight = Math.max(
+                    15,
+                    Math.round(((maxPrice - pt.price) / (maxPrice - minPrice || 1)) * 100)
+                  );
+                  const isLowest = pt.price === activeProduct.currentLowest;
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative">
+                      {/* Tooltip on hover */}
+                      <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 border border-white/20 px-2 py-0.5 rounded text-[10px] font-mono text-white whitespace-nowrap pointer-events-none z-20">
+                        {activeProduct.currency}{pt.price.toLocaleString('en-IN')} {pt.note ? `• ${pt.note}` : ''}
+                      </div>
+
+                      <div className="w-full flex justify-center items-end h-full">
+                        <div
+                          className={`w-3/4 max-w-[48px] rounded-t-xl transition-all duration-300 ${
+                            isLowest
+                              ? 'bg-gradient-to-t from-emerald-500 to-teal-300 shadow-[0_0_15px_rgba(52,211,153,0.5)]'
+                              : 'bg-slate-800 hover:bg-slate-700'
+                          }`}
+                          style={{ height: `${normalizedHeight}%` }}
+                        />
+                      </div>
+                      <span className={`text-[10px] font-mono ${isLowest ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
+                        {pt.day}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          )}
 
-          {activeFeatureTab === 'intent' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Subsystem 02: Intent Guard & Verifier</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Accessory Junk & Refurbished Filter
-                </h3>
-                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">
-                  Never be tricked by a $14 silicone sleeve or replacement cable when searching for a $350 pair of noise-canceling headphones.
-                </p>
-                <ul className="space-y-2 text-xs text-slate-300 mb-6">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Exact model token relevance extractor</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Discards cases, cables, cushions, and mismatched variants</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Condition checks: New vs Certified Refurbished vs Pre-owned</span>
-                  </li>
-                </ul>
-                <button
-                  onClick={onOpenAuthModal}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
-                >
-                  <span>Explore Search Verifier</span>
-                  <ArrowRight className="w-3 h-3 text-emerald-400" />
-                </button>
+            {/* Multi-Merchant Breakdown Table */}
+            <div>
+              <div className="text-xs font-mono uppercase tracking-wider font-bold text-slate-400 mb-3 flex items-center justify-between">
+                <span>Multi-Merchant Normalized Crawl:</span>
+                <span className="text-[11px] text-slate-500">Includes 10-minute Quick Commerce</span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-2.5 shadow-inner">
-                <div className="text-slate-500 text-[11px] pb-2 border-b border-slate-800 flex items-center justify-between">
-                  <span>verifier.spec.guard</span>
-                  <span className="text-emerald-400">● PASS RATIO 99.4%</span>
-                </div>
-                <div className="p-2 rounded bg-rose-950/30 border border-rose-900/40 text-rose-300">
-                  ✕ REJECTED: "Silicone Case for Sony WH-1000XM5" (Token Match: Accessory)
-                </div>
-                <div className="p-2 rounded bg-rose-950/30 border border-rose-900/40 text-rose-300">
-                  ✕ REJECTED: "WH-1000XM4 Pre-Owned" (Condition: Used, Refurbished)
-                </div>
-                <div className="p-2 rounded bg-emerald-950/30 border border-emerald-900/40 text-emerald-300">
-                  ✓ VERIFIED: "Sony WH-1000XM5 Black (Brand New)" (Relevance: 0.98)
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                {activeProduct.merchants.map((merchant, mIdx) => (
+                  <div
+                    key={mIdx}
+                    className={`rounded-2xl p-4 border transition-all ${
+                      merchant.isLowest
+                        ? 'bg-emerald-950/25 border-emerald-500/40 shadow-[0_0_20px_rgba(52,211,153,0.1)]'
+                        : 'bg-slate-900/50 border-white/[0.05] hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-sm text-white">{merchant.name}</span>
+                      {merchant.isLowest && (
+                        <span className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full uppercase">
+                          Best Price
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-2xl font-black text-white font-mono mb-2">
+                      {activeProduct.currency}{merchant.price.toLocaleString('en-IN')}
+                    </div>
+                    <div className="text-[11px] text-slate-400 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-emerald-400" />
+                        <span className="text-emerald-300 font-semibold">{merchant.deliveryTime || 'Fast Delivery'}</span>
+                      </div>
+                      <div className="text-slate-500">{merchant.stock}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
 
-          {activeFeatureTab === 'paypal' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">
-                  <Zap className="w-3.5 h-3.5" />
-                  <span>Subsystem 03: PayPal Agent Toolkit</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Pre-Flight Price Revalidation Gatekeeper
-                </h3>
-                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">
-                  Integrated with official `@paypal/agent-toolkit/openai` (`create_order`, `get_order`, `pay_order`). Live revalidation guarantees no unexpected price shifts or out-of-stock checkouts.
-                </p>
-                <ul className="space-y-2 text-xs text-slate-300 mb-6">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Server-side capture verification (prevents client-side spoofing)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Cryptographic Idempotency-Key headers prevent double-captures</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Interactive natural-language shopping assistant chat interface</span>
-                  </li>
-                </ul>
-                <button
-                  onClick={onOpenAuthModal}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
-                >
-                  <span>Test PayPal Sandbox</span>
-                  <ArrowRight className="w-3 h-3 text-emerald-400" />
-                </button>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-2 shadow-inner">
-                <div className="text-slate-500 text-[11px] pb-2 border-b border-slate-800 flex items-center justify-between">
-                  <span>paypal.preflight.audit</span>
-                  <span className="text-sky-400">● 256-BIT TLS</span>
-                </div>
-                <div className="text-slate-400">[REVALIDATION] Querying live merchant stock...</div>
-                <div className="text-emerald-400">[IN_STOCK] Merchant confirmed 12 units available</div>
-                <div className="text-emerald-400">[PRICE_VERIFIED] Live: ₹19,990 == Cached: ₹19,990</div>
-                <div className="text-sky-300">[SANDBOX_ORDER] Created: 9DL4920401019</div>
-                <div className="text-slate-400">[CAPTURE] Idempotency Key verified • Charge cleared</div>
-              </div>
-            </div>
-          )}
-
-          {activeFeatureTab === 'outbox' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>Subsystem 04: Transactional Outbox</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Zero Duplicate Price-Drop Dispatches
-                </h3>
-                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">
-                  Alerts are committed atomically within the same database transaction as the price observation. Dedicated outbox workers dispatch responsive dark-quartz HTML emails with SHA-256 deduplication.
-                </p>
-                <ul className="space-y-2 text-xs text-slate-300 mb-6">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Deduplication key format: `rule + offer + event + obs`</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Resilient against network drops and worker restarts</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>HTML email previews and one-click purchase links</span>
-                  </li>
-                </ul>
-                <button
-                  onClick={onOpenAuthModal}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
-                >
-                  <span>Preview Alert Templates</span>
-                  <ArrowRight className="w-3 h-3 text-emerald-400" />
-                </button>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-2 shadow-inner">
-                <div className="text-slate-500 text-[11px] pb-2 border-b border-slate-800 flex items-center justify-between">
-                  <span>outbox.dispatcher.queue</span>
-                  <span className="text-purple-400">● DEDUPED</span>
-                </div>
-                <div className="text-slate-400">DedupKey: rule_81:off_33:drop_33:obs_910</div>
-                <div className="text-teal-400">[EMAIL_DISPATCH] Template: dark-quartz-alert.html</div>
-                <div className="text-emerald-400">[SMTP_STATUS] Delivered to user session email</div>
-                <div className="text-slate-400">[DUPLICATE_CHECK] Repeated job ignored (Idempotent)</div>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          BOTTOM CTA & REPUTATION BANNER
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-16 text-center">
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-emerald-500/25 relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">
-            Ready to Put Deal-Hunting on Autopilot?
+      {/* CORE CAPABILITIES BENTO GRID (Inspired by vibrant.design) */}
+      <section id="quick-commerce" className="relative z-10 py-20 px-4 sm:px-6 max-w-7xl mx-auto">
+        
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-bold uppercase tracking-wider mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Autonomous Engineering Architecture</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+            Engineered For Precision Deal Automation.
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto mb-8">
-            Deploy your personal agent in under 30 seconds. Stream live domestic retailer offers, set price alerts, and test autonomous checkout.
+          <p className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto mt-3">
+            Every layer from normalization to checkout runs on verified deterministic rules, transactional reliability, and intelligent background workers.
+          </p>
+        </div>
+
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Bento Card 1: Quick Commerce */}
+          <div className="md:col-span-2 bg-slate-900/40 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-8 shadow-xl relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/20 transition-all" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6">
+              <Zap className="w-6 h-6" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">
+              10-Minute Quick Commerce Arbitrage
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-xl">
+              Why wait 3 days for standard shipping when local dark stores have lower prices right now? DealPilot cross-analyzes instant delivery catalogs on <strong className="text-slate-200">Blinkit, Zepto & Swiggy Instamart</strong> against traditional e-commerce giants.
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs font-mono font-bold">
+              <span className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400">⚡ Blinkit (10m)</span>
+              <span className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-teal-300">⚡ Zepto (11m)</span>
+              <span className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-300">⚡ Instamart (15m)</span>
+              <span className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300">Amazon India</span>
+              <span className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300">Flipkart</span>
+            </div>
+          </div>
+
+          {/* Bento Card 2: Deterministic Guardrails */}
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-8 shadow-xl relative overflow-hidden group hover:border-teal-500/30 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-6">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              Anti-Fraud Spec Guard
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-4">
+              Our deterministic token extractor catches misleading listings, excludes cheap phone cases and replacement cables masquerading as flagships, and rejects refurbished or open-box goods.
+            </p>
+            <div className="space-y-2 text-xs text-slate-300 font-medium">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Zero accessory confusion</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Condition & brand verification</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bento Card 3: PayPal v6 Web SDK */}
+          <div id="paypal-v6" className="bg-slate-900/40 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-8 shadow-xl relative overflow-hidden group hover:border-blue-500/30 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
+              <CreditCard className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              PayPal v6 Web SDK
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-4">
+              Modern client-token authentication, dynamic eligible payment method discovery, Pay Later installments, and server-side capture verification with <code className="text-blue-300 font-mono text-xs">Idempotency-Key</code> guards.
+            </p>
+            <div className="text-xs text-blue-300 font-mono bg-blue-950/40 border border-blue-800/40 p-2.5 rounded-xl">
+              window.paypal.createInstance()
+            </div>
+          </div>
+
+          {/* Bento Card 4: Transactional Outbox Email */}
+          <div className="md:col-span-2 bg-slate-900/40 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-8 shadow-xl relative overflow-hidden group hover:border-cyan-500/30 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
+              <Mail className="w-6 h-6" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">
+              Atomic Transactional Outbox & Real Gmail Dispatch
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-4 max-w-xl">
+              Never miss a price drop again. All price shift events are written atomically with database observations, guaranteeing zero dropped notifications. Dispatched directly as styled HTML alerts to your authenticated Gmail account.
+            </p>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-mono">
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Deduplication key constraints prevent duplicate emails</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* FOOTER CTA SECTION */}
+      <section className="relative z-10 py-20 px-4 sm:px-6 max-w-5xl mx-auto text-center">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-white/[0.1] rounded-3xl p-10 md:p-14 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none" />
+          
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4 relative z-10">
+            Ready to Automate Your Deal Hunting?
+          </h2>
+          <p className="text-slate-400 text-base max-w-xl mx-auto mb-8 relative z-10">
+            Sign in with Google or GitHub, command the radar with your target price, and let DealPilot do the monitoring 24/7.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={onOpenAuthModal}
-              className="w-full sm:w-auto px-8 py-3.5 text-sm font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 transition-all rounded-xl shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              <span>Get Started Now</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onOpenAuthModal}
-              className="w-full sm:w-auto px-6 py-3.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-xl transition"
-            >
-              Explore Interactive Demo
-            </button>
+          <button
+            onClick={onOpenAuthModal}
+            className="px-8 py-4 rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 text-slate-950 font-black text-sm tracking-wide shadow-[0_0_35px_rgba(52,211,153,0.45)] hover:shadow-[0_0_55px_rgba(52,211,153,0.6)] transition-all duration-200 active:scale-95 inline-flex items-center gap-2 cursor-pointer relative z-10"
+          >
+            <span>Launch DealPilot Now</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Footer Brand & Legal */}
+        <div className="mt-12 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-400">DealPilot</span>
+            <span>• Next-Gen Autonomous Shopping Engine</span>
+          </div>
+          <div>
+            Built with Next.js 16 (Turbopack), React 19, BullMQ, Redis, PostgreSQL 16 & PayPal Web SDK v6
           </div>
         </div>
       </section>
 
-      {/* Minimal Footer */}
-      <footer className="border-t border-slate-800/80 py-10 text-center bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-300">DealPilot</span>
-            <span>—</span>
-            <span>Autonomous Commerce Engine</span>
-            <span>•</span>
-            <span className="text-emerald-500/80">Next.js 16 & React 19</span>
-          </div>
-          <div className="flex items-center gap-5">
-            <button onClick={onOpenAuthModal} className="hover:text-slate-300 transition">
-              Sign In
-            </button>
-            <button onClick={onOpenAuthModal} className="hover:text-emerald-400 font-semibold transition">
-              Deploy Agent →
-            </button>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

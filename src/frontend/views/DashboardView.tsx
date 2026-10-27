@@ -32,11 +32,11 @@ import { PayPalChatInterface } from '../components/PayPalChatInterface';
 import { AgentBuyDirectiveModal } from '../components/AgentBuyDirectiveModal';
 import { LandingView } from './LandingView';
 import { AuthModal } from '../components/AuthModal';
-import { useSession } from '@/frontend/utils/auth-client';
+import { useAuth } from '@/frontend/utils/auth-context';
 import { SUPPORTED_COUNTRIES, CountryConfig, DEFAULT_COUNTRY } from '@/backend/contracts/countries';
 
 export const DashboardView: React.FC = () => {
-  const { data: session, isPending: isSessionPending } = useSession();
+  const { session, isInitialLoading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<CountryConfig>(DEFAULT_COUNTRY);
   const [query, setQuery] = useState('');
@@ -254,8 +254,25 @@ export const DashboardView: React.FC = () => {
     }
   };
 
-  // Unauthenticated users are served the landing page
-  if (!isSessionPending && !session) {
+  // Initial loading state
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-center p-4">
+        <div className="relative flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-2xl text-slate-950 shadow-xl shadow-emerald-500/20 animate-pulse">
+            ✈
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-slate-300 font-semibold text-sm">
+          <RefreshCw className="w-4 h-4 text-emerald-400 animate-spin" />
+          <span>Synchronizing DealPilot Radar...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Unauthenticated users are served the vibrant landing page
+  if (!session) {
     return (
       <>
         <LandingView onOpenAuthModal={() => setIsAuthModalOpen(true)} />
@@ -286,14 +303,7 @@ export const DashboardView: React.FC = () => {
         onCountryChange={handleCountrySelect}
       />
 
-      {isSessionPending ? (
-        <div className="max-w-7xl mx-auto px-4 py-24 flex flex-col items-center justify-center text-center">
-          <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mb-4" />
-          <h2 className="text-xl font-bold text-slate-200">Verifying Session...</h2>
-          <p className="text-slate-400 text-sm mt-1">Checking authentication state with Better Auth</p>
-        </div>
-      ) : (
-        <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
           {activeTab === 'search' && (
             <div>
               {/* Modernized Search & Filter Command Center */}
@@ -587,7 +597,6 @@ export const DashboardView: React.FC = () => {
             />
           )}
         </main>
-      )}
 
       {/* Tracking Modal */}
       {trackModalProduct && (

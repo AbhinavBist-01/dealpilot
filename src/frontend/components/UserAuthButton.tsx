@@ -2,10 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { LogIn, LogOut, User, CheckCircle, Shield, Sparkles } from 'lucide-react';
-import { signIn, signOut, useSession } from '@/frontend/utils/auth-client';
+import { signIn, signOut } from '@/frontend/utils/auth-client';
+import { useAuth } from '@/frontend/utils/auth-context';
 
 export const UserAuthButton: React.FC = () => {
-  const { data: session, isPending } = useSession();
+  const { session, isPending } = useAuth();
   const sessionData = session as any;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

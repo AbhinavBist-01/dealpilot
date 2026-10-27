@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, Bell, Zap, CreditCard, Search, Activity, Shield, Sparkles, Globe } from 'lucide-react';
 import { UserAuthButton } from './UserAuthButton';
-import { useSession } from '@/frontend/utils/auth-client';
+import { useAuth } from '@/frontend/utils/auth-context';
 import { SUPPORTED_COUNTRIES, CountryConfig } from '@/backend/contracts/countries';
 
 interface HeaderProps {
@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   selectedCountry = SUPPORTED_COUNTRIES[0],
   onCountryChange,
 }) => {
-  const { data: session } = useSession();
+  const { session } = useAuth();
   const sessionUser = (session as any)?.user;
   const initials = (sessionUser?.name || sessionUser?.email || 'DP')
     .split(' ')
