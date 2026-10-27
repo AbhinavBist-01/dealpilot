@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "DealPilot",
@@ -14,6 +15,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
+      <head>
+        {/* PayPal v6 Web SDK Core */}
+        <Script
+          src="https://www.sandbox.paypal.com/web-sdk/v6/core"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
         {children}
       </body>
