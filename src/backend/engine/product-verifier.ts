@@ -220,6 +220,39 @@ export function verifyProductMatch(input: ProductVerificationInput): ProductVeri
     }
   }
 
+  // Model generation conflict guard (e.g. user queried "iPhone 16" or "iPhone 17", but candidate is "iPhone 15")
+  if (queryModels.length > 0 && !modelMatched) {
+    const hasConflictingModel = titleModels.some((tm) => {
+      return queryModels.some((qm) => {
+        // Pure numeric generations (e.g. "15" vs "16", "17" vs "15", "14" vs "16")
+        if (/^\d{1,2}$/.test(qm) && /^\d{1,2}$/.test(tm) && qm !== tm) {
+          return true;
+        }
+        // Alphanumeric generations like s23 vs s24, xm4 vs xm5, m2 vs m3
+        const qmPrefix = qm.replace(/\d+$/, '');
+        const tmPrefix = tm.replace(/\d+$/, '');
+        const qmNum = qm.match(/\d+$/)?.[0];
+        const tmNum = tm.match(/\d+$/)?.[0];
+        if (qmPrefix && tmPrefix && qmPrefix === tmPrefix && qmNum && tmNum && qmNum !== tmNum) {
+          return true;
+        }
+        return false;
+      });
+    });
+
+    if (hasConflictingModel) {
+      reasons.push(`Model conflict: query requested model (${queryModels.join(', ')}), but candidate product is different generation (${titleModels.join(', ')})`);
+      return {
+        isMatch: false,
+        relevanceScore: 0.1,
+        matchQuality: 'irrelevant',
+        isAccessoryMismatch: false,
+        matchedTokens: [],
+        reasons,
+      };
+    }
+  }
+
   // Token overlap ratio
   const overlapRatio = queryTokens.length > 0 ? matchedTokens.length / queryTokens.length : 0;
 

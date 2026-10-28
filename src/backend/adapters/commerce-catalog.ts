@@ -423,6 +423,206 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
       ],
     },
     {
+      id: "in_apple_iphone_16",
+      canonicalId: "apple-iphone-16",
+      title: "Apple iPhone 16 (128 GB) - Ultramarine / Black",
+      brand: "Apple",
+      model: "iPhone 16",
+      category: "Smartphones",
+      mrp: 79900,
+      imageUrl: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80",
+      merchants: [
+        {
+          name: "Amazon India",
+          domain: "amazon.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Tomorrow by 11 AM",
+          price: 77990,
+          rating: 4.9,
+          reviews: 24000,
+          url: "https://www.amazon.in/dp/B0DGJ9M8V2",
+          inStock: true,
+        },
+        {
+          name: "Blinkit",
+          domain: "blinkit.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 10 mins Delivery",
+          price: 78990,
+          rating: 4.9,
+          reviews: 6200,
+          url: "https://blinkit.com/prn/apple-iphone-16-128gb",
+          inStock: true,
+        },
+        {
+          name: "Zepto",
+          domain: "zeptonow.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 11 mins Delivery",
+          price: 78990,
+          rating: 4.8,
+          reviews: 5100,
+          url: "https://zeptonow.com/pn/apple-iphone-16-128gb",
+          inStock: true,
+        },
+        {
+          name: "Flipkart",
+          domain: "flipkart.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 2 Days Delivery",
+          price: 78490,
+          rating: 4.7,
+          reviews: 19800,
+          url: "https://www.flipkart.com/apple-iphone-16-black-128-gb",
+          inStock: true,
+        },
+        {
+          name: "Croma Retail",
+          domain: "croma.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 Same Day In-Store",
+          price: 79490,
+          rating: 4.8,
+          reviews: 4200,
+          url: "https://www.croma.com/apple-iphone-16-128gb",
+          inStock: true,
+        },
+        {
+          name: "Reliance Digital",
+          domain: "reliancedigital.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Tomorrow",
+          price: 78990,
+          rating: 4.7,
+          reviews: 3800,
+          url: "https://www.reliancedigital.in/apple-iphone-16-128gb",
+          inStock: true,
+        },
+        {
+          name: "Tata CLiQ",
+          domain: "tatacliq.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 2 Days",
+          price: 79190,
+          rating: 4.6,
+          reviews: 2100,
+          url: "https://www.tatacliq.com/apple-iphone-16",
+          inStock: true,
+        },
+        {
+          name: "Vijay Sales",
+          domain: "vijaysales.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 Tomorrow",
+          price: 79490,
+          rating: 4.7,
+          reviews: 2900,
+          url: "https://www.vijaysales.com/apple-iphone-16",
+          inStock: true,
+        },
+        {
+          name: "Swiggy Instamart",
+          domain: "swiggy.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 15 mins Delivery",
+          price: 79900,
+          rating: 4.7,
+          reviews: 3100,
+          url: "https://www.swiggy.com/instamart/apple-iphone-16",
+          inStock: true,
+        },
+        {
+          name: "BigBasket Now",
+          domain: "bigbasket.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 15 mins Delivery",
+          price: 79900,
+          rating: 4.8,
+          reviews: 1800,
+          url: "https://www.bigbasket.com/pd/apple-iphone-16",
+          inStock: true,
+        },
+      ],
+    },
+    {
+      id: "in_apple_iphone_17",
+      canonicalId: "apple-iphone-17",
+      title: "Apple iPhone 17 (256 GB) - Next-Gen Edition (Pre-Order)",
+      brand: "Apple",
+      model: "iPhone 17",
+      category: "Smartphones",
+      mrp: 89900,
+      imageUrl: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80",
+      merchants: [
+        {
+          name: "Amazon India",
+          domain: "amazon.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Pre-Order Delivery",
+          price: 84900,
+          rating: 4.9,
+          reviews: 8200,
+          url: "https://www.amazon.in/dp/B0IPHONE17",
+          inStock: true,
+        },
+        {
+          name: "Blinkit",
+          domain: "blinkit.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ Priority Launch Delivery",
+          price: 85990,
+          rating: 4.9,
+          reviews: 2100,
+          url: "https://blinkit.com/prn/apple-iphone-17",
+          inStock: true,
+        },
+        {
+          name: "Flipkart",
+          domain: "flipkart.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 Launch Day Delivery",
+          price: 84900,
+          rating: 4.7,
+          reviews: 7400,
+          url: "https://www.flipkart.com/apple-iphone-17",
+          inStock: true,
+        },
+        {
+          name: "Croma Retail",
+          domain: "croma.com",
+          type: "ecommerce",
+          deliverySpeed: "📦 Day 1 Store Pickup",
+          price: 86900,
+          rating: 4.8,
+          reviews: 3200,
+          url: "https://www.croma.com/apple-iphone-17",
+          inStock: true,
+        },
+        {
+          name: "Reliance Digital",
+          domain: "reliancedigital.in",
+          type: "ecommerce",
+          deliverySpeed: "📦 Day 1 Delivery",
+          price: 86490,
+          rating: 4.7,
+          reviews: 2100,
+          url: "https://www.reliancedigital.in/apple-iphone-17",
+          inStock: true,
+        },
+        {
+          name: "Zepto",
+          domain: "zeptonow.com",
+          type: "quick_commerce",
+          deliverySpeed: "⚡ 10 mins on Launch",
+          price: 87900,
+          rating: 4.8,
+          reviews: 1900,
+          url: "https://zeptonow.com/pn/apple-iphone-17",
+          inStock: true,
+        },
+      ],
+    },
+    {
       id: "in_apple_iphone_15",
       canonicalId: "apple-iphone-15",
       title: "Apple iPhone 15 (128 GB) - Black",
@@ -686,14 +886,18 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
     const offers: NormalizedOffer[] = [];
 
     // 1. Search benchmarked products
-    const queryTokens = query.split(/\s+/).filter((t) => t.length > 2 && !/^\d+$/.test(t));
+    const queryTokens = query.split(/\s+/).filter((t) => t.length > 1);
     for (const benchmark of this.benchmarks) {
+      const bTitle = benchmark.title.toLowerCase();
+      const bBrand = benchmark.brand.toLowerCase();
+      const bModel = benchmark.model.toLowerCase();
+
       const matchesQuery =
         !query ||
-        benchmark.title.toLowerCase().includes(query) ||
-        benchmark.brand.toLowerCase().includes(query) ||
-        benchmark.model.toLowerCase().includes(query) ||
-        (queryTokens.length > 0 && queryTokens.some((token) => benchmark.title.toLowerCase().includes(token)));
+        bTitle.includes(query) ||
+        bBrand.includes(query) ||
+        bModel.includes(query) ||
+        (queryTokens.length > 0 && queryTokens.every((token) => bTitle.includes(token) || bBrand.includes(token) || bModel.includes(token)));
 
       if (!matchesQuery) continue;
 
@@ -788,31 +992,66 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
     let estimatedPrice = 24999;
     let inferredCategory = "Electronics & Gadgets";
     let inferredBrand = query.split(" ")[0] || "Verified Brand";
+    let imageUrl = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80"; // Default sleek tech
 
-    if (qLower.includes("macbook") || qLower.includes("laptop") || qLower.includes("thinkpad") || qLower.includes("xps")) {
+    if (qLower.includes("iphone 16 pro max")) {
+      estimatedPrice = 144900;
+      inferredBrand = "Apple";
+      inferredCategory = "Smartphones";
+      imageUrl = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80";
+    } else if (qLower.includes("iphone 16 pro")) {
+      estimatedPrice = 119900;
+      inferredBrand = "Apple";
+      inferredCategory = "Smartphones";
+      imageUrl = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80";
+    } else if (qLower.includes("iphone 16")) {
+      estimatedPrice = 77990;
+      inferredBrand = "Apple";
+      inferredCategory = "Smartphones";
+      imageUrl = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80";
+    } else if (qLower.includes("iphone 17")) {
+      estimatedPrice = 84900;
+      inferredBrand = "Apple";
+      inferredCategory = "Smartphones";
+      imageUrl = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80";
+    } else if (qLower.includes("iphone 15")) {
+      estimatedPrice = 68990;
+      inferredBrand = "Apple";
+      inferredCategory = "Smartphones";
+      imageUrl = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80";
+    } else if (qLower.includes("macbook") || qLower.includes("laptop") || qLower.includes("thinkpad") || qLower.includes("xps")) {
       estimatedPrice = 89990;
       inferredCategory = "Computers & Laptops";
-    } else if (qLower.includes("iphone") || qLower.includes("galaxy ultra") || qLower.includes("pro max")) {
-      estimatedPrice = 69999;
+      imageUrl = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80";
+    } else if (qLower.includes("galaxy ultra") || qLower.includes("s24 ultra")) {
+      estimatedPrice = 121999;
+      inferredBrand = "Samsung";
       inferredCategory = "Smartphones";
+      imageUrl = "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80";
     } else if (qLower.includes("phone") || qLower.includes("oneplus") || qLower.includes("redmi") || qLower.includes("realme") || qLower.includes("pixel")) {
       estimatedPrice = 29999;
       inferredCategory = "Smartphones";
+      imageUrl = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80";
     } else if (qLower.includes("headphone") || qLower.includes("earphone") || qLower.includes("earbud") || qLower.includes("airdopes") || qLower.includes("tws") || qLower.includes("airpods")) {
       estimatedPrice = qLower.includes("sony") || qLower.includes("bose") || qLower.includes("apple") ? 24990 : 1899;
       inferredCategory = "Audio";
+      imageUrl = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80";
     } else if (qLower.includes("ps5") || qLower.includes("playstation") || qLower.includes("xbox") || qLower.includes("nintendo")) {
       estimatedPrice = 49990;
       inferredCategory = "Gaming Consoles";
+      imageUrl = "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800&q=80";
     } else if (qLower.includes("watch") || qLower.includes("band")) {
       estimatedPrice = qLower.includes("apple") || qLower.includes("galaxy") ? 29990 : 2999;
       inferredCategory = "Wearables";
+      imageUrl = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80";
     } else if (qLower.includes("shoe") || qLower.includes("sneaker") || qLower.includes("nike") || qLower.includes("adidas")) {
       estimatedPrice = 4999;
       inferredCategory = "Fashion & Footwear";
+      imageUrl = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80";
     } else if (qLower.includes("milk") || qLower.includes("bread") || qLower.includes("soap") || qLower.includes("grocery")) {
       estimatedPrice = 299;
       inferredCategory = "Quick Commerce Grocery";
+      imageUrl = "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?w=800&q=80";
     }
 
     const basePrice = filter.maxPrice
@@ -837,7 +1076,7 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         domain: "blinkit.com",
         type: "quick_commerce",
         deliverySpeed: "⚡ 10 mins Delivery",
-        price: Math.round(basePrice * 1.03),
+        price: Math.round(basePrice * 1.02),
         rating: 4.9,
         reviews: 2100,
         url: `https://blinkit.com/s/?q=${encodeURIComponent(query)}`,
@@ -848,7 +1087,7 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         domain: "zeptonow.com",
         type: "quick_commerce",
         deliverySpeed: "⚡ 12 mins Delivery",
-        price: Math.round(basePrice * 1.04),
+        price: Math.round(basePrice * 1.03),
         rating: 4.8,
         reviews: 1900,
         url: `https://zeptonow.com/search?q=${encodeURIComponent(query)}`,
@@ -859,7 +1098,7 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         domain: "flipkart.com",
         type: "ecommerce",
         deliverySpeed: "📦 2 Days Delivery",
-        price: Math.round(basePrice * 1.02),
+        price: Math.round(basePrice * 1.01),
         rating: 4.6,
         reviews: 7400,
         url: `https://www.flipkart.com/search?q=${encodeURIComponent(query)}`,
@@ -870,7 +1109,7 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         domain: "croma.com",
         type: "ecommerce",
         deliverySpeed: "📦 Same Day Delivery",
-        price: Math.round(basePrice * 1.05),
+        price: Math.round(basePrice * 1.04),
         rating: 4.7,
         reviews: 1800,
         url: `https://www.croma.com/searchB?q=${encodeURIComponent(query)}`,
@@ -881,10 +1120,54 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
         domain: "swiggy.com",
         type: "quick_commerce",
         deliverySpeed: "⚡ 15 mins Delivery",
-        price: Math.round(basePrice * 1.06),
+        price: Math.round(basePrice * 1.05),
         rating: 4.7,
         reviews: 1400,
         url: `https://www.swiggy.com/instamart/search?query=${encodeURIComponent(query)}`,
+        inStock: true,
+      },
+      {
+        name: "Reliance Digital",
+        domain: "reliancedigital.in",
+        type: "ecommerce",
+        deliverySpeed: "📦 Tomorrow",
+        price: Math.round(basePrice * 1.03),
+        rating: 4.7,
+        reviews: 3200,
+        url: `https://www.reliancedigital.in/search?q=${encodeURIComponent(query)}`,
+        inStock: true,
+      },
+      {
+        name: "Tata CLiQ",
+        domain: "tatacliq.com",
+        type: "ecommerce",
+        deliverySpeed: "📦 2 Days",
+        price: Math.round(basePrice * 1.04),
+        rating: 4.6,
+        reviews: 1900,
+        url: `https://www.tatacliq.com/search/?searchCategory=all&text=${encodeURIComponent(query)}`,
+        inStock: true,
+      },
+      {
+        name: "Vijay Sales",
+        domain: "vijaysales.com",
+        type: "ecommerce",
+        deliverySpeed: "📦 Tomorrow",
+        price: Math.round(basePrice * 1.04),
+        rating: 4.7,
+        reviews: 2400,
+        url: `https://www.vijaysales.com/search/${encodeURIComponent(query)}`,
+        inStock: true,
+      },
+      {
+        name: "BigBasket Now",
+        domain: "bigbasket.com",
+        type: "quick_commerce",
+        deliverySpeed: "⚡ 15 mins Delivery",
+        price: Math.round(basePrice * 1.05),
+        rating: 4.8,
+        reviews: 1600,
+        url: `https://www.bigbasket.com/ps/?q=${encodeURIComponent(query)}`,
         inStock: true,
       },
     ];
@@ -898,8 +1181,7 @@ export class IndiaCommerceCatalogAdapter implements CatalogAdapter {
       brand: inferredBrand,
       model: titleCase,
       category: inferredCategory,
-      imageUrl:
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
+      imageUrl,
       variantAttributes: {
         condition: "new" as const,
         deliverySpeed: m.deliverySpeed,

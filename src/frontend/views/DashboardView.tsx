@@ -26,7 +26,9 @@ import {
   Zap,
   Command,
   Eye,
-  AlertCircle
+  AlertCircle,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { DashboardSidebar, DashboardMode } from '../components/DashboardSidebar';
 import { DealCard } from '../components/DealCard';
@@ -51,6 +53,7 @@ export const DashboardView: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState<CountryConfig>(DEFAULT_COUNTRY);
   const [dashboardMode, setDashboardMode] = useState<DashboardMode>('agent');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDirectiveModalOpen, setIsDirectiveModalOpen] = useState(false);
 
   const [query, setQuery] = useState('');
@@ -95,7 +98,6 @@ export const DashboardView: React.FC = () => {
   useEffect(() => {
     fetchTrackingRules();
     fetchOutboxAlerts();
-    handleSearch('Sony WH-1000XM5');
   }, []);
 
   const showBanner = (msg: string) => {
@@ -303,6 +305,8 @@ export const DashboardView: React.FC = () => {
         isMobileOpen={isMobileSidebarOpen}
         setIsMobileOpen={setIsMobileSidebarOpen}
         onOpenDirectiveModal={() => setIsDirectiveModalOpen(true)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
       {/* 2. Main Content Canvas */}
@@ -319,6 +323,16 @@ export const DashboardView: React.FC = () => {
               aria-label="Open sidebar"
             >
               <Menu className="w-4 h-4" />
+            </button>
+
+            {/* Desktop Sidebar Collapse Toggle */}
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="hidden md:flex p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800 transition-colors cursor-pointer"
+              title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
             </button>
 
             <div className="flex items-center gap-2">

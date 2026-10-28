@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
   Search, 
@@ -18,7 +18,9 @@ import {
   ChevronRight,
   Sparkles,
   Command,
-  Radio
+  Radio,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { SUPPORTED_COUNTRIES, CountryConfig } from '@/backend/contracts/countries';
 import { useAuth } from '@/frontend/utils/auth-context';
@@ -36,6 +38,8 @@ interface DashboardSidebarProps {
   isMobileOpen: boolean;
   setIsMobileOpen: (open: boolean) => void;
   onOpenDirectiveModal: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
@@ -49,7 +53,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   isMobileOpen,
   setIsMobileOpen,
   onOpenDirectiveModal,
+  isCollapsed: externalIsCollapsed,
+  onToggleCollapse: externalToggleCollapse,
 }) => {
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const isCollapsed = externalIsCollapsed !== undefined ? externalIsCollapsed : internalCollapsed;
+  const toggleCollapse = externalToggleCollapse || (() => setInternalCollapsed(!internalCollapsed));
+
   const { session, signOut } = useAuth();
   const sessionUser = (session as any)?.user;
   const userInitials = (sessionUser?.name || sessionUser?.email || 'DP')
@@ -104,109 +114,182 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   ];
 
   const sidebarContent = (
-    <div className="h-full flex flex-col justify-between p-4 bg-[#09090b] text-zinc-100 font-sans border-r border-zinc-850">
+    <div className={`h-full flex flex-col justify-between ${isCollapsed ? 'p-2' : 'p-4'} bg-[#09090b] text-zinc-100 font-sans border-r border-zinc-850 transition-all duration-300`}>
       
       {/* Top Header & Brand */}
-      <div className="space-y-5">
-        <div className="flex items-center justify-between px-2 pt-1">
+      <div className="space-y-4">
+        <div className={`flex items-center ${isCollapsed ? 'flex-col gap-3 pt-2' : 'justify-between px-2 pt-1'}`}>
           <div className="flex items-center gap-2.5">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-md bg-zinc-900 border border-zinc-800 font-bold text-xs text-white">
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 font-bold text-xs text-white">
               DP
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
-            <div>
-              <div className="font-bold text-sm tracking-tight text-white leading-tight">
-                DealPilot
+            {!isCollapsed && (
+              <div>
+                <div className="font-bold text-sm tracking-tight text-white leading-tight">
+                  DealPilot
+                </div>
+                <div className="text-[10px] font-mono text-zinc-500">
+                  v2.0 RADAR
+                </div>
               </div>
-              <div className="text-[10px] font-mono text-zinc-500">
-                v2.0 RADAR
-              </div>
-            </div>
+            )}
           </div>
 
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
-            PRO
-          </span>
+          <div className="flex items-center gap-1.5">
+            {!isCollapsed && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+                PRO
+              </span>
+            )}
+            <button
+              onClick={toggleCollapse}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors cursor-pointer hidden md:flex items-center justify-center"
+              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         {/* 2 Modes Segmented Switcher (Agent vs Manual) */}
-        <div className="space-y-1.5 px-1">
-          <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 px-1">
-            <span className="uppercase tracking-wider">Operational Mode</span>
-            <span className={`text-[10px] font-bold ${mode === 'agent' ? 'text-emerald-400' : 'text-zinc-400'}`}>
-              {mode === 'agent' ? 'AUTONOMOUS' : 'MANUAL'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 p-1 rounded-lg bg-black border border-zinc-800">
+        {isCollapsed ? (
+          <div className="flex flex-col items-center gap-1 py-1">
             <button
               type="button"
-              onClick={() => setMode('agent')}
-              className={`py-2 px-2.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              onClick={() => setMode(mode === 'agent' ? 'manual' : 'agent')}
+              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all cursor-pointer border ${
                 mode === 'agent'
-                  ? 'bg-zinc-850 text-white shadow-sm border border-zinc-750'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-zinc-850 text-white border-zinc-700 shadow-sm'
+                  : 'bg-zinc-900 text-zinc-400 border-zinc-850 hover:text-zinc-200'
               }`}
+              title={`Mode: ${mode === 'agent' ? 'Agent (Autonomous)' : 'Manual'} - Click to switch`}
             >
-              <Bot className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Agent</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setMode('manual')}
-              className={`py-2 px-2.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                mode === 'manual'
-                  ? 'bg-zinc-850 text-white shadow-sm border border-zinc-750'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5 text-zinc-300" />
-              <span>Manual</span>
+              {mode === 'agent' ? (
+                <Bot className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <Sliders className="w-4 h-4 text-zinc-300" />
+              )}
             </button>
           </div>
+        ) : (
+          <div className="space-y-1.5 px-1">
+            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 px-1">
+              <span className="uppercase tracking-wider">Operational Mode</span>
+              <span className={`text-[10px] font-bold ${mode === 'agent' ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                {mode === 'agent' ? 'AUTONOMOUS' : 'MANUAL'}
+              </span>
+            </div>
 
-          {/* Mode Micro Telemetry Hint */}
-          <div className="px-1 text-[10px] font-mono text-zinc-500 flex items-center gap-1">
-            {mode === 'agent' ? (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className="truncate">AI scoring & auto buy directives armed</span>
-              </>
-            ) : (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 shrink-0" />
-                <span className="truncate">Direct manual search & AG Grid table</span>
-              </>
-            )}
+            <div className="grid grid-cols-2 p-1 rounded-lg bg-black border border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setMode('agent')}
+                className={`py-2 px-2.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  mode === 'agent'
+                    ? 'bg-zinc-850 text-white shadow-sm border border-zinc-750'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <Bot className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Agent</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMode('manual')}
+                className={`py-2 px-2.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  mode === 'manual'
+                    ? 'bg-zinc-850 text-white shadow-sm border border-zinc-750'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5 text-zinc-300" />
+                <span>Manual</span>
+              </button>
+            </div>
+
+            {/* Mode Micro Telemetry Hint */}
+            <div className="px-1 text-[10px] font-mono text-zinc-500 flex items-center gap-1">
+              {mode === 'agent' ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <span className="truncate">AI scoring & auto buy directives armed</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 shrink-0" />
+                  <span className="truncate">Direct manual search & AG Grid table</span>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Agent Quick Directive Action (Visible in Agent Mode) */}
+        {/* Agent Quick Directive Action */}
         {mode === 'agent' && (
-          <div className="px-1">
-            <button
-              onClick={onOpenDirectiveModal}
-              className="w-full py-2.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer shadow-sm group"
-            >
-              <div className="flex items-center gap-2">
-                <Command className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Command Directive</span>
-              </div>
-              <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
+          isCollapsed ? (
+            <div className="flex justify-center">
+              <button
+                onClick={onOpenDirectiveModal}
+                className="w-10 h-10 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-emerald-500/30 text-emerald-300 flex items-center justify-center transition-all cursor-pointer"
+                title="Command Buy Directive"
+              >
+                <Command className="w-4 h-4 text-emerald-400" />
+              </button>
+            </div>
+          ) : (
+            <div className="px-1">
+              <button
+                onClick={onOpenDirectiveModal}
+                className="w-full py-2.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer shadow-sm group"
+              >
+                <div className="flex items-center gap-2">
+                  <Command className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Command Directive</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          )
         )}
 
         {/* Navigation Section */}
         <div className="space-y-1">
-          <div className="text-[10px] font-mono uppercase text-zinc-500 px-3 tracking-wider mb-2">
-            Navigation
-          </div>
+          {!isCollapsed && (
+            <div className="text-[10px] font-mono uppercase text-zinc-500 px-3 tracking-wider mb-2">
+              Navigation
+            </div>
+          )}
 
           <nav className="space-y-1">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
+              if (isCollapsed) {
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (item.onClick) item.onClick();
+                      else setActiveTab(item.id);
+                      setIsMobileOpen(false);
+                    }}
+                    className={`relative w-10 h-10 mx-auto rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                    }`}
+                    title={item.label}
+                  >
+                    {item.icon}
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500" />
+                    )}
+                  </button>
+                );
+              }
+
               return (
                 <button
                   key={item.id}
@@ -247,55 +330,76 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       </div>
 
       {/* Bottom User Account & Telemetry Footer */}
-      <div className="pt-4 border-t border-zinc-850/80 space-y-3">
+      <div className={`pt-4 border-t border-zinc-850/80 ${isCollapsed ? 'space-y-2' : 'space-y-3'}`}>
         
         {/* System Health Status */}
-        <div className="p-2.5 rounded-lg bg-black border border-zinc-850/80 text-[10px] font-mono text-zinc-400 space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-zinc-500">ENGINE STATUS</span>
-            <span className="text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              ONLINE
-            </span>
+        {!isCollapsed && (
+          <div className="p-2.5 rounded-lg bg-black border border-zinc-850/80 text-[10px] font-mono text-zinc-400 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-zinc-500">ENGINE STATUS</span>
+              <span className="text-emerald-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                ONLINE
+              </span>
+            </div>
+            <div className="text-zinc-500 truncate">
+              Redis 7 • PG 16 • 10 Stores
+            </div>
           </div>
-          <div className="text-zinc-500 truncate">
-            Redis 7 • PG 16 • PayPal v6 SDK
-          </div>
-        </div>
+        )}
 
         {/* User Card & Sign Out */}
         {sessionUser ? (
-          <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/60 border border-zinc-850">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-7 h-7 rounded bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-xs text-white shrink-0">
+          isCollapsed ? (
+            <div className="flex flex-col items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-xs text-white"
+                title={sessionUser.name || sessionUser.email}
+              >
                 {userInitials}
               </div>
-              <div className="overflow-hidden">
-                <div className="text-xs font-semibold text-zinc-200 truncate">
-                  {sessionUser.name || 'Agent Operator'}
+              <button
+                onClick={() => signOut()}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
+                title="Sign Out"
+                aria-label="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/60 border border-zinc-850">
+              <div className="flex items-center gap-2.5 overflow-hidden">
+                <div className="w-7 h-7 rounded bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                  {userInitials}
                 </div>
-                <div className="text-[10px] font-mono text-zinc-500 truncate">
-                  {sessionUser.email || 'Authenticated'}
+                <div className="overflow-hidden">
+                  <div className="text-xs font-semibold text-zinc-200 truncate">
+                    {sessionUser.name || 'Agent Operator'}
+                  </div>
+                  <div className="text-[10px] font-mono text-zinc-500 truncate">
+                    {sessionUser.email || 'Authenticated'}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <button
-              onClick={() => signOut()}
-              className="p-1.5 rounded text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
-              title="Sign Out"
-              aria-label="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </div>
+              <button
+                onClick={() => signOut()}
+                className="p-1.5 rounded text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
+                title="Sign Out"
+                aria-label="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )
         ) : (
           <div className="text-center">
             <Link
               href="/auth"
-              className="w-full py-2 rounded-md bg-zinc-100 hover:bg-white text-black font-semibold text-xs transition-colors block"
+              className="w-full py-2 rounded-md bg-zinc-100 hover:bg-white text-black font-semibold text-xs transition-colors block text-center"
             >
-              Sign In to Account
+              {isCollapsed ? 'Sign In' : 'Sign In to Account'}
             </Link>
           </div>
         )}
@@ -307,8 +411,8 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
   return (
     <>
-      {/* Desktop Persistent Sidebar */}
-      <aside className="hidden md:block w-64 lg:w-72 shrink-0 h-screen sticky top-0 z-30">
+      {/* Desktop Persistent Sidebar with smooth collapse transition */}
+      <aside className={`hidden md:block shrink-0 h-screen sticky top-0 z-30 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-64 lg:w-72'}`}>
         {sidebarContent}
       </aside>
 
