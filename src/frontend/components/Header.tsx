@@ -1,8 +1,7 @@
 import React from 'react';
-import { Clock, Bell, Zap, CreditCard, Search, Activity, Shield, Sparkles, Globe, Plane } from 'lucide-react';
+import { Clock, Bell, Zap, CreditCard, Search, Activity, Shield, Sparkles, Plane } from 'lucide-react';
 import { UserAuthButton } from './UserAuthButton';
 import { useAuth } from '@/frontend/utils/auth-context';
-import { SUPPORTED_COUNTRIES, CountryConfig } from '@/backend/contracts/countries';
 
 interface HeaderProps {
   activeTab: 'search' | 'watches' | 'alerts' | 'simulation' | 'paypal';
@@ -10,8 +9,6 @@ interface HeaderProps {
   activeWatchesCount: number;
   alertsCount: number;
   onRefreshWatches: () => void;
-  selectedCountry?: CountryConfig;
-  onCountryChange?: (country: CountryConfig) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,8 +17,6 @@ export const Header: React.FC<HeaderProps> = ({
   activeWatchesCount,
   alertsCount,
   onRefreshWatches,
-  selectedCountry = SUPPORTED_COUNTRIES[0],
-  onCountryChange,
 }) => {
   const { session } = useAuth();
   const sessionUser = (session as any)?.user;
@@ -188,27 +183,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-[11px] font-medium text-zinc-300">Pilot Guest</span>
                 <span className="text-[9px] text-zinc-500 font-mono">Sandbox</span>
               </div>
-            </div>
-          )}
-
-          {/* Country & Currency Selector Dropdown */}
-          {onCountryChange && (
-            <div className="relative flex items-center">
-              <select
-                value={selectedCountry.code}
-                onChange={(e) => {
-                  const found = SUPPORTED_COUNTRIES.find((c) => c.code === e.target.value);
-                  if (found) onCountryChange(found);
-                }}
-                className="appearance-none bg-zinc-900 hover:bg-zinc-850 text-xs font-medium text-zinc-200 border border-zinc-800 hover:border-zinc-700 rounded-lg pl-2.5 pr-7 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-zinc-600 transition"
-              >
-                {SUPPORTED_COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code} className="bg-black text-zinc-200">
-                    {c.flag} {c.code} ({c.currency})
-                  </option>
-                ))}
-              </select>
-              <Globe className="w-3.5 h-3.5 absolute right-2 text-zinc-500 pointer-events-none" />
             </div>
           )}
 

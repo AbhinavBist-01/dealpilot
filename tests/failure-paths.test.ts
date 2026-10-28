@@ -480,4 +480,167 @@ describe('DealPilot Architectural Guardrails & Failure Paths', () => {
     expect(agentResult.toolCalled).toBe('create_order');
     expect(agentResult.toolResult).toBeDefined();
   });
+
+  // Test 14: Sudden Stock Outage Pre-flight Checkout Abort Guard
+  it('14. If an item goes out of stock immediately prior to checkout, pre-flight safety aborts order creation', async () => {
+    const testUser = await prisma.user.upsert({
+      where: { email: 'test_stock_guard_user@dealpilot.ai' },
+      create: { email: 'test_stock_guard_user@dealpilot.ai', name: 'Stock Guard User' },
+      update: {},
+    });
+
+    const product = await prisma.product.upsert({
+      where: { canonicalId: 'test-product-stock-outage' },
+      create: {
+        canonicalId: 'test-product-stock-outage',
+        title: 'Sony WH-1000XM5 Outage Test',
+        brand: 'Sony',
+        model: 'WH-1000XM5',
+        category: 'Headphones',
+      },
+      update: {},
+    });
+
+    const oosOffer = await prisma.offer.create({
+      data: {
+        productId: product.id,
+        sourceId: 'mock_retailer',
+        externalProductId: 'test-stock-outage-sku',
+        offerUrl: 'https://mock.com/p/outage',
+        sellerName: 'Reliable Electronics',
+        isAuthorizedSeller: true,
+        sellerRating: 4.8,
+        itemPrice: 18000,
+        totalPrice: 18000,
+        availabilityStatus: 'out_of_stock',
+        freshnessStatus: 'fresh',
+      },
+    });
+
+    const paypal = new PayPalService();
+    const result = await paypal.createCheckoutOrder({
+      userId: testUser.id,
+      offerId: oosOffer.id,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain('Item is no longer available in stock');
+  });
+
+  // Test 15: Zero / Negative Price Exploit Guard
+  it('15. An offer with zero or negative manipulated price is deterministically blocked from order creation', async () => {
+    const testUser = await prisma.user.upsert({
+      where: { email: 'test_price_exploit_user@dealpilot.ai' },
+      create: { email: 'test_price_exploit_user@dealpilot.ai', name: 'Exploit Guard User' },
+      update: {},
+    });
+
+    const product = await prisma.product.upsert({
+      where: { canonicalId: 'test-product-zero-price' },
+      create: {
+        canonicalId: 'test-product-zero-price',
+        title: 'Zero Price Test Item',
+        brand: 'Sony',
+        category: 'Headphones',
+      },
+      update: {},
+    });
+
+    const zeroOffer = await prisma.offer.create({
+      data: {
+        productId: product.id,
+        sourceId: 'mock_retailer',
+        externalProductId: 'test-zero-price-sku',
+        offerUrl: 'https://mock.com/p/zero',
+        sellerName: 'Suspicious Store',
+        isAuthorizedSeller: false,
+        itemPrice: 0,
+        totalPrice: 0,
+        availabilityStatus: 'in_stock',
+        freshnessStatus: 'fresh',
+      },
+    });
+
+    const paypal = new PayPalService();
+    const result = await paypal.createCheckoutOrder({
+      userId: testUser.id,
+      offerId: zeroOffer.id,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain('Invalid or zero price offer rejected by safety guardrail');
+  });
+
+  // Test 16: PayPal Order ID Tampering / Mismatched Capture Guard
+  it('16. Capturing an order with a mismatched or spoofed PayPal Order ID is rejected and throws', async () => {
+    const testUser = await prisma.user.upsert({
+      where: { email: 'test_tamper_user@dealpilot.ai' },
+      create: { email: 'test_tamper_user@dealpilot.ai', name: 'Tamper Test User' },
+      update: {},
+    });
+
+    const product = await prisma.product.upsert({
+      where: { canonicalId: 'test-product-tamper' },
+      create: {
+        canonicalId: 'test-product-tamper',
+        title: 'Tamper Guard Product',
+        brand: 'TestBrand',
+        category: 'Test',
+      },
+      update: {},
+    });
+
+    const offer = await prisma.offer.create({
+      data: {
+        productId: product.id,
+        sourceId: 'mock_retailer',
+        externalProductId: 'test-tamper-sku',
+        offerUrl: 'https://mock.com/p/tamper',
+        sellerName: 'Verified Store',
+        isAuthorizedSeller: true,
+        itemPrice: 15000,
+        totalPrice: 15000,
+        availabilityStatus: 'in_stock',
+        freshnessStatus: 'fresh',
+      },
+    });
+
+    const paypal = new PayPalService();
+    const orderResult = await paypal.createCheckoutOrder({
+      userId: testUser.id,
+      offerId: offer.id,
+    });
+
+    expect(orderResult.valid).toBe(true);
+    const orderId = orderResult.order.id;
+
+    // Attempt to capture with a fake spoofed PayPal Order ID
+    await expect(
+      paypal.captureOrder({
+        orderId,
+        paypalOrderId: 'FAKE-SPOOFED-PAYPAL-ID-9999',
+      })
+    ).rejects.toThrow('PayPal Order ID mismatch');
+  });
+
+  // Test 17: Seller Trust & High-Risk Rejection Guard
+  it('17. Untrusted seller with low rating (<3.0) and poor stock receives pass grade and refuses autonomous buy', () => {
+    const untrustedOffer: NormalizedOffer = {
+      ...sampleOffer,
+      seller: { id: 's_untrusted', name: 'Shady Third Party', isAuthorized: false, rating: 2.1 },
+      availabilityStatus: 'out_of_stock',
+      freshnessStatus: 'stale',
+      price: { itemPrice: 14000, shippingPrice: 500, fees: 0, currency: 'INR', totalPrice: 14500 },
+    };
+
+    const scoreResult = calculateDealScore({
+      offer: untrustedOffer,
+      targetPrice: 18000,
+      historicalPrices: [20000, 19500, 19000],
+    });
+
+    expect(scoreResult.score).toBeLessThan(50);
+    expect(scoreResult.recommendation).toBe('pass');
+    expect(scoreResult.breakdown.sellerTrust).toBeLessThan(60);
+  });
 });

@@ -93,7 +93,11 @@ export const DealCard: React.FC<DealCardProps> = ({
   const sparklinePath = `M 5 26 C 25 22, 45 26, 65 24 C 85 22, 105 14, 130 ${isAtHistoricalLow ? 8 : 14}`;
 
   return (
-    <div className="group relative bg-[#09090b] hover:bg-[#0c0c0f] border border-zinc-850 hover:border-zinc-750 rounded-xl overflow-hidden transition-all duration-200 flex flex-col justify-between shadow-lg">
+    <div
+      onClick={() => onViewHistory && onViewHistory(product)}
+      className="group relative bg-[#09090b] hover:bg-[#0c0c0f] border border-zinc-850 hover:border-zinc-700 rounded-xl overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-emerald-500/10 flex flex-col justify-between cursor-pointer"
+      title="Click to view live multi-merchant comparison & price history"
+    >
       <div>
         {/* Thumbnail & Badges */}
         {product.imageUrl && (
@@ -196,9 +200,8 @@ export const DealCard: React.FC<DealCardProps> = ({
 
               {/* Minimal SVG Sparkline */}
               <div
-                onClick={() => onViewHistory && onViewHistory(product)}
-                className="cursor-pointer flex flex-col items-end group/spark"
-                title="Click to view multi-merchant price chart"
+                className="flex flex-col items-end group/spark"
+                title="30-day price trajectory"
               >
                 <div className="w-24 h-8 rounded bg-[#09090b] border border-zinc-850 p-0.5 hover:border-zinc-700 transition-colors">
                   <svg viewBox="0 0 135 36" className="w-full h-full overflow-visible">
@@ -292,34 +295,30 @@ export const DealCard: React.FC<DealCardProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="p-4 sm:p-5 pt-0 space-y-2">
+      <div className="p-4 sm:p-5 pt-0">
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => onTrack(product, offer)}
-            className="w-full bg-zinc-900 hover:bg-zinc-850 active:scale-95 text-zinc-300 hover:text-white text-xs font-semibold py-2.5 rounded-lg border border-zinc-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTrack(product, offer);
+            }}
+            className="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-300 hover:text-white text-xs font-semibold py-2.5 rounded-lg border border-zinc-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Bell className="w-3.5 h-3.5 text-zinc-400" />
             <span>Track</span>
           </button>
 
           <button
-            onClick={() => onBuy(product, offer)}
-            className="w-full bg-zinc-100 hover:bg-white active:scale-95 text-black text-xs font-semibold py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBuy(product, offer);
+            }}
+            className="w-full bg-white hover:bg-zinc-200 active:scale-95 text-black text-xs font-semibold py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
           >
             <CreditCard className="w-3.5 h-3.5" />
             <span>Buy Now</span>
           </button>
         </div>
-
-        {onViewHistory && (
-          <button
-            onClick={() => onViewHistory(product)}
-            className="w-full bg-black hover:bg-zinc-900 active:scale-[0.99] text-zinc-500 hover:text-zinc-300 text-[11px] font-mono py-1.5 rounded-lg border border-zinc-850 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-          >
-            <TrendingDown className="w-3 h-3 text-zinc-400" />
-            <span>Inspect Multi-Merchant Comparison</span>
-          </button>
-        )}
       </div>
     </div>
   );

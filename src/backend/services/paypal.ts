@@ -143,6 +143,10 @@ export class PayPalService {
       return { valid: false, reason: 'Item is no longer available in stock' };
     }
 
+    if (offer.totalPrice <= 0 || (revalidation.currentTotalPrice !== undefined && revalidation.currentTotalPrice <= 0)) {
+      return { valid: false, reason: 'Invalid or zero price offer rejected by safety guardrail' };
+    }
+
     if (revalidation.currentTotalPrice !== offer.totalPrice) {
       // Price shifted! Force user re-review
       await prisma.offer.update({

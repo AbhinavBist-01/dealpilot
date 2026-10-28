@@ -33,8 +33,6 @@ interface DashboardSidebarProps {
   activeWatchesCount: number;
   alertsCount: number;
   onRefreshWatches: () => void;
-  selectedCountry: CountryConfig;
-  onCountryChange: (country: CountryConfig) => void;
   isMobileOpen: boolean;
   setIsMobileOpen: (open: boolean) => void;
   onOpenDirectiveModal: () => void;
@@ -48,8 +46,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   activeWatchesCount,
   alertsCount,
   onRefreshWatches,
-  selectedCountry,
-  onCountryChange,
   isMobileOpen,
   setIsMobileOpen,
   onOpenDirectiveModal,
@@ -246,34 +242,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               );
             })}
           </nav>
-        </div>
-
-        {/* Country / Market Selector */}
-        <div className="space-y-1 px-1">
-          <div className="text-[10px] font-mono uppercase text-zinc-500 px-2 tracking-wider mb-1.5 flex items-center justify-between">
-            <span>Market Region</span>
-            <Globe className="w-3 h-3 text-zinc-500" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-1.5 bg-black p-1 rounded-lg border border-zinc-800 text-xs">
-            {SUPPORTED_COUNTRIES.map((country) => {
-              const isSelected = selectedCountry.code === country.code;
-              return (
-                <button
-                  key={country.code}
-                  onClick={() => onCountryChange(country)}
-                  className={`py-1.5 px-2 rounded flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${
-                    isSelected
-                      ? 'bg-zinc-850 text-white font-semibold'
-                      : 'text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  <span>{country.flag}</span>
-                  <span className="truncate">{country.currency}</span>
-                </button>
-              );
-            })}
-          </div>
         </div>
 
       </div>

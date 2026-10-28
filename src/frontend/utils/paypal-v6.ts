@@ -203,57 +203,67 @@ export async function createPayPalSDKInstance(
   }
 
   try {
-    if (typeof window !== 'undefined' && window.paypal?.createInstance) {
-      const rawInstance = await window.paypal.createInstance({
-        clientToken: options.clientToken,
-        components: options.components || ['paypal-payments', 'fastlane'],
-        pageType: options.pageType || 'checkout',
-        locale: options.locale || 'en-US',
-        clientMetadataId:
-          options.clientMetadataId ||
-          (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `meta-${Date.now()}`),
-        partnerAttributionId: options.partnerAttributionId,
-      });
+    if (typeof window !== 'undefined' && typeof window.paypal?.createInstance === 'function') {
+      try {
+        const rawInstance = await window.paypal.createInstance({
+          clientToken: options.clientToken,
+          components: options.components || ['paypal-payments', 'fastlane'],
+          pageType: options.pageType || 'checkout',
+          locale: options.locale || 'en-US',
+          clientMetadataId:
+            options.clientMetadataId ||
+            (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `meta-${Date.now()}`),
+          partnerAttributionId: options.partnerAttributionId,
+        });
 
-      console.log('✅ PayPal SDK v6 initialized successfully');
+        if (rawInstance) {
+          console.log('✅ PayPal SDK v6 initialized successfully');
 
-      return {
-        findEligibleMethods: async (params?: { currencyCode?: string }) => {
-          if (typeof rawInstance.findEligibleMethods === 'function') {
-            const res = await rawInstance.findEligibleMethods(params);
-            return normalizeEligibility(res);
-          }
-          return normalizeEligibility(['paypal', 'paylater', 'credit']);
-        },
-        createPayPalOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
-          if (typeof rawInstance.createPayPalOneTimePaymentSession === 'function') {
-            return rawInstance.createPayPalOneTimePaymentSession(sessionOpts);
-          }
-          return createFallbackSession('paypal', sessionOpts);
-        },
-        createPayLaterOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
-          if (typeof rawInstance.createPayLaterOneTimePaymentSession === 'function') {
-            return rawInstance.createPayLaterOneTimePaymentSession(sessionOpts);
-          }
-          return createFallbackSession('paylater', sessionOpts);
-        },
-        createPayPalCreditOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
-          if (typeof rawInstance.createPayPalCreditOneTimePaymentSession === 'function') {
-            return rawInstance.createPayPalCreditOneTimePaymentSession(sessionOpts);
-          }
-          return createFallbackSession('credit', sessionOpts);
-        },
-        createFastlane: async (fastlaneOpts?: any) => {
-          if (typeof rawInstance.createFastlane === 'function') {
-            return rawInstance.createFastlane(fastlaneOpts);
-          }
-          return null;
-        },
-        rawInstance,
-      };
+          return {
+            findEligibleMethods: async (params?: { currencyCode?: string }) => {
+              if (typeof rawInstance.findEligibleMethods === 'function') {
+                try {
+                  const res = await rawInstance.findEligibleMethods(params);
+                  return normalizeEligibility(res);
+                } catch {
+                  return normalizeEligibility(['paypal', 'paylater', 'credit']);
+                }
+              }
+              return normalizeEligibility(['paypal', 'paylater', 'credit']);
+            },
+            createPayPalOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
+              if (typeof rawInstance.createPayPalOneTimePaymentSession === 'function') {
+                return rawInstance.createPayPalOneTimePaymentSession(sessionOpts);
+              }
+              return createFallbackSession('paypal', sessionOpts);
+            },
+            createPayLaterOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
+              if (typeof rawInstance.createPayLaterOneTimePaymentSession === 'function') {
+                return rawInstance.createPayLaterOneTimePaymentSession(sessionOpts);
+              }
+              return createFallbackSession('paylater', sessionOpts);
+            },
+            createPayPalCreditOneTimePaymentSession: (sessionOpts: PaymentSessionOptions) => {
+              if (typeof rawInstance.createPayPalCreditOneTimePaymentSession === 'function') {
+                return rawInstance.createPayPalCreditOneTimePaymentSession(sessionOpts);
+              }
+              return createFallbackSession('credit', sessionOpts);
+            },
+            createFastlane: async (fastlaneOpts?: any) => {
+              if (typeof rawInstance.createFastlane === 'function') {
+                return rawInstance.createFastlane(fastlaneOpts);
+              }
+              return null;
+            },
+            rawInstance,
+          };
+        }
+      } catch (instanceErr) {
+        console.warn('PayPal createInstance call fallback:', instanceErr);
+      }
     }
   } catch (error) {
-    console.error('Failed to initialize PayPal SDK:', error);
+    console.warn('Failed to initialize PayPal SDK, using sandbox fallback:', error);
   }
 
   // Graceful fallback for headless/SSR or test modes

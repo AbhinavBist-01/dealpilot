@@ -299,8 +299,6 @@ export const DashboardView: React.FC = () => {
         activeWatchesCount={trackingRules.length}
         alertsCount={outboxAlerts.length}
         onRefreshWatches={fetchTrackingRules}
-        selectedCountry={selectedCountry}
-        onCountryChange={handleCountrySelect}
         isMobileOpen={isMobileSidebarOpen}
         setIsMobileOpen={setIsMobileSidebarOpen}
         onOpenDirectiveModal={() => setIsDirectiveModalOpen(true)}
@@ -368,12 +366,6 @@ export const DashboardView: React.FC = () => {
                 </>
               )}
             </button>
-
-            {/* Region / Currency Pill */}
-            <div className="text-[11px] font-mono text-zinc-400 px-2 py-1 rounded border border-zinc-850 bg-black flex items-center gap-1">
-              <span>{selectedCountry.flag}</span>
-              <span>{selectedCountry.currency}</span>
-            </div>
 
           </div>
         </header>
