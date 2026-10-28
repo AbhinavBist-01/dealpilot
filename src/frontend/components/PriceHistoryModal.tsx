@@ -54,6 +54,19 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
       });
   }, [productId, propCurrency]);
 
+  useEffect(() => {
+    if (!productId) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [productId, onClose]);
+
   // Filter timeline based on timeframe
   const activeTimeline = useMemo(() => {
     if (!data?.timeline || data.timeline.length === 0) return [];
@@ -106,8 +119,14 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
   const currency = product?.currency || propCurrency || 'INR';
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-150">
-      <div className="bg-[#09090b] border border-zinc-800 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden my-6">
+    <div 
+      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-150"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-[#09090b] border border-zinc-800 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden my-6"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-zinc-800 bg-[#0e0e11]">
           <div className="flex items-center gap-3">
@@ -155,7 +174,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                     </span>
                   ) : (
                     <span className="text-zinc-500 font-mono">
-                      +₹{((stats?.currentPrice || 0) - (stats?.lowestRecorded || 0)).toLocaleString()} from low
+                      +{formatCurrency(((stats?.currentPrice || 0) - (stats?.lowestRecorded || 0)), currency)} from low
                     </span>
                   )}
                 </div>
@@ -183,7 +202,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                   {formatCurrency(stats?.highestRecorded || 0, currency)}
                 </div>
                 <div className="mt-1 text-[11px] text-zinc-500 font-mono">
-                  Save ₹{(stats?.savingsVsHigh || 0).toLocaleString()} vs peak
+                  Save {formatCurrency(stats?.savingsVsHigh || 0, currency)} vs peak
                 </div>
               </div>
 
@@ -417,7 +436,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                             {isBestPrice ? (
                               <span className="text-emerald-400 font-medium">Best Deal</span>
                             ) : (
-                              <span className="font-mono">+₹{diff.toLocaleString()} diff</span>
+                              <span className="font-mono">+{formatCurrency(diff, currency)} diff</span>
                             )}
                           </div>
                         </div>
@@ -441,7 +460,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                 <span className="font-semibold text-zinc-100">Optimal Buying Strategy: </span>
                 {stats?.isAllTimeLow
                   ? 'Currently at its all-time lowest price. Recommended purchase.'
-                  : `Price is within ₹${((stats?.currentPrice || 0) - (stats?.lowestRecorded || 0)).toLocaleString()} of the historical low.`}
+                  : `Price is within ${formatCurrency(((stats?.currentPrice || 0) - (stats?.lowestRecorded || 0)), currency)} of the historical low.`}
               </div>
 
               <div className="flex items-center gap-2 shrink-0">

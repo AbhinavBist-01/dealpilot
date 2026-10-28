@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { DashboardSidebar, DashboardMode } from '../components/DashboardSidebar';
 import { DealCard } from '../components/DealCard';
+import { DealCardSkeleton } from '../components/DealCardSkeleton';
 import { DealGrid } from '../components/DealGrid';
 import { WatchesList } from '../components/WatchesList';
 import { OutboxAlertsList } from '../components/OutboxAlertsList';
@@ -273,10 +274,10 @@ export const DashboardView: React.FC = () => {
 
   const tabLabels: Record<string, string> = {
     search: 'Deal Radar & Search',
-    watches: 'Active Background Watches',
-    alerts: 'Outbox Alert Events',
-    paypal: 'PayPal Agent Toolkit Console',
-    simulation: 'Failure Path Test Lab',
+    watches: 'Active Price Watches',
+    alerts: 'Price Drop Alerts',
+    paypal: 'PayPal Agent Assistant',
+    simulation: 'System Safety & Test Lab',
   };
 
   return (
@@ -549,6 +550,15 @@ export const DashboardView: React.FC = () => {
                   )}
                 </div>
 
+                {/* Loading Skeleton */}
+                {loading && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {[...Array(6)].map((_, idx) => (
+                      <DealCardSkeleton key={idx} />
+                    ))}
+                  </div>
+                )}
+
                 {/* Empty State */}
                 {products.length === 0 && !loading && (
                   <div className="bg-[#09090b] border border-zinc-850 rounded-xl p-10 text-center space-y-4">
@@ -567,7 +577,7 @@ export const DashboardView: React.FC = () => {
                 )}
 
                 {/* Products Display (Cards vs AG Grid Table) */}
-                {viewMode === 'cards' ? (
+                {!loading && viewMode === 'cards' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {products.map((product) => (
                       <DealCard

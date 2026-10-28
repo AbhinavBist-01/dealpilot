@@ -51,6 +51,19 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
     setError(null);
   };
 
+  useEffect(() => {
+    if (!isModalOpen) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isModalOpen]);
+
   const examplePrompts = [
     { text: 'Buy Sony WH-1000XM5 when price drops to 30000', query: 'Sony WH-1000XM5', target: 30000 },
     { text: 'Buy AirPods Pro 2 if under 18500', query: 'AirPods Pro 2', target: 18500 },

@@ -94,14 +94,14 @@ export const OutboxAlertsList: React.FC<OutboxAlertsListProps> = ({ alerts, onRe
           <div className="flex items-center gap-2 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] font-mono uppercase text-emerald-400 tracking-wider font-semibold">
-              Atomic Transactional Outbox Pattern
+              Instant Email Delivery
             </span>
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight">
-            Email Notification Service & Dispatcher
+            Price Drop Notifications
           </h2>
           <p className="text-zinc-400 text-xs mt-1">
-            Observations write atomic outbox events to PostgreSQL with unique deduplication keys, ensuring zero dropped or repeated alerts.
+            Real-time notifications sent to your email with instant price drop confirmations and savings breakdowns.
           </p>
         </div>
 
@@ -111,14 +111,14 @@ export const OutboxAlertsList: React.FC<OutboxAlertsListProps> = ({ alerts, onRe
             className="bg-zinc-900 hover:bg-zinc-850 px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 text-zinc-300 border border-zinc-800 transition-colors cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5 text-zinc-400" />
-            <span>Preview Template</span>
+            <span>Preview Email</span>
           </button>
           <button
             onClick={onRefresh}
             className="bg-zinc-900 hover:bg-zinc-850 px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 text-zinc-300 border border-zinc-800 transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Sync</span>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
@@ -165,9 +165,9 @@ export const OutboxAlertsList: React.FC<OutboxAlertsListProps> = ({ alerts, onRe
       {alerts.length === 0 ? (
         <div className="p-12 text-center border border-dashed border-zinc-850 rounded-lg space-y-2">
           <Mail className="w-8 h-8 text-zinc-600 mx-auto" />
-          <div className="text-xs font-semibold text-zinc-300">No alert events fired yet</div>
+          <div className="text-xs font-semibold text-zinc-300">No price drop alerts yet</div>
           <p className="text-[11px] text-zinc-500 max-w-sm mx-auto">
-            When target prices are breached, atomic transactional events will appear here and dispatch directly to your inbox.
+            When a tracked deal drops to your target price, notifications will appear here and deliver to your inbox.
           </p>
         </div>
       ) : (

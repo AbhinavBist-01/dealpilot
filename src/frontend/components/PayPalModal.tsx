@@ -139,21 +139,45 @@ export const PayPalModal: React.FC<PayPalModalProps> = ({
   const payLaterDetails = eligibility?.getDetails('paylater') || { productCode: 'PAY_IN_4', countryCode: 'US' };
   const creditDetails = eligibility?.getDetails('credit') || { countryCode: 'US' };
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
   return (
     <div 
       className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in-up"
       onClick={onClose}
     >
       <div 
-        className="bg-[#09090b] border border-zinc-800 rounded-xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative"
+        className="bg-[#09090b] border border-zinc-800 rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-zinc-500 hover:text-white rounded hover:bg-zinc-900 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 text-zinc-500 hover:text-white rounded-lg hover:bg-zinc-900 transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
+
+        {step === 'review' && (
+          <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+            <div className="w-10 h-10 border-2 border-zinc-800 border-t-emerald-400 rounded-full animate-spin" />
+            <div>
+              <h3 className="text-sm font-semibold text-white">Pre-Flight Revalidation</h3>
+              <p className="text-xs text-zinc-400 mt-1 max-w-xs leading-relaxed">
+                Checking live merchant pricing, stock availability, and seller security before checkout...
+              </p>
+            </div>
+          </div>
+        )}
 
         {step === 'paypal_sandbox' && (
           <div className="space-y-5">

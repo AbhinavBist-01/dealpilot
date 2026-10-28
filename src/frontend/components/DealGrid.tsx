@@ -41,7 +41,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
       const offer = product.offers?.[0];
       const evalData = offer?.evaluations?.[0];
       const dealScoreData = computeProductDealScore(product, offer);
-      const score = evalData?.score || dealScoreData.score;
+      const score = dealScoreData.score;
       const history = offer?.observations || [];
       const currentPrice = offer?.totalPrice || 0;
       const lowestObserved =
@@ -234,7 +234,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
                   </span>
                 ) : (
                   <span className="ml-1 text-[10px] text-zinc-500 font-mono">
-                    (+₹{(current - low).toLocaleString()})
+                    (+{formatCurrency(current - low, params.data?.currency)})
                   </span>
                 )}
               </div>

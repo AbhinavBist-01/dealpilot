@@ -164,13 +164,14 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult & { 
   if (offer.seller.rating) {
     if (offer.seller.rating >= 4.5) T += 12;
     else if (offer.seller.rating >= 4.0) T += 5;
+    else if (offer.seller.rating < 3.0) T -= 30; // Severe risk penalty for low rated sellers
     else if (offer.seller.rating < 3.5) T -= 15;
   }
 
   if (offer.availabilityStatus === "in_stock") {
     T += 5;
   } else {
-    T -= 35; // fulfillment risk
+    T -= 40; // fulfillment risk
   }
   T = Math.max(0, Math.min(100, Math.round(T)));
 
@@ -213,11 +214,15 @@ export function calculateDealScore(input: ScoreInput): DealEvaluationResult & { 
   );
   const score = Math.max(0, Math.min(100, finalScore));
 
-  // Recommendation categorization
+  // Recommendation categorization with safety gates
   let recommendation: DealRecommendation = "fair";
-  if (score >= 80) recommendation = "strong_buy";
-  else if (score >= 65) recommendation = "buy";
-  else if (score < 40) recommendation = "pass";
+  if (score >= 80 && T >= 60 && offer.availabilityStatus === "in_stock") {
+    recommendation = "strong_buy";
+  } else if (score >= 65 && T >= 50 && offer.availabilityStatus === "in_stock") {
+    recommendation = "buy";
+  } else if (score < 50 || offer.availabilityStatus !== "in_stock" || T < 50) {
+    recommendation = "pass";
+  }
 
   // Confidence level
   let confidenceLevel: ConfidenceLevel = "high";

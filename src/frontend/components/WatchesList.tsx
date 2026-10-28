@@ -19,14 +19,14 @@ export const WatchesList: React.FC<WatchesListProps> = ({ rules, onRefresh }) =>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] font-mono uppercase text-emerald-400 tracking-wider font-semibold">
-              BullMQ + Redis Background Queue
+              Live Price Tracking Active
             </span>
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight">
-            Active Tracking Rules & Adaptive Polling
+            Active Price Trackers
           </h2>
           <p className="text-zinc-400 text-xs mt-1">
-            Background workers poll catalog endpoints at 2h intervals, escalating to 30m when offers approach within 10% of target.
+            We continuously check store prices and will alert you the instant a deal matches or beats your target.
           </p>
         </div>
 
@@ -35,16 +35,16 @@ export const WatchesList: React.FC<WatchesListProps> = ({ rules, onRefresh }) =>
           className="bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>Sync State</span>
+          <span>Refresh</span>
         </button>
       </div>
 
       {rules.length === 0 ? (
         <div className="p-12 text-center border border-dashed border-zinc-850 rounded-lg space-y-2">
           <Clock className="w-8 h-8 text-zinc-600 mx-auto" />
-          <div className="text-xs font-semibold text-zinc-300">No active tracking rules deployed</div>
+          <div className="text-xs font-semibold text-zinc-300">No active price trackers</div>
           <p className="text-[11px] text-zinc-500 max-w-sm mx-auto">
-            Search for any product or send an autonomous buy directive to start background monitoring.
+            Search for any product or set an alert on a deal to begin tracking.
           </p>
         </div>
       ) : (

@@ -38,7 +38,7 @@ export const DealCard: React.FC<DealCardProps> = ({
 
   // 1. Dynamic Value & Deal Score (30% P + 25% Q + 15% H + 15% T + 15% U)
   const dealScoreData = computeProductDealScore(product, offer);
-  const score = evalData?.score || dealScoreData.score;
+  const score = dealScoreData.score;
 
   // 2. Pricing, Lowest Observed & Savings Calculation
   const currentPrice = offer?.totalPrice || 0;
@@ -105,7 +105,7 @@ export const DealCard: React.FC<DealCardProps> = ({
             <img
               src={product.imageUrl}
               alt={product.title}
-              className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+              className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 ease-out"
             />
 
             {/* AI Deal Score Badge (Top-Right) */}
@@ -256,26 +256,41 @@ export const DealCard: React.FC<DealCardProps> = ({
               <span className="text-emerald-400 font-medium text-[10px]">{dealScoreData.gradeLabel}</span>
             </div>
 
-            <div className="grid grid-cols-5 gap-1 text-[9px] font-mono text-center">
-              <div className="bg-black p-1 rounded border border-zinc-850" title="Price & Deal Quality (30% weight)">
+            <div className="grid grid-cols-5 gap-1.5 text-[9px] font-mono text-center">
+              <div className="bg-black p-1.5 rounded border border-zinc-850" title="Price & Deal Quality (30% weight)">
                 <div className="text-zinc-500 text-[8px] uppercase">Price 30%</div>
                 <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.P}</div>
+                <div className="w-full bg-zinc-850 rounded-full h-1 mt-1 overflow-hidden">
+                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${dealScoreData.P}%` }} />
+                </div>
               </div>
-              <div className="bg-black p-1 rounded border border-zinc-850" title="Product Quality (25% weight)">
-                <div className="text-zinc-500 text-[8px] uppercase">Quality 25%</div>
+              <div className="bg-black p-1.5 rounded border border-zinc-850" title="Product Quality (25% weight)">
+                <div className="text-zinc-500 text-[8px] uppercase">Qual 25%</div>
                 <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.Q}</div>
+                <div className="w-full bg-zinc-850 rounded-full h-1 mt-1 overflow-hidden">
+                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${dealScoreData.Q}%` }} />
+                </div>
               </div>
-              <div className="bg-black p-1 rounded border border-zinc-850" title="Price History (15% weight)">
+              <div className="bg-black p-1.5 rounded border border-zinc-850" title="Price History (15% weight)">
                 <div className="text-zinc-500 text-[8px] uppercase">Hist 15%</div>
                 <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.H}</div>
+                <div className="w-full bg-zinc-850 rounded-full h-1 mt-1 overflow-hidden">
+                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${dealScoreData.H}%` }} />
+                </div>
               </div>
-              <div className="bg-black p-1 rounded border border-zinc-850" title="Seller Trust (15% weight)">
+              <div className="bg-black p-1.5 rounded border border-zinc-850" title="Seller Trust (15% weight)">
                 <div className="text-zinc-500 text-[8px] uppercase">Trust 15%</div>
                 <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.T}</div>
+                <div className="w-full bg-zinc-850 rounded-full h-1 mt-1 overflow-hidden">
+                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${dealScoreData.T}%` }} />
+                </div>
               </div>
-              <div className="bg-black p-1 rounded border border-zinc-850" title="User Fit (15% weight)">
+              <div className="bg-black p-1.5 rounded border border-zinc-850" title="User Fit (15% weight)">
                 <div className="text-zinc-500 text-[8px] uppercase">Fit 15%</div>
                 <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.U}</div>
+                <div className="w-full bg-zinc-850 rounded-full h-1 mt-1 overflow-hidden">
+                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${dealScoreData.U}%` }} />
+                </div>
               </div>
             </div>
           </div>
@@ -295,7 +310,7 @@ export const DealCard: React.FC<DealCardProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="p-4 sm:p-5 pt-0">
+      <div className="p-4 sm:p-5 pt-0 space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={(e) => {
@@ -318,6 +333,11 @@ export const DealCard: React.FC<DealCardProps> = ({
             <CreditCard className="w-3.5 h-3.5" />
             <span>Buy Now</span>
           </button>
+        </div>
+
+        <div className="text-[10px] font-mono text-zinc-500 text-center flex items-center justify-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+          <ArrowUpRight className="w-3 h-3 text-zinc-400" />
+          <span>Click to view multi-store comparison</span>
         </div>
       </div>
     </div>
