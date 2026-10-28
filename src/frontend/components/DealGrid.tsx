@@ -14,7 +14,8 @@ import {
   Sparkles,
   Tag,
   LineChart,
-  Store,
+  Zap,
+  Package,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -116,14 +117,14 @@ export const DealGrid: React.FC<DealGridProps> = ({
                 <img
                   src={data.imageUrl}
                   alt={data.title}
-                  className="w-11 h-11 rounded-xl object-cover bg-slate-950 border border-slate-800 shrink-0 shadow-sm"
+                  className="w-10 h-10 rounded-lg object-cover bg-black border border-zinc-800 shrink-0"
                 />
               )}
               <div className="truncate">
-                <div className="font-bold text-slate-100 text-xs md:text-sm truncate">
+                <div className="font-semibold text-zinc-100 text-xs md:text-sm truncate">
                   {data.title}
                 </div>
-                <div className="text-[11px] text-slate-400 font-medium">
+                <div className="text-[11px] text-zinc-400 font-normal">
                   {data.brand} · {data.category}
                 </div>
               </div>
@@ -139,8 +140,8 @@ export const DealGrid: React.FC<DealGridProps> = ({
           const isExact = params.value === 'exact_model';
           return (
             <div className="flex items-center h-full">
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 shadow-sm ${
-                isExact ? 'bg-emerald-950/90 text-emerald-300 border-emerald-500/50' : 'bg-teal-950/90 text-teal-300 border-teal-500/50'
+              <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold border flex items-center gap-1 ${
+                isExact ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60' : 'bg-zinc-900 text-zinc-300 border-zinc-800'
               }`}>
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
                 <span>{isExact ? 'Verified Intent' : 'Verified Deal'}</span>
@@ -160,10 +161,10 @@ export const DealGrid: React.FC<DealGridProps> = ({
           return (
             <div className="flex items-center h-full">
               <span
-                className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border inline-flex items-center gap-1 ${
+                className={`text-[11px] font-medium px-2 py-0.5 rounded border inline-flex items-center gap-1 ${
                   isRefurb
-                    ? 'bg-amber-950/80 text-amber-300 border-amber-800/80'
-                    : 'bg-emerald-950/80 text-emerald-300 border-emerald-800/80'
+                    ? 'bg-amber-950/30 text-amber-300 border-amber-800/50'
+                    : 'bg-zinc-900 text-zinc-300 border-zinc-800'
                 }`}
               >
                 <Tag className="w-2.5 h-2.5" />
@@ -184,11 +185,11 @@ export const DealGrid: React.FC<DealGridProps> = ({
           return (
             <div className="flex flex-col justify-center h-full py-1">
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-emerald-400 text-sm font-mono">
+                <span className="font-bold text-zinc-100 text-sm font-mono tracking-tight">
                   {formatCurrency(params.value, params.data?.currency)}
                 </span>
                 {savings > 0 && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
                     -{savings}%
                   </span>
                 )}
@@ -213,29 +214,29 @@ export const DealGrid: React.FC<DealGridProps> = ({
               onClick={() =>
                 onViewHistory && onViewHistory(params.data?.rawProduct)
               }
-              className="text-left group flex flex-col justify-center h-full py-1 hover:opacity-90 transition cursor-pointer"
+              className="text-left group flex flex-col justify-center h-full py-1 cursor-pointer transition"
               title="Click to view 30D multi-merchant price chart"
             >
               <div className="flex items-center gap-1 text-xs">
                 <span
                   className={
-                    isAtLow ? 'text-emerald-400 font-bold font-mono' : 'text-slate-300 font-mono'
+                    isAtLow ? 'text-emerald-400 font-semibold font-mono' : 'text-zinc-300 font-mono'
                   }
                 >
                   {formatCurrency(low, params.data?.currency)}
                 </span>
                 {isAtLow ? (
-                  <span className="ml-1 text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-500/30 font-bold inline-flex items-center gap-0.5">
+                  <span className="ml-1 text-[10px] bg-emerald-950/50 text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-800/50 font-medium inline-flex items-center gap-0.5">
                     <TrendingDown className="w-2.5 h-2.5" />
-                    <span>Low!</span>
+                    <span>Low</span>
                   </span>
                 ) : (
-                  <span className="ml-1 text-[10px] text-slate-500 font-mono">
+                  <span className="ml-1 text-[10px] text-zinc-500 font-mono">
                     (+₹{(current - low).toLocaleString()})
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-indigo-400 group-hover:underline flex items-center gap-1 mt-0.5">
+              <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 flex items-center gap-1 mt-0.5">
                 <LineChart className="w-2.5 h-2.5" />
                 <span>30D Trajectory</span>
               </span>
@@ -252,31 +253,34 @@ export const DealGrid: React.FC<DealGridProps> = ({
         cellRenderer: (params: any) => {
           const data = params.data;
           if (!data) return null;
+          const isQuick = data.seller?.toLowerCase().includes('blinkit') || data.seller?.toLowerCase().includes('zepto') || data.seller?.toLowerCase().includes('instamart');
           return (
             <div className="flex flex-col justify-center h-full truncate py-1">
-              <div className="flex items-center gap-1.5 text-xs text-slate-200 font-medium truncate">
+              <div className="flex items-center gap-1.5 text-xs text-zinc-200 font-medium truncate">
                 {data.isAuthorized && (
                   <span title="Authorized Retailer">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   </span>
                 )}
                 <span className="truncate">{data.seller}</span>
-                {data.seller?.toLowerCase().includes('blinkit') || data.seller?.toLowerCase().includes('zepto') || data.seller?.toLowerCase().includes('instamart') ? (
-                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700/60 shrink-0">
-                    ⚡ Quick
+                {isQuick ? (
+                  <span className="text-[9px] font-medium px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 shrink-0 inline-flex items-center gap-0.5">
+                    <Zap className="w-2.5 h-2.5 text-amber-400" />
+                    <span>Quick</span>
                   </span>
                 ) : (
-                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 shrink-0">
-                    📦 Store
+                  <span className="text-[9px] font-medium px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 shrink-0 inline-flex items-center gap-0.5">
+                    <Package className="w-2.5 h-2.5 text-zinc-400" />
+                    <span>Store</span>
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-1 text-[11px] text-amber-400 mt-0.5">
                 <Star className="w-3 h-3 fill-amber-400" />
-                <span className="font-bold text-slate-200 font-mono">
+                <span className="font-semibold text-zinc-200 font-mono">
                   {Number(data.sellerRating).toFixed(1)}
                 </span>
-                <span className="text-slate-500 text-[10px]">
+                <span className="text-zinc-500 text-[10px]">
                   ({Number(data.sellerReviewCount).toLocaleString()})
                 </span>
               </div>
@@ -296,7 +300,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
           return (
             <div className="flex items-center h-full">
               <span
-                className={`px-3 py-1 rounded-full text-xs font-black border shadow-sm ${badgeColors.bg} ${badgeColors.text} ${badgeColors.border}`}
+                className={`px-2.5 py-0.5 rounded-md text-xs font-semibold border ${badgeColors.bg} ${badgeColors.text} ${badgeColors.border}`}
               >
                 {score} / 100
               </span>
@@ -312,7 +316,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
         cellRenderer: (params: any) => {
           return (
             <div
-              className="text-xs text-slate-300 truncate h-full flex items-center gap-1.5"
+              className="text-xs text-zinc-300 truncate h-full flex items-center gap-1.5"
               title={params.value}
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -335,15 +339,15 @@ export const DealGrid: React.FC<DealGridProps> = ({
                 <button
                   type="button"
                   onClick={() => onViewHistory(data.rawProduct)}
-                  className="p-1.5 bg-slate-800 hover:bg-indigo-950/80 text-slate-300 hover:text-indigo-300 rounded-lg border border-slate-700 hover:border-indigo-700/60 transition active:scale-90"
+                  className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg border border-zinc-800 transition active:scale-95 cursor-pointer"
                   title="View Price History & Multi-Merchant Comparison"
                 >
-                  <LineChart className="w-3.5 h-3.5 text-indigo-400" />
+                  <LineChart className="w-3.5 h-3.5" />
                 </button>
               )}
               <button
                 onClick={() => onTrack(data.rawProduct, data.rawOffer)}
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg border border-slate-700 flex items-center gap-1 transition active:scale-95 shadow-sm"
+                className="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-medium rounded-lg border border-zinc-800 flex items-center gap-1 transition active:scale-95 cursor-pointer"
                 title="Track price"
               >
                 <Bell className="w-3 h-3 text-amber-400" />
@@ -351,7 +355,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
               </button>
               <button
                 onClick={() => onBuy(data.rawProduct, data.rawOffer)}
-                className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 text-xs font-black rounded-lg flex items-center gap-1 transition active:scale-95 shadow-sm shadow-emerald-500/20"
+                className="px-3 py-1 bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-semibold rounded-lg flex items-center gap-1 transition active:scale-95 cursor-pointer"
                 title="Buy with PayPal Sandbox"
               >
                 <CreditCard className="w-3 h-3" />
@@ -374,34 +378,34 @@ export const DealGrid: React.FC<DealGridProps> = ({
   );
 
   return (
-    <div className="w-full bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md p-4 md:p-6">
-      {/* Scoped CSS for Dark-Quartz AG Grid Theme */}
+    <div className="w-full bg-[#09090b] border border-zinc-800 rounded-2xl overflow-hidden p-4 md:p-6">
+      {/* Scoped CSS for Dark-Quartz AG Grid Theme (Black OLED aesthetic) */}
       <style jsx global>{`
         .ag-theme-quartz-dark {
-          --ag-background-color: #0b1120;
-          --ag-header-background-color: #0f172a;
-          --ag-odd-row-background-color: #0d1527;
-          --ag-border-color: #1e293b;
-          --ag-row-border-color: #1e293b;
-          --ag-header-column-separator-color: #334155;
-          --ag-foreground-color: #f1f5f9;
-          --ag-data-color: #e2e8f0;
-          --ag-secondary-foreground-color: #94a3b8;
-          --ag-header-foreground-color: #cbd5e1;
-          --ag-row-hover-color: rgba(51, 65, 85, 0.45);
+          --ag-background-color: #09090b;
+          --ag-header-background-color: #0e0e11;
+          --ag-odd-row-background-color: #060608;
+          --ag-border-color: #18181b;
+          --ag-row-border-color: #18181b;
+          --ag-header-column-separator-color: #27272a;
+          --ag-foreground-color: #f4f4f5;
+          --ag-data-color: #e4e4e7;
+          --ag-secondary-foreground-color: #71717a;
+          --ag-header-foreground-color: #a1a1aa;
+          --ag-row-hover-color: rgba(39, 39, 42, 0.45);
           --ag-selected-row-background-color: rgba(16, 185, 129, 0.12);
           --ag-range-selection-border-color: #10b981;
           --ag-active-color: #10b981;
           --ag-font-family: inherit;
           --ag-font-size: 13px;
-          --ag-border-radius: 16px;
+          --ag-border-radius: 12px;
         }
         .ag-theme-quartz-dark .ag-header-cell-label {
-          font-weight: 800;
-          letter-spacing: 0.05em;
+          font-weight: 600;
+          letter-spacing: 0.04em;
           text-transform: uppercase;
           font-size: 10px;
-          color: #94a3b8;
+          color: #a1a1aa;
         }
         .ag-theme-quartz-dark .ag-row {
           transition: background-color 0.15s ease;
@@ -409,25 +413,25 @@ export const DealGrid: React.FC<DealGridProps> = ({
       `}</style>
 
       {/* Grid Header Info */}
-      <div className="text-xs text-slate-400 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
+      <div className="text-xs text-zinc-400 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
         <div className="flex items-center gap-2">
-          <span className="font-extrabold text-slate-200">
-            Interactive AG Grid Comparison
+          <span className="font-semibold text-zinc-200">
+            AG Grid Comparison
           </span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-emerald-400 font-semibold border border-slate-700">
-            Dark Quartz Engine
+          <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-300 font-medium border border-zinc-800">
+            Quartz Engine
           </span>
         </div>
-        <div className="flex items-center gap-3 text-slate-400 text-[11px]">
+        <div className="flex items-center gap-3 text-zinc-400 text-[11px]">
           <span>Sorted by relevance & deal rating</span>
-          <span className="text-emerald-400 font-bold font-mono">
+          <span className="text-zinc-200 font-medium font-mono">
             {rowData.length} normalized deals
           </span>
         </div>
       </div>
 
       {/* AG Grid Responsive Container */}
-      <div className="w-full overflow-x-auto rounded-2xl border border-slate-800/80 shadow-inner">
+      <div className="w-full overflow-x-auto rounded-xl border border-zinc-800">
         <div
           className="ag-theme-quartz-dark"
           style={{ height: '540px', width: '100%', minWidth: '880px' }}

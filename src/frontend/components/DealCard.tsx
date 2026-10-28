@@ -13,6 +13,8 @@ import {
   LineChart,
   Store,
   CheckCircle2,
+  Zap,
+  ArrowUpRight
 } from 'lucide-react';
 import { formatCurrency, getDealScoreBadgeColor } from '../utils/formatters';
 
@@ -33,9 +35,8 @@ export const DealCard: React.FC<DealCardProps> = ({
   const offer = product.offers?.[0];
   const evalData = offer?.evaluations?.[0];
 
-  // 1. Deal Score & Badge Colors (0-100 rubric)
+  // 1. Deal Score & Badge (0-100 rubric)
   const score = evalData?.score || 78;
-  const badgeColors = getDealScoreBadgeColor(score);
 
   // 2. Pricing, Lowest Observed & Savings Calculation
   const currentPrice = offer?.totalPrice || 0;
@@ -45,7 +46,6 @@ export const DealCard: React.FC<DealCardProps> = ({
       ? Math.min(...observations.map((o: any) => o.totalPrice))
       : offer?.lowestPrice || Math.round(currentPrice * 0.94);
   const isAtHistoricalLow = currentPrice <= lowestObserved;
-  const diffFromLow = currentPrice - lowestObserved;
 
   // Calculate Savings Percentage
   const originalPrice =
@@ -68,10 +68,10 @@ export const DealCard: React.FC<DealCardProps> = ({
   const condition = rawAttrs.condition || offer?.condition || 'new';
   const conditionDisplay =
     condition === 'refurbished'
-      ? 'Certified Refurbished'
+      ? 'Refurbished'
       : condition === 'open_box'
       ? 'Open Box'
-      : 'Brand New (Factory Sealed)';
+      : 'Brand New (Sealed)';
 
   // 4. Seller Ratings & Merchant Info
   const sellerRating = Number(offer?.sellerRating || 4.8);
@@ -85,244 +85,190 @@ export const DealCard: React.FC<DealCardProps> = ({
   // 6. AI Summary about product specs & deal
   const aiSummary =
     evalData?.explanation ||
-    `${conditionDisplay}. ${product.brand} ${product.model || product.title}. Deal rating ${score}/100 verified across domestic merchants.`;
+    `${conditionDisplay}. ${product.brand} ${product.model || product.title}. Deal score ${score}/100 verified across domestic merchants.`;
 
-  // Mini Sparkline Points Synthesizer
-  // We produce a smooth bezier trajectory path ending at current price
-  const sparklinePoints = [
-    { x: 5, y: 28 },
-    { x: 35, y: 24 },
-    { x: 65, y: 30 },
-    { x: 95, y: 18 },
-    { x: 130, y: isAtHistoricalLow ? 10 : 15 },
-  ];
-  const sparklinePath = `M 5 28 C 25 24, 45 28, 65 26 C 85 24, 105 16, 130 ${isAtHistoricalLow ? 8 : 14}`;
-  const sparklineArea = `${sparklinePath} L 130 36 L 5 36 Z`;
+  // Mini Sparkline Points
+  const sparklinePath = `M 5 26 C 25 22, 45 26, 65 24 C 85 22, 105 14, 130 ${isAtHistoricalLow ? 8 : 14}`;
 
   return (
-    <div className="group relative bg-slate-900/90 hover:bg-slate-900 border border-slate-800 hover:border-slate-700/80 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between backdrop-blur-sm">
+    <div className="group relative bg-[#09090b] hover:bg-[#0c0c0f] border border-zinc-850 hover:border-zinc-750 rounded-xl overflow-hidden transition-all duration-200 flex flex-col justify-between shadow-lg">
       <div>
-        {/* Thumbnail & Overlay Badges */}
+        {/* Thumbnail & Badges */}
         {product.imageUrl && (
-          <div className="h-52 w-full bg-slate-950 relative overflow-hidden">
+          <div className="h-48 w-full bg-black relative overflow-hidden border-b border-zinc-850">
             <img
               src={product.imageUrl}
               alt={product.title}
-              className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+              className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
             />
-            {/* Dark gradient overlay for contrast */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
 
-            {/* Badge Tier 1: AI Deal Score (Top-Right) */}
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-black border backdrop-blur-md shadow-lg flex items-center gap-1.5 ${badgeColors.bg} ${badgeColors.text} ${badgeColors.border}`}
-              >
-                <Award className="w-3.5 h-3.5" />
-                <span>AI Deal Score: {score}/100</span>
+            {/* AI Deal Score Badge (Top-Right) */}
+            <div className="absolute top-2.5 right-2.5 z-10">
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-black/90 text-emerald-400 border border-emerald-500/30 backdrop-blur-md flex items-center gap-1">
+                <span>{score}/100</span>
               </span>
             </div>
 
-            {/* Badge Tier 2: Verified Intent (Top-Left) */}
+            {/* Verified Badge (Top-Left) */}
             {isVerified && (
-              <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
-                <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border backdrop-blur-md flex items-center gap-1 shadow-md ${
-                  isExactModel
-                    ? 'bg-emerald-950/90 text-emerald-300 border-emerald-500/50 shadow-emerald-500/10'
-                    : 'bg-teal-950/90 text-teal-300 border-teal-500/50'
-                }`}>
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{isExactModel ? 'Verified Intent' : 'Verified Deal'}</span>
+              <div className="absolute top-2.5 left-2.5 z-10">
+                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-black/90 text-zinc-300 border border-zinc-700 backdrop-blur-md flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                  <span>{isExactModel ? 'Spec Verified' : 'Verified Deal'}</span>
                 </span>
               </div>
             )}
 
-            {/* Bottom Thumbnail Pills: Condition & Channel3 Live */}
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
-              <span
-                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-lg border backdrop-blur-md flex items-center gap-1 ${
-                  condition === 'refurbished'
-                    ? 'bg-amber-950/90 text-amber-300 border-amber-700/60'
-                    : 'bg-slate-950/90 text-emerald-300 border-emerald-700/60'
-                }`}
-              >
-                <Tag className="w-2.5 h-2.5" />
-                <span>{conditionDisplay}</span>
+            {/* Bottom Thumbnail Overlay Tags */}
+            <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between gap-2 z-10">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/90 text-zinc-300 border border-zinc-800 backdrop-blur-md">
+                {conditionDisplay}
               </span>
 
               {offer?.sellerName?.toLowerCase().includes('blinkit') ||
               offer?.sellerName?.toLowerCase().includes('zepto') ||
               offer?.sellerName?.toLowerCase().includes('instamart') ? (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg border backdrop-blur-md bg-amber-950/90 text-amber-300 border-amber-600/60 flex items-center gap-1 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  <span>⚡ Quick Commerce</span>
+                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-black/90 text-amber-300 border border-amber-600/50 backdrop-blur-md flex items-center gap-1">
+                  <Zap className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                  <span>10m Delivery</span>
                 </span>
               ) : (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg border backdrop-blur-md bg-emerald-950/90 text-emerald-300 border-emerald-600/60 flex items-center gap-1 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>📦 Verified Store</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/90 text-zinc-400 border border-zinc-800 backdrop-blur-md">
+                  Domestic Merchant
                 </span>
               )}
             </div>
           </div>
         )}
 
-        <div className="p-5">
-          {/* Brand & Category Breadcrumb */}
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="p-4 sm:p-5 space-y-3">
+          
+          {/* Brand & Seller Row */}
+          <div className="flex items-center justify-between gap-2 text-xs font-mono">
+            <span className="text-zinc-500 uppercase tracking-wider text-[10px] truncate">
               {product.brand} · {product.category}
             </span>
 
-            {/* Merchant Pill (Badge Tier 4) */}
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-[11px] text-slate-300 truncate max-w-[140px]">
-              <Store className="w-3 h-3 text-emerald-400 shrink-0" />
-              <span className="font-medium truncate">{sellerName}</span>
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black border border-zinc-850 text-[11px] text-zinc-300 truncate max-w-[130px]">
+              <Store className="w-3 h-3 text-zinc-400 shrink-0" />
+              <span className="truncate">{sellerName}</span>
             </div>
           </div>
 
           {/* Product Title */}
           <h3
-            className="font-extrabold text-base line-clamp-2 text-slate-100 group-hover:text-emerald-300 transition-colors mb-3 leading-snug"
+            className="font-semibold text-sm line-clamp-2 text-zinc-100 group-hover:text-white transition-colors leading-snug"
             title={product.title}
           >
             {product.title}
           </h3>
 
-          {/* Telemetry Price Block with Animated Sparkline & Savings Badge */}
-          <div className="bg-slate-950/90 rounded-2xl p-3.5 border border-slate-800/80 mb-3 shadow-inner">
+          {/* Telemetry Price Block with Clean SVG Trajectory */}
+          <div className="bg-black rounded-lg p-3 border border-zinc-850">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <div className="text-2xl font-black text-emerald-400 font-mono tracking-tight">
+                  <div className="text-xl font-bold font-mono text-white tabular-nums">
                     {formatCurrency(currentPrice, offer?.currency)}
                   </div>
 
-                  {/* Badge Tier 3: Savings Percentage Pill */}
                   {savingsPct > 0 && (
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm animate-in fade-in duration-200">
-                      SAVE {savingsPct}%
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      -{savingsPct}%
                     </span>
                   )}
                 </div>
 
-                <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
-                  <span className="text-slate-500">Historical Low:</span>
-                  <span className="font-bold text-slate-200 font-mono">
+                <div className="text-[11px] font-mono text-zinc-500 flex items-center gap-1 mt-1">
+                  <span>Low:</span>
+                  <span className="text-zinc-300 tabular-nums">
                     {formatCurrency(lowestObserved, offer?.currency)}
                   </span>
                   {isAtHistoricalLow && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
-                      All-Time Low!
+                    <span className="text-[10px] px-1 py-0.2 rounded bg-zinc-900 text-emerald-400 font-bold border border-zinc-800">
+                      Record
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Animated Price Trajectory Sparkline Preview */}
+              {/* Minimal SVG Sparkline */}
               <div
                 onClick={() => onViewHistory && onViewHistory(product)}
-                className="cursor-pointer group/spark flex flex-col items-end"
-                title="Click to view 30-day multi-merchant price chart"
+                className="cursor-pointer flex flex-col items-end group/spark"
+                title="Click to view multi-merchant price chart"
               >
-                <div className="relative w-28 h-9 overflow-hidden rounded-lg bg-slate-900/60 border border-slate-800/80 p-0.5 hover:border-emerald-500/50 transition">
+                <div className="w-24 h-8 rounded bg-[#09090b] border border-zinc-850 p-0.5 hover:border-zinc-700 transition-colors">
                   <svg viewBox="0 0 135 36" className="w-full h-full overflow-visible">
-                    <defs>
-                      <linearGradient id={`grad-stroke-${sparklineId}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#38bdf8" />
-                        <stop offset="60%" stopColor="#2dd4bf" />
-                        <stop offset="100%" stopColor="#34d399" />
-                      </linearGradient>
-                      <linearGradient id={`grad-fill-${sparklineId}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#34d399" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#34d399" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
-
-                    {/* Gradient area */}
-                    <path d={sparklineArea} fill={`url(#grad-fill-${sparklineId})`} />
-
-                    {/* Animated Trajectory Stroke */}
                     <path
                       d={sparklinePath}
                       fill="none"
-                      stroke={`url(#grad-stroke-${sparklineId})`}
-                      strokeWidth="2.2"
+                      stroke="#10b981"
+                      strokeWidth="2"
                       strokeLinecap="round"
                     />
-
-                    {/* Current Price Dot with Radar Ping */}
                     <circle
                       cx="130"
                       cy={isAtHistoricalLow ? 8 : 14}
-                      r="4"
-                      className="fill-emerald-400 animate-ping opacity-75"
-                    />
-                    <circle
-                      cx="130"
-                      cy={isAtHistoricalLow ? 8 : 14}
-                      r="2.5"
-                      className="fill-emerald-300 stroke-slate-950 stroke-[1.5]"
+                      r="3"
+                      fill="#10b981"
                     />
                   </svg>
                 </div>
-                <span className="text-[9px] text-emerald-400/80 group-hover/spark:text-emerald-300 font-medium flex items-center gap-0.5 mt-0.5">
+                <span className="text-[9px] font-mono text-zinc-500 group-hover/spark:text-zinc-300 mt-1 flex items-center gap-0.5">
                   <LineChart className="w-2.5 h-2.5" />
-                  <span>30D Trajectory</span>
+                  <span>Trajectory</span>
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Seller Ratings & Authorization Section */}
-          <div className="flex items-center justify-between text-xs text-slate-300 pb-3 mb-3 border-b border-slate-800/80">
-            <div className="flex items-center gap-1.5 truncate">
+          {/* Seller Ratings & Authorization */}
+          <div className="flex items-center justify-between text-xs text-zinc-400 pb-2 border-b border-zinc-850/80">
+            <div className="flex items-center gap-1 text-[11px] font-mono truncate">
               {offer?.isAuthorizedSeller && (
-                <span title="Authorized Dealer" className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-semibold">
-                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span className="inline-flex items-center gap-1 text-zinc-300">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
                   <span>Authorized Dealer</span>
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-1 shrink-0 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+            <div className="flex items-center gap-1 bg-black px-2 py-0.5 rounded border border-zinc-850 text-[11px] font-mono text-zinc-400">
               <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-              <span className="font-bold text-slate-100 font-mono">
-                {sellerRating.toFixed(1)}
-              </span>
-              <span className="text-[10px] text-slate-500">
-                ({sellerReviews.toLocaleString()})
-              </span>
+              <span className="text-zinc-200 font-bold">{sellerRating.toFixed(1)}</span>
+              <span className="text-zinc-600">({sellerReviews.toLocaleString()})</span>
             </div>
           </div>
 
-          {/* AI Specs & Deal Insight Summary */}
-          <div className="bg-emerald-950/20 rounded-2xl p-3 border border-emerald-800/30 text-xs text-slate-300">
-            <div className="flex items-center gap-1.5 text-emerald-400 font-bold mb-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>AI Specs & Deal Summary</span>
+          {/* AI Specs Summary */}
+          <div className="bg-[#0e0e11] rounded-lg p-2.5 border border-zinc-850 text-xs text-zinc-400 space-y-1">
+            <div className="flex items-center gap-1.5 text-zinc-300 font-mono text-[10px] uppercase font-semibold">
+              <Sparkles className="w-3 h-3 text-zinc-400" />
+              <span>Spec & Evaluation</span>
             </div>
-            <p className="text-slate-300 text-xs leading-relaxed line-clamp-2">
+            <p className="text-zinc-400 text-xs leading-relaxed line-clamp-2 font-sans">
               {aiSummary}
             </p>
           </div>
+
         </div>
       </div>
 
-      {/* Tactile Action Buttons */}
-      <div className="p-5 pt-0 space-y-2 mt-2">
+      {/* Action Buttons */}
+      <div className="p-4 sm:p-5 pt-0 space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onTrack(product, offer)}
-            className="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-bold py-2.5 rounded-xl border border-slate-700 transition flex items-center justify-center gap-1.5 shadow-sm"
+            className="w-full bg-zinc-900 hover:bg-zinc-850 active:scale-95 text-zinc-300 hover:text-white text-xs font-semibold py-2.5 rounded-lg border border-zinc-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <Bell className="w-3.5 h-3.5 text-amber-400" />
-            <span>Track Price</span>
+            <Bell className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Track</span>
           </button>
 
           <button
             onClick={() => onBuy(product, offer)}
-            className="w-full bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 active:scale-95 text-slate-950 text-xs font-black py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20"
+            className="w-full bg-zinc-100 hover:bg-white active:scale-95 text-black text-xs font-semibold py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
           >
             <CreditCard className="w-3.5 h-3.5" />
             <span>Buy Now</span>
@@ -332,10 +278,10 @@ export const DealCard: React.FC<DealCardProps> = ({
         {onViewHistory && (
           <button
             onClick={() => onViewHistory(product)}
-            className="w-full bg-slate-950 hover:bg-slate-800/80 active:scale-98 text-slate-400 hover:text-emerald-300 text-[11px] font-semibold py-2 rounded-xl border border-slate-800 hover:border-slate-700 transition flex items-center justify-center gap-1.5"
+            className="w-full bg-black hover:bg-zinc-900 active:scale-[0.99] text-zinc-500 hover:text-zinc-300 text-[11px] font-mono py-1.5 rounded-lg border border-zinc-850 transition-colors flex items-center justify-center gap-1 cursor-pointer"
           >
-            <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Multi-Merchant Trajectory Chart</span>
+            <TrendingDown className="w-3 h-3 text-zinc-400" />
+            <span>Inspect Multi-Merchant Comparison</span>
           </button>
         )}
       </div>

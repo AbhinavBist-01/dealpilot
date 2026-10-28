@@ -18,8 +18,17 @@ import {
   Laptop,
   Headphones,
   Monitor,
+  Menu,
+  Bot,
+  Sliders,
+  CheckCircle2,
+  Clock,
+  Zap,
+  Command,
+  Eye,
+  AlertCircle
 } from 'lucide-react';
-import { Header } from '../components/Header';
+import { DashboardSidebar, DashboardMode } from '../components/DashboardSidebar';
 import { DealCard } from '../components/DealCard';
 import { DealGrid } from '../components/DealGrid';
 import { WatchesList } from '../components/WatchesList';
@@ -39,6 +48,10 @@ export const DashboardView: React.FC = () => {
   const { session, isInitialLoading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<CountryConfig>(DEFAULT_COUNTRY);
+  const [dashboardMode, setDashboardMode] = useState<DashboardMode>('agent');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isDirectiveModalOpen, setIsDirectiveModalOpen] = useState(false);
+
   const [query, setQuery] = useState('');
   const [budget, setBudget] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -134,13 +147,12 @@ export const DashboardView: React.FC = () => {
 
   const handleCountrySelect = (newCountry: CountryConfig) => {
     setSelectedCountry(newCountry);
-    // Adjust default budget scale when switching between high-denomination INR and USD/GBP/EUR
     if (newCountry.currency === 'INR' && Number(budget) < 1000) {
       setBudget('30000');
     } else if (newCountry.currency !== 'INR' && Number(budget) > 5000) {
       setBudget('500');
     }
-    showBanner(`Localized to ${newCountry.name} (${newCountry.currency})`);
+    showBanner(`Market switched to ${newCountry.name} (${newCountry.currency})`);
     handleSearch(query, undefined, newCountry);
   };
 
@@ -259,7 +271,7 @@ export const DashboardView: React.FC = () => {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center p-4 font-sans text-zinc-100">
         <div className="relative flex items-center justify-center mb-4">
-          <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-sm text-zinc-200">
+          <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-850 flex items-center justify-center font-bold text-sm text-zinc-200">
             DP
           </div>
         </div>
@@ -284,220 +296,337 @@ export const DashboardView: React.FC = () => {
   const budgetNum = Number(budget) || 0;
   const budgetProgress = Math.min(100, Math.max(5, (budgetNum / 200000) * 100));
 
+  const tabLabels: Record<string, string> = {
+    search: 'Deal Radar & Search',
+    watches: 'Active Background Watches',
+    alerts: 'Outbox Alert Events',
+    paypal: 'PayPal Agent Toolkit Console',
+    simulation: 'Failure Path Test Lab',
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-black text-zinc-100 font-sans flex flex-col md:flex-row selection:bg-zinc-800 selection:text-white">
+      
+      {/* Banner Notifications */}
       {bannerMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-600/90 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-sm font-semibold border border-emerald-400/40 animate-in fade-in slide-in-from-top duration-200">
-          <Sparkles className="w-4 h-4 text-emerald-200" />
+        <div className="fixed top-4 right-4 z-50 bg-zinc-900 text-white px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2 text-xs font-mono border border-zinc-700 animate-fade-in-up">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
           <span>{bannerMessage}</span>
         </div>
       )}
 
-      <Header
+      {/* 1. Left Persistent Sidebar */}
+      <DashboardSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        mode={dashboardMode}
+        setMode={setDashboardMode}
         activeWatchesCount={trackingRules.length}
         alertsCount={outboxAlerts.length}
         onRefreshWatches={fetchTrackingRules}
         selectedCountry={selectedCountry}
         onCountryChange={handleCountrySelect}
+        isMobileOpen={isMobileSidebarOpen}
+        setIsMobileOpen={setIsMobileSidebarOpen}
+        onOpenDirectiveModal={() => setIsDirectiveModalOpen(true)}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-          {activeTab === 'search' && (
-            <div>
-              {/* Modernized Search & Filter Command Center */}
-              <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl mb-8 relative overflow-hidden">
-                {/* Subtle Ambient Background Gradient */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-teal-500/5 blur-3xl pointer-events-none" />
+      {/* 2. Main Content Canvas */}
+      <div className="flex-1 flex flex-col min-w-0">
+        
+        {/* Top Command & Telemetry Bar */}
+        <header className="h-14 border-b border-zinc-850 bg-[#09090b]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
+          
+          <div className="flex items-center gap-3">
+            {/* Mobile Sidebar Hamburger Toggle */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800 cursor-pointer"
+              aria-label="Open sidebar"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
 
-                <div className="relative z-10">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-xs text-white">
+                {tabLabels[activeTab]}
+              </span>
+              <span className="text-zinc-600 hidden sm:inline">•</span>
+              
+              {/* Active Operational Mode Pill */}
+              <div className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-zinc-900 border border-zinc-850">
+                {dashboardMode === 'agent' ? (
+                  <>
+                    <Bot className="w-3 h-3 text-emerald-400" />
+                    <span className="text-emerald-400">AGENT MODE</span>
+                  </>
+                ) : (
+                  <>
+                    <Sliders className="w-3 h-3 text-zinc-300" />
+                    <span className="text-zinc-300">MANUAL MODE</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Header Status Controls */}
+          <div className="flex items-center gap-3">
+            
+            {/* Quick Mode Toggle Button */}
+            <button
+              onClick={() => setDashboardMode(dashboardMode === 'agent' ? 'manual' : 'agent')}
+              className="text-[11px] font-mono px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Toggle operational mode"
+            >
+              {dashboardMode === 'agent' ? (
+                <>
+                  <Sliders className="w-3 h-3 text-zinc-400" />
+                  <span className="hidden sm:inline">Switch to</span>
+                  <span>Manual</span>
+                </>
+              ) : (
+                <>
+                  <Bot className="w-3 h-3 text-emerald-400" />
+                  <span className="hidden sm:inline">Switch to</span>
+                  <span>Agent</span>
+                </>
+              )}
+            </button>
+
+            {/* Region / Currency Pill */}
+            <div className="text-[11px] font-mono text-zinc-400 px-2 py-1 rounded border border-zinc-850 bg-black flex items-center gap-1">
+              <span>{selectedCountry.flag}</span>
+              <span>{selectedCountry.currency}</span>
+            </div>
+
+          </div>
+        </header>
+
+        {/* Main Work Area */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+          
+          {activeTab === 'search' && (
+            <div className="space-y-6">
+              
+              {/* MODE 1: AGENT MODE CONSOLE */}
+              {dashboardMode === 'agent' ? (
+                <div className="bg-[#09090b] border border-zinc-850 rounded-xl p-5 sm:p-6 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-100 flex items-center gap-2">
-                        <span>Autonomous Deal Radar</span>
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">
-                          AI Scored
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[11px] font-mono uppercase text-emerald-400 tracking-wider font-semibold">
+                          Autonomous Agent Engine Active
                         </span>
-                      </h1>
-                      <p className="text-slate-400 text-sm mt-1">
-                        Crawls verified domestic sources, normalizes multi-merchant offers, and applies rubric deal scoring.
+                      </div>
+                      <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                        Continuous Radar & Directives Monitoring
+                      </h2>
+                      <p className="text-xs text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+                        DealPilot background workers continuously scrape and normalize domestic offers across Amazon, Flipkart, Croma, Blinkit, Zepto, and Instamart. When a deal reaches target threshold, pre-flight safety locks the offer for 1-click execution.
                       </p>
                     </div>
 
-                    {/* Price Range Indicator Pill */}
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs shadow-inner">
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-slate-400 font-medium">Market:</span>
-                      <span className="font-extrabold text-emerald-400 font-mono flex items-center gap-1">
-                        <span>{selectedCountry.flag}</span>
-                        <span>0 — {selectedCountry.symbol}{budgetNum.toLocaleString(selectedCountry.locale)}</span>
-                      </span>
+                    <button
+                      onClick={() => setIsDirectiveModalOpen(true)}
+                      className="px-4 py-2.5 rounded-lg bg-zinc-100 hover:bg-white text-black font-semibold text-xs transition-all active:scale-[0.98] flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
+                    >
+                      <Command className="w-3.5 h-3.5" />
+                      <span>Deploy Buy Directive</span>
+                    </button>
+                  </div>
+
+                  {/* Agent 3-Metric Health Strip */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-zinc-850/80 text-xs font-mono">
+                    <div className="p-3 rounded-lg bg-black border border-zinc-850">
+                      <div className="text-[10px] text-zinc-500 uppercase">Tracked Directives</div>
+                      <div className="text-base font-bold text-zinc-100 tabular-nums mt-0.5">
+                        {trackingRules.length} Active Rules
+                      </div>
+                      <div className="text-[10px] text-emerald-400 mt-0.5">● Polling Cadence: 30m / 2h</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-black border border-zinc-850">
+                      <div className="text-[10px] text-zinc-500 uppercase">Outbox Alerts Ready</div>
+                      <div className="text-base font-bold text-zinc-100 tabular-nums mt-0.5">
+                        {outboxAlerts.length} Captured Events
+                      </div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">Gmail Dispatch Deduplicated</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-black border border-zinc-850">
+                      <div className="text-[10px] text-zinc-500 uppercase">Pre-Flight Safety</div>
+                      <div className="text-base font-bold text-zinc-100 mt-0.5">
+                        100% Guarded
+                      </div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">Stock & Price Locked at Checkout</div>
                     </div>
                   </div>
 
-                  {/* Search Bar & Budget Control */}
-                  <div className="flex flex-col lg:flex-row gap-3">
-                    {/* Search Input with Clear Button */}
-                    <div className="relative flex-1 group">
-                      <Search className="w-5 h-5 absolute left-4 top-3.5 text-slate-400 group-focus-within:text-emerald-400 transition-colors" />
+                  {/* Search Bar in Agent Mode */}
+                  <div className="pt-2">
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3.5 top-3 text-zinc-500" />
                       <input
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder={`Search product or model for ${selectedCountry.name} (${selectedCountry.currency})...`}
-                        className="w-full bg-slate-950/90 border border-slate-700/80 hover:border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl pl-12 pr-12 py-3.5 text-sm text-slate-100 placeholder:text-slate-500 transition-all shadow-inner outline-none font-medium"
+                        placeholder={`Tell agent which product or category to crawl across ${selectedCountry.name}...`}
+                        className="w-full bg-black border border-zinc-800 hover:border-zinc-700 focus:border-zinc-500 rounded-lg pl-10 pr-24 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-colors"
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                       />
+                      <button
+                        onClick={() => handleSearch()}
+                        disabled={loading}
+                        className="absolute right-1.5 top-1.5 px-3 py-1 rounded bg-zinc-850 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Crawl'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* MODE 2: MANUAL MODE CONSOLE (TRADER) */
+                <div className="bg-[#09090b] border border-zinc-850 rounded-xl p-5 sm:p-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                        <span className="text-[11px] font-mono uppercase text-zinc-300 tracking-wider font-semibold">
+                          Manual Trader Mode
+                        </span>
+                      </div>
+                      <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                        Granular Search & Table Inspection
+                      </h2>
+                    </div>
 
-                      {/* Clear Button */}
+                    <div className="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
+                      <span>Ceiling:</span>
+                      <span className="text-emerald-400 font-bold tabular-nums">
+                        {selectedCountry.symbol}{budgetNum > 0 ? budgetNum.toLocaleString(selectedCountry.locale) : 'No Limit'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Manual Search & Budget Inputs */}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <Search className="w-4 h-4 absolute left-3.5 top-3 text-zinc-500" />
+                      <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder={`Search manual catalog for ${selectedCountry.name} (${selectedCountry.currency})...`}
+                        className="w-full bg-black border border-zinc-800 hover:border-zinc-700 focus:border-zinc-500 rounded-lg pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-colors"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                      />
                       {query.length > 0 && (
                         <button
                           type="button"
-                          onClick={() => {
-                            setQuery('');
-                          }}
-                          className="absolute right-3.5 top-3.5 p-1 rounded-full text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition active:scale-90"
-                          title="Clear search input"
-                          aria-label="Clear search"
+                          onClick={() => setQuery('')}
+                          className="absolute right-3 top-3 text-zinc-500 hover:text-white"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
 
-                    {/* Budget Input & Filter */}
-                    <div className="flex items-center gap-2">
-                      <div className="relative w-44">
-                        <span className="absolute left-3.5 top-3.5 text-xs text-slate-400 font-bold">Max {selectedCountry.symbol}</span>
-                        <input
-                          type="number"
-                          value={budget}
-                          onChange={(e) => setBudget(e.target.value)}
-                          placeholder="Budget"
-                          className="w-full bg-slate-950/90 border border-slate-700/80 hover:border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl pl-16 pr-3 py-3.5 text-sm font-semibold font-mono text-slate-100 transition-all shadow-inner outline-none"
-                        />
-                      </div>
+                    <div className="relative w-full sm:w-44">
+                      <input
+                        type="number"
+                        value={budget}
+                        onChange={(e) => setBudget(e.target.value)}
+                        placeholder={`Budget (${selectedCountry.symbol})`}
+                        className="w-full bg-black border border-zinc-800 hover:border-zinc-700 focus:border-zinc-500 rounded-lg px-3 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-colors font-mono"
+                      />
+                    </div>
 
-                      {/* Discover CTA Button */}
+                    <button
+                      onClick={() => handleSearch()}
+                      disabled={loading}
+                      className="px-4 py-2.5 rounded-lg bg-zinc-100 hover:bg-white text-black font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm shrink-0"
+                    >
+                      {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                      <span>Search</span>
+                    </button>
+                  </div>
+
+                  {/* Budget Tiers Chips */}
+                  <div className="pt-2 border-t border-zinc-850/80 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-zinc-500 font-mono text-[11px] uppercase mr-1">Tiers:</span>
+                    {budgetTiers.map((tier) => (
                       <button
-                        onClick={() => handleSearch()}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-6 py-3.5 rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/25 active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+                        key={tier.val}
+                        onClick={() => {
+                          setBudget(tier.val);
+                          handleSearch(query, tier.val);
+                        }}
+                        className={`px-2.5 py-1 rounded text-[11px] font-mono transition-colors cursor-pointer border ${
+                          budget === tier.val
+                            ? 'bg-zinc-800 text-white border-zinc-700'
+                            : 'bg-black text-zinc-400 hover:text-zinc-200 border-zinc-850'
+                        }`}
                       >
-                        {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                        <span>Discover Deals</span>
+                        {tier.label}
                       </button>
-                    </div>
+                    ))}
                   </div>
 
-                  {/* Interactive Price Range Indicator Bar */}
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-400 font-semibold shrink-0">Budget Tiers:</span>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {budgetTiers.map((tier) => (
-                          <button
-                            key={tier.val}
-                            onClick={() => {
-                              setBudget(tier.val);
-                              handleSearch(query, tier.val);
-                            }}
-                            className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition active:scale-95 border ${
-                              budget === tier.val
-                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
-                                : 'bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
-                            }`}
-                          >
-                            {tier.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Visual Progress Track */}
-                    <div className="flex items-center gap-2.5 w-full md:w-56">
-                      <span className="text-[10px] text-slate-500 font-mono">₹0</span>
-                      <div className="flex-1 h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-                        <div
-                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 rounded-full"
-                          style={{ width: `${budgetProgress}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] text-emerald-400 font-mono font-bold">
-                        ₹{budgetNum > 1000 ? `${Math.round(budgetNum / 1000)}k` : budgetNum}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Required Quick Preset Chips */}
-                  <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-800/60 text-xs">
-                    <span className="text-slate-400 font-semibold flex items-center gap-1 mr-1">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Quick Presets:</span>
-                    </span>
-
-                    {presetChips.map((chip) => {
-                      const isSelected = query.toLowerCase() === chip.query.toLowerCase();
-                      return (
-                        <button
-                          key={chip.label}
-                          onClick={() => {
-                            setQuery(chip.query);
-                            setBudget(chip.budget);
-                            handleSearch(chip.query, chip.budget);
-                          }}
-                          className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 active:scale-95 border shadow-sm ${
-                            isSelected
-                              ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-emerald-500/10'
-                              : 'bg-slate-950/80 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800 hover:border-slate-700'
-                          }`}
-                        >
-                          <span>{chip.icon}</span>
-                          <span>{chip.label}</span>
-                          <span className={`text-[10px] font-mono ml-0.5 ${isSelected ? 'text-emerald-400 font-bold' : 'text-slate-500 group-hover:text-slate-400'}`}>
-                            (≤₹{Number(chip.budget) / 1000}k)
-                          </span>
-                        </button>
-                      );
-                    })}
+                  {/* Quick Presets */}
+                  <div className="pt-2 border-t border-zinc-850/80 flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="text-zinc-500 font-mono text-[11px] uppercase mr-1">Presets:</span>
+                    {presetChips.map((chip) => (
+                      <button
+                        key={chip.label}
+                        onClick={() => {
+                          setQuery(chip.query);
+                          setBudget(chip.budget);
+                          handleSearch(chip.query, chip.budget);
+                        }}
+                        className="px-2.5 py-1 rounded bg-black hover:bg-zinc-900 border border-zinc-850 text-zinc-300 hover:text-white text-xs font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>{chip.icon}</span>
+                        <span>{chip.label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Deal Grid / Cards Header & Toggle */}
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* Deal Cards & AG Grid Table Header */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-                      <span>Normalized Deals</span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                        {products.length} found
+                    <h3 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
+                      <span>Normalized Catalog Results</span>
+                      <span className="text-[11px] font-mono px-2 py-0.2 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
+                        {products.length} Items Found
                       </span>
-                    </h2>
-                    <span className="text-xs text-slate-400">Deterministic scoring & live inventory verification</span>
+                    </h3>
                   </div>
 
+                  {/* View Mode Toggle: Cards vs AG Grid Table */}
                   {products.length > 0 && (
-                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 shadow-inner">
+                    <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-zinc-850">
                       <button
                         onClick={() => setViewMode('cards')}
-                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 ${
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                           viewMode === 'cards'
-                            ? 'bg-slate-800 text-emerald-400 shadow-sm border border-slate-700'
-                            : 'text-slate-400 hover:text-slate-200'
+                            ? 'bg-zinc-850 text-white font-semibold shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         <LayoutGrid className="w-3.5 h-3.5" />
-                        <span>Cards View</span>
+                        <span>Cards</span>
                       </button>
                       <button
                         onClick={() => setViewMode('grid')}
-                        className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 ${
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                           viewMode === 'grid'
-                            ? 'bg-slate-800 text-emerald-400 shadow-sm border border-slate-700'
-                            : 'text-slate-400 hover:text-slate-200'
+                            ? 'bg-zinc-850 text-white font-semibold shadow-sm'
+                            : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         <Table className="w-3.5 h-3.5" />
@@ -507,41 +636,44 @@ export const DashboardView: React.FC = () => {
                   )}
                 </div>
 
+                {/* Empty State */}
                 {products.length === 0 && !loading && (
-                  <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-10 md:p-14 text-center text-slate-400 backdrop-blur-sm shadow-2xl relative overflow-hidden">
-                    <div className="max-w-2xl mx-auto">
-                      <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-4 shadow-inner">
-                        <Sparkles className="w-8 h-8" />
-                      </div>
-                      <h3 className="text-xl md:text-2xl font-bold text-slate-100 mb-2">
-                        Real-Time Indian Price Comparison & Quick Commerce Radar
-                      </h3>
-                      <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-                        Enter any product to crawl live offers across <strong className="text-slate-200">Amazon India, Flipkart, Croma, Reliance Digital</strong> alongside 10-minute Quick Commerce on <strong className="text-slate-200">Blinkit, Zepto & Swiggy Instamart</strong>.
+                  <div className="bg-[#09090b] border border-zinc-850 rounded-xl p-10 text-center space-y-4">
+                    <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-400">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    <div className="max-w-md mx-auto space-y-1">
+                      <h4 className="text-sm font-bold text-white">
+                        {dashboardMode === 'agent' ? 'No Active Agent Discoveries Yet' : 'No Catalog Offers Loaded'}
+                      </h4>
+                      <p className="text-xs text-zinc-400 leading-relaxed">
+                        {dashboardMode === 'agent'
+                          ? 'Instruct the agent with a natural language directive or search a product to trigger autonomous domestic crawlers.'
+                          : 'Enter a search term above or select a preset chip to view normalized multi-merchant offers.'}
                       </p>
-
-                      <div className="flex flex-wrap items-center justify-center gap-3">
-                        {presetChips.map((chip) => (
-                          <button
-                            key={chip.label}
-                            onClick={() => {
-                              setQuery(chip.query);
-                              setBudget(chip.budget);
-                              handleSearch(chip.query, chip.budget);
-                            }}
-                            className="px-4 py-2.5 rounded-2xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 text-slate-200 hover:text-emerald-400 text-xs font-semibold flex items-center gap-2 transition active:scale-95 shadow-sm"
-                          >
-                            <span>{chip.icon}</span>
-                            <span>{chip.label}</span>
-                          </button>
-                        ))}
-                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                      {presetChips.map((chip) => (
+                        <button
+                          key={chip.label}
+                          onClick={() => {
+                            setQuery(chip.query);
+                            setBudget(chip.budget);
+                            handleSearch(chip.query, chip.budget);
+                          }}
+                          className="px-3 py-1.5 rounded-md bg-black hover:bg-zinc-900 border border-zinc-850 text-zinc-300 hover:text-white text-xs font-mono transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span>{chip.icon}</span>
+                          <span>{chip.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
 
+                {/* Products Display (Cards vs AG Grid Table) */}
                 {viewMode === 'cards' ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {products.map((product) => (
                       <DealCard
                         key={product.id}
@@ -596,7 +728,9 @@ export const DashboardView: React.FC = () => {
               onSimulate={runSimulation}
             />
           )}
+
         </main>
+      </div>
 
       {/* Tracking Modal */}
       {trackModalProduct && (
@@ -638,13 +772,16 @@ export const DashboardView: React.FC = () => {
         />
       )}
 
-      {/* Autonomous Agent Buy Directive Interface */}
+      {/* Autonomous Agent Buy Directive Modal */}
       <AgentBuyDirectiveModal
         country={selectedCountry.code}
         currency={selectedCountry.currency}
+        externalIsOpen={isDirectiveModalOpen}
+        onCloseExternal={() => setIsDirectiveModalOpen(false)}
         onInitiateCheckout={(product, offer) => initiateCheckout(product, offer)}
         onRefreshWatches={fetchTrackingRules}
       />
+
     </div>
   );
 };

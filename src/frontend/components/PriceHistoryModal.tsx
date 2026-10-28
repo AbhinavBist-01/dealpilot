@@ -106,55 +106,55 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
   const currency = product?.currency || propCurrency || 'INR';
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden my-6">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-150">
+      <div className="bg-[#09090b] border border-zinc-800 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden my-6">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-800 bg-slate-900/60">
+        <div className="flex items-center justify-between p-6 border-b border-zinc-800 bg-[#0e0e11]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <TrendingDown className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400">
+              <TrendingDown className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
+              <div className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider">
                 Price Intelligence & History
               </div>
-              <h2 className="text-lg font-bold text-slate-100 line-clamp-1 max-w-lg">
+              <h2 className="text-base font-semibold text-zinc-100 line-clamp-1 max-w-lg">
                 {product?.title || 'Loading Product History...'}
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 flex items-center justify-center transition"
+            className="w-8 h-8 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 flex items-center justify-center transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {loading ? (
           <div className="p-16 flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin mb-4" />
-            <p className="text-sm text-slate-400">Aggregating historical price observations...</p>
+            <div className="w-8 h-8 border-2 border-zinc-800 border-t-white rounded-full animate-spin mb-4" />
+            <p className="text-xs text-zinc-400">Aggregating historical price observations...</p>
           </div>
         ) : (
           <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
             {/* 4 Stat Metric Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {/* Current Price */}
-              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <div className="bg-black border border-zinc-800 rounded-xl p-4">
+                <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">
                   Current Price
                 </span>
-                <div className="text-2xl font-black text-emerald-400">
+                <div className="text-2xl font-bold text-zinc-100 font-mono tracking-tight">
                   {formatCurrency(stats?.currentPrice || 0, currency)}
                 </div>
                 <div className="mt-1 flex items-center gap-1 text-[11px]">
                   {stats?.isAllTimeLow ? (
-                    <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-                      <Sparkles className="w-3 h-3" /> All-Time Low!
+                    <span className="text-emerald-400 font-medium flex items-center gap-0.5">
+                      <Sparkles className="w-3 h-3" /> All-Time Low
                     </span>
                   ) : (
-                    <span className="text-slate-400">
+                    <span className="text-zinc-500 font-mono">
                       +₹{((stats?.currentPrice || 0) - (stats?.lowestRecorded || 0)).toLocaleString()} from low
                     </span>
                   )}
@@ -162,77 +162,77 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
               </div>
 
               {/* Lowest Recorded */}
-              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <div className="bg-black border border-zinc-800 rounded-xl p-4">
+                <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">
                   Lowest Recorded
                 </span>
-                <div className="text-2xl font-black text-slate-100">
+                <div className="text-2xl font-bold text-zinc-100 font-mono tracking-tight">
                   {formatCurrency(stats?.lowestRecorded || 0, currency)}
                 </div>
-                <div className="mt-1 text-[11px] text-emerald-400 font-semibold flex items-center gap-0.5">
+                <div className="mt-1 text-[11px] text-emerald-400 font-medium flex items-center gap-0.5">
                   <ArrowDownRight className="w-3 h-3" /> {stats?.dropPercent}% peak discount
                 </div>
               </div>
 
               {/* Highest Recorded */}
-              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <div className="bg-black border border-zinc-800 rounded-xl p-4">
+                <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">
                   Historical Peak
                 </span>
-                <div className="text-2xl font-black text-slate-300">
+                <div className="text-2xl font-bold text-zinc-400 font-mono tracking-tight">
                   {formatCurrency(stats?.highestRecorded || 0, currency)}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-400">
+                <div className="mt-1 text-[11px] text-zinc-500 font-mono">
                   Save ₹{(stats?.savingsVsHigh || 0).toLocaleString()} vs peak
                 </div>
               </div>
 
               {/* Trend & Average */}
-              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <div className="bg-black border border-zinc-800 rounded-xl p-4">
+                <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">
                   30-Day Trend
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="text-xl font-bold capitalize text-slate-200">
+                  <div className="text-lg font-semibold capitalize text-zinc-200">
                     {stats?.trend || 'Stable'}
                   </div>
                   {stats?.trend === 'dropping' ? (
-                    <TrendingDown className="w-5 h-5 text-emerald-400" />
+                    <TrendingDown className="w-4 h-4 text-emerald-400" />
                   ) : stats?.trend === 'rising' ? (
-                    <TrendingUp className="w-5 h-5 text-rose-400" />
+                    <TrendingUp className="w-4 h-4 text-rose-400" />
                   ) : (
-                    <Minus className="w-5 h-5 text-amber-400" />
+                    <Minus className="w-4 h-4 text-amber-400" />
                   )}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-400">
+                <div className="mt-1 text-[11px] text-zinc-500 font-mono">
                   Avg: {formatCurrency(stats?.averagePrice || 0, currency)}
                 </div>
               </div>
             </div>
 
             {/* Interactive SVG Chart Container */}
-            <div className="bg-slate-950 border border-slate-800/90 rounded-2xl p-5 shadow-inner">
+            <div className="bg-black border border-zinc-800 rounded-xl p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-                  <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex items-center gap-2 text-xs font-medium text-zinc-300">
+                  <Clock className="w-3.5 h-3.5 text-zinc-400" />
                   <span>Price History Trajectory</span>
                   {hoverIndex !== null && chartMetrics && (
-                    <span className="text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800 font-mono text-[11px]">
+                    <span className="text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40 font-mono text-[11px]">
                       {chartMetrics.points[hoverIndex]?.date}: {formatCurrency(chartMetrics.points[hoverIndex]?.price || 0, currency)}
                     </span>
                   )}
                 </div>
 
                 {/* Timeframe Buttons */}
-                <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
                   {(['7d', '14d', '30d', 'all'] as const).map((tf) => (
                     <button
                       key={tf}
                       onClick={() => setTimeframe(tf)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition uppercase ${
+                      className={`px-3 py-1 rounded-md text-xs font-semibold transition uppercase cursor-pointer ${
                         timeframe === tf
-                          ? 'bg-emerald-500 text-slate-950 shadow'
-                          : 'text-slate-400 hover:text-slate-200'
+                          ? 'bg-white text-zinc-950 shadow-sm'
+                          : 'text-zinc-400 hover:text-zinc-200'
                       }`}
                     >
                       {tf}
@@ -251,12 +251,9 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                   >
                     <defs>
                       <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.18" />
+                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0.0" />
                       </linearGradient>
-                      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#10b981" floodOpacity="0.4" />
-                      </filter>
                     </defs>
 
                     {/* Horizontal Gridlines */}
@@ -270,13 +267,13 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                             y1={yVal}
                             x2={chartMetrics.width - chartMetrics.padX}
                             y2={yVal}
-                            stroke="#1e293b"
-                            strokeDasharray="4 4"
+                            stroke="#18181b"
+                            strokeDasharray="3 3"
                           />
                           <text
                             x={chartMetrics.padX - 8}
                             y={yVal + 3}
-                            fill="#64748b"
+                            fill="#71717a"
                             fontSize="9"
                             textAnchor="end"
                             fontFamily="monospace"
@@ -294,9 +291,8 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                     <path
                       d={chartMetrics.pathD}
                       fill="none"
-                      stroke="#10b981"
-                      strokeWidth="2.5"
-                      filter="url(#glow)"
+                      stroke="#22c55e"
+                      strokeWidth="2"
                     />
 
                     {/* Data Points */}
@@ -317,11 +313,11 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                             <circle
                               cx={pt.x}
                               cy={pt.y}
-                              r={8}
+                              r={7}
                               fill="none"
-                              stroke="#10b981"
+                              stroke="#22c55e"
                               strokeWidth="1.5"
-                              className="animate-ping opacity-60"
+                              className="animate-ping opacity-50"
                             />
                           )}
 
@@ -329,9 +325,9 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                           <circle
                             cx={pt.x}
                             cy={pt.y}
-                            r={isHovered ? 6 : isLow ? 4.5 : 3.5}
-                            fill={isHovered ? '#34d399' : isLow ? '#10b981' : '#059669'}
-                            stroke="#0f172a"
+                            r={isHovered ? 5.5 : isLow ? 4 : 3}
+                            fill={isHovered ? '#ffffff' : isLow ? '#22c55e' : '#15803d'}
+                            stroke="#09090b"
                             strokeWidth="2"
                           />
 
@@ -340,7 +336,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                             <text
                               x={pt.x}
                               y={chartMetrics.height - 6}
-                              fill={isHovered ? '#34d399' : '#64748b'}
+                              fill={isHovered ? '#ffffff' : '#71717a'}
                               fontSize="9"
                               textAnchor="middle"
                               fontFamily="sans-serif"
@@ -359,8 +355,8 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
             {/* Multi-Merchant Comparison Table */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Store className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-sm font-bold text-slate-200">
+                <Store className="w-4 h-4 text-zinc-400" />
+                <h3 className="text-xs font-semibold text-zinc-200 uppercase tracking-wider">
                   Multi-Merchant Live Comparison ({merchants.length} retailers)
                 </h3>
               </div>
@@ -373,62 +369,62 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                   return (
                     <div
                       key={idx}
-                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition ${
+                      className={`flex items-center justify-between p-3.5 rounded-xl border transition ${
                         isBestPrice
-                          ? 'bg-emerald-950/20 border-emerald-800/60 shadow-sm'
-                          : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                          ? 'bg-zinc-900 border-zinc-700'
+                          : 'bg-black border-zinc-850 hover:border-zinc-800'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-300">
+                        <div className="w-7 h-7 rounded-md bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs text-zinc-300">
                           {idx + 1}
                         </div>
                         <div>
-                          <div className="flex items-center gap-1.5 font-bold text-sm text-slate-200">
+                          <div className="flex items-center gap-1.5 font-medium text-xs text-zinc-200">
                             <span>{m.merchant}</span>
                             {m.isAuthorized && (
-                              <span title="Verified Indian Retailer">
+                              <span title="Verified Retailer">
                                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                               </span>
                             )}
                             {m.merchant?.toLowerCase().includes('blinkit') || m.merchant?.toLowerCase().includes('zepto') || m.merchant?.toLowerCase().includes('instamart') ? (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
-                                ⚡ Quick Commerce
+                              <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 flex items-center gap-1">
+                                Quick
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                                📦 E-Commerce
+                              <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 flex items-center gap-1">
+                                Store
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                            <span className="flex items-center gap-1 text-amber-400 font-semibold">
+                          <div className="flex items-center gap-2 text-[11px] text-zinc-400 mt-0.5">
+                            <span className="flex items-center gap-1 text-amber-400 font-medium">
                               <Star className="w-3 h-3 fill-amber-400" />
-                              <span>{Number(m.rating).toFixed(1)}</span>
+                              <span className="font-mono">{Number(m.rating).toFixed(1)}</span>
                             </span>
                             <span>·</span>
-                            <span className="capitalize text-slate-300">{m.condition}</span>
+                            <span className="capitalize text-zinc-400">{m.condition}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <div className="text-base font-black text-emerald-400">
+                          <div className="text-sm font-bold text-zinc-100 font-mono">
                             {formatCurrency(m.price, currency)}
                           </div>
-                          <div className="text-[11px] font-medium text-slate-400">
+                          <div className="text-[11px] font-normal text-zinc-400">
                             {isBestPrice ? (
-                              <span className="text-emerald-400 font-bold">Best Deal</span>
+                              <span className="text-emerald-400 font-medium">Best Deal</span>
                             ) : (
-                              <span>+₹{diff.toLocaleString()} difference</span>
+                              <span className="font-mono">+₹{diff.toLocaleString()} diff</span>
                             )}
                           </div>
                         </div>
 
                         <button
                           onClick={() => onBuy(product, m)}
-                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition shadow-sm"
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-zinc-200 text-zinc-950 transition cursor-pointer"
                         >
                           Select
                         </button>
@@ -440,11 +436,11 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
             </div>
 
             {/* Quick Action Footer */}
-            <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="text-xs text-slate-300">
-                <span className="font-bold text-emerald-400">Optimal Buying Strategy: </span>
+            <div className="p-4 bg-zinc-900/60 rounded-xl border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="text-xs text-zinc-300">
+                <span className="font-semibold text-zinc-100">Optimal Buying Strategy: </span>
                 {stats?.isAllTimeLow
-                  ? 'Currently at its all-time lowest price. Excellent time to purchase.'
+                  ? 'Currently at its all-time lowest price. Recommended purchase.'
                   : `Price is within ₹${((stats?.currentPrice || 0) - (stats?.lowestRecorded || 0)).toLocaleString()} of the historical low.`}
               </div>
 
@@ -454,10 +450,10 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                     onTrack(product, stats?.lowestRecorded || stats?.currentPrice || 15000);
                     onClose();
                   }}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <Bell className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Set Watch at All-Time Low</span>
+                  <span>Set Watch</span>
                 </button>
 
                 <button
@@ -466,7 +462,7 @@ export const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({
                     onBuy(product, bestOffer);
                     onClose();
                   }}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-zinc-200 text-zinc-950 transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <CreditCard className="w-3.5 h-3.5" />
                   <span>Buy at Best Price</span>

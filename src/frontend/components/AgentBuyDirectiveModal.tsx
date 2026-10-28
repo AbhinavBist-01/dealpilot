@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bot, 
   Send, 
@@ -12,7 +12,8 @@ import {
   Clock, 
   ShieldCheck, 
   AlertCircle,
-  TrendingDown
+  TrendingDown,
+  Zap
 } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 
@@ -21,6 +22,8 @@ interface AgentBuyDirectiveProps {
   currency?: string;
   onInitiateCheckout: (product: any, offer: any) => void;
   onRefreshWatches: () => void;
+  externalIsOpen?: boolean;
+  onCloseExternal?: () => void;
 }
 
 export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
@@ -28,12 +31,25 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
   currency = 'INR',
   onInitiateCheckout,
   onRefreshWatches,
+  externalIsOpen,
+  onCloseExternal,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [promptInput, setPromptInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const isModalOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+
+  const handleClose = () => {
+    setInternalIsOpen(false);
+    if (onCloseExternal) {
+      onCloseExternal();
+    }
+    setResult(null);
+    setError(null);
+  };
 
   const examplePrompts = [
     { text: 'Buy Sony WH-1000XM5 when price drops to 30000', query: 'Sony WH-1000XM5', target: 30000 },
@@ -68,7 +84,7 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
       setResult(data);
       onRefreshWatches();
     } catch (err: any) {
-      setError(err.message || 'Failed to communicate with Autonomous Agent');
+      setError(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -78,52 +94,48 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
     <>
       {/* Floating Agent Action Button */}
       <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 text-slate-950 font-black px-5 py-3.5 rounded-full shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all flex items-center gap-2.5 group cursor-pointer border border-emerald-300/40"
+        onClick={() => setInternalIsOpen(true)}
+        className="fixed bottom-6 right-6 z-40 bg-zinc-100 hover:bg-white text-black font-semibold px-4 py-3 rounded-full shadow-2xl active:scale-95 transition-all flex items-center gap-2 cursor-pointer border border-zinc-200"
       >
-        <span className="relative flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75" />
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-slate-950" />
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
         </span>
-        <Bot className="w-5 h-5 text-slate-950" />
-        <span className="text-sm tracking-tight">Agent Buy Directive</span>
+        <Bot className="w-4 h-4 text-black" />
+        <span className="text-xs font-semibold">Agent Directive</span>
       </button>
 
       {/* Modal Overlay */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in-up"
+          onClick={handleClose}
+        >
           <div 
-            className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+            className="w-full max-w-lg bg-[#09090b] border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-
             {/* Header */}
-            <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between mb-6 border-b border-zinc-850 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-slate-950 shadow-lg shadow-emerald-500/20">
-                  <Bot className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-white">
+                  <Bot className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                     <span>Autonomous Buy Directive</span>
-                    <span className="text-[10px] uppercase font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                      Agent Loop
+                    <span className="text-[10px] uppercase font-mono font-bold bg-zinc-900 text-emerald-400 border border-zinc-800 px-2 py-0.5 rounded">
+                      Agent Engine
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-400">Instruct the agent what to buy and when. You only click Buy Now when matched.</p>
+                  <p className="text-xs text-zinc-400">Instruct the agent what to buy and when. You decide between Buy Now or Leave when matched.</p>
                 </div>
               </div>
               <button
-                onClick={() => {
-                  setIsOpen(false);
-                  setResult(null);
-                  setError(null);
-                }}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                onClick={handleClose}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -131,16 +143,16 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
             {!result ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-2">
-                    Describe your buy directive:
+                  <label className="block text-xs font-mono uppercase text-zinc-400 mb-2">
+                    Natural Language Directive:
                   </label>
                   <div className="relative">
                     <textarea
                       rows={3}
                       value={promptInput}
                       onChange={(e) => setPromptInput(e.target.value)}
-                      placeholder='e.g. "Buy Sony WH-1000XM5 when the price drops to 18000"'
-                      className="w-full bg-slate-950 border border-slate-700/80 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl p-4 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition font-medium resize-none shadow-inner"
+                      placeholder='e.g. "Buy Sony WH-1000XM5 when the price drops to 30000"'
+                      className="w-full bg-[#0e0e11] border border-zinc-800 focus:border-zinc-600 rounded-xl p-3.5 text-xs text-zinc-100 placeholder:text-zinc-600 outline-none transition font-sans resize-none"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
@@ -152,16 +164,16 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
                 </div>
 
                 {error && (
-                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
+                  <div className="p-3 rounded-lg bg-zinc-900 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
 
                 {/* Example Quick-Pick Prompts */}
                 <div>
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-                    Try example directives:
+                  <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wider block mb-2">
+                    Example directives:
                   </span>
                   <div className="space-y-1.5">
                     {examplePrompts.map((ex, i) => (
@@ -172,10 +184,10 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
                           setPromptInput(ex.text);
                           handleParseAndSubmit(ex.text);
                         }}
-                        className="w-full text-left p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 hover:text-white transition flex items-center justify-between group"
+                        className="w-full text-left p-2.5 rounded-lg bg-black hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-750 text-xs text-zinc-300 hover:text-white transition-colors flex items-center justify-between cursor-pointer group"
                       >
-                        <span className="font-mono text-slate-300">{ex.text}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 transition" />
+                        <span className="font-mono text-xs text-zinc-300">{ex.text}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
                       </button>
                     ))}
                   </div>
@@ -186,50 +198,50 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
                   type="button"
                   disabled={submitting || !promptInput.trim()}
                   onClick={() => handleParseAndSubmit()}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black py-3.5 rounded-2xl transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="w-full bg-zinc-100 hover:bg-white text-black font-semibold py-3 rounded-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-xs shadow-sm"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Zap className="w-3.5 h-3.5 fill-black" />
                   <span>{submitting ? 'Instructing Agent...' : 'Delegate Buy Directive to Agent'}</span>
                 </button>
               </div>
             ) : (
               /* Agent Notification & Match Card */
-              <div className="space-y-5 animate-in fade-in duration-200">
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-5 animate-fade-in-up">
+                <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-bold text-emerald-300">
-                      {result.isTargetMet ? 'Offer Matched! Ready for One-Click Checkout' : 'Directive Active in Background'}
+                    <h4 className="text-xs font-bold text-zinc-100 font-mono">
+                      {result.isTargetMet ? 'TARGET MET — PRE-FLIGHT VERIFIED' : 'DIRECTIVE ACTIVE IN BACKGROUND'}
                     </h4>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
                       {result.message}
                     </p>
                   </div>
                 </div>
 
                 {/* Product Detail Snippet */}
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-3.5">
+                <div className="p-4 rounded-xl bg-black border border-zinc-850 flex items-center gap-3.5">
                   {result.product?.imageUrl && (
                     <img
                       src={result.product.imageUrl}
                       alt={result.product.title}
-                      className="w-14 h-14 rounded-xl object-contain bg-slate-900 border border-slate-800 p-1"
+                      className="w-12 h-12 rounded-lg object-contain bg-zinc-900 border border-zinc-800 p-1"
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm text-slate-100 truncate">
+                    <div className="font-semibold text-xs text-zinc-100 truncate">
                       {result.product?.title}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                      <span>Live Price: <strong className="text-emerald-400 font-mono">{formatCurrency(result.product?.currentBestPrice, currency)}</strong></span>
+                    <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 mt-1">
+                      <span>Best: <strong className="text-emerald-400">{formatCurrency(result.product?.currentBestPrice, currency)}</strong></span>
                       <span>•</span>
-                      <span>Target: <strong className="text-slate-200 font-mono">{formatCurrency(result.rule?.targetPrice, currency)}</strong></span>
+                      <span>Target: <strong className="text-zinc-200">{formatCurrency(result.rule?.targetPrice, currency)}</strong></span>
                     </div>
 
                     {result.product?.bestOffer?.sellerName && (
-                      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-300">
-                        <span className="font-semibold text-slate-400">Best Store:</span>
-                        <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-emerald-400 font-medium">
+                      <div className="mt-1 flex items-center gap-1.5 text-[11px] font-mono text-zinc-400">
+                        <span>Merchant:</span>
+                        <span className="px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800 text-zinc-200">
                           {result.product.bestOffer.sellerName}
                         </span>
                       </div>
@@ -237,37 +249,12 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
                   </div>
                 </div>
 
-                {/* Agent Tool Executions Audit */}
-                {result.toolsExecuted && result.toolsExecuted.length > 0 && (
-                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-[11px]">
-                    <div className="text-[10px] uppercase font-bold text-slate-400 mb-1.5 tracking-wider flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-emerald-400" />
-                      <span>Autonomous Tools Executed ({result.toolsExecuted.length}):</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {result.toolsExecuted.map((t: any, i: number) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono text-[10px]"
-                          title={t.resultSummary}
-                        >
-                          ✓ {t.tool}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Required Action Buttons: BUY NOW vs LEAVE */}
-                <div className="flex items-center gap-3 pt-2">
+                <div className="flex items-center gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setResult(null);
-                      setPromptInput('');
-                    }}
-                    className="w-1/2 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition border border-slate-700"
+                    onClick={handleClose}
+                    className="w-1/2 py-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-850 text-zinc-300 font-medium text-xs transition-colors border border-zinc-800 cursor-pointer"
                   >
                     Leave
                   </button>
@@ -275,16 +262,14 @@ export const AgentBuyDirectiveModal: React.FC<AgentBuyDirectiveProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setIsOpen(false);
+                      handleClose();
                       if (result.product && result.product.bestOffer) {
                         onInitiateCheckout(result.product, result.product.bestOffer);
                       }
-                      setResult(null);
-                      setPromptInput('');
                     }}
-                    className="w-1/2 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5"
+                    className="w-1/2 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                   >
-                    <ShoppingCart className="w-4 h-4" />
+                    <ShoppingCart className="w-3.5 h-3.5" />
                     <span>Buy Now</span>
                   </button>
                 </div>

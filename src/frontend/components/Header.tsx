@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Bell, Zap, CreditCard, Search, Activity, Shield, Sparkles, Globe } from 'lucide-react';
+import { Clock, Bell, Zap, CreditCard, Search, Activity, Shield, Sparkles, Globe, Plane } from 'lucide-react';
 import { UserAuthButton } from './UserAuthButton';
 import { useAuth } from '@/frontend/utils/auth-context';
 import { SUPPORTED_COUNTRIES, CountryConfig } from '@/backend/contracts/countries';
@@ -63,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'paypal' as const,
       label: 'PayPal Agent',
-      icon: <CreditCard className="w-3.5 h-3.5 text-blue-400" />,
+      icon: <CreditCard className="w-3.5 h-3.5" />,
       onClick: () => setActiveTab('paypal'),
     },
     {
@@ -75,46 +75,46 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-40 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+    <header className="border-b border-zinc-800 bg-black/90 backdrop-blur-md sticky top-0 z-40 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         {/* Brand & Live Worker Heartbeat */}
         <div className="flex items-center gap-4 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-xl text-slate-950 shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform">
-              ✈
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white">
+              <Plane className="w-4 h-4 text-zinc-200" />
             </div>
             <div>
-              <div className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+              <div className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
                 <span>DealPilot</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase tracking-wide">
+                <span className="text-[9px] font-mono font-medium px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-400 border border-zinc-800 uppercase">
                   v2.0
                 </span>
               </div>
-              <div className="text-[10px] text-emerald-400 uppercase tracking-widest font-semibold flex items-center gap-1.5">
+              <div className="text-[10px] text-zinc-400 uppercase tracking-widest font-medium flex items-center gap-1.5">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                 </span>
                 <span>Autonomous Shopping Agent</span>
               </div>
             </div>
           </div>
 
-          {/* Subtle Live Worker Heartbeat Pulse Telemetry */}
-          <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/80 border border-emerald-500/30 text-emerald-400 shadow-sm backdrop-blur-sm">
-            <span className="relative flex h-2 w-2">
+          {/* Subtle Live Worker Heartbeat Telemetry */}
+          <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300">
+            <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
             </span>
-            <Activity className="w-3 h-3 text-emerald-400" />
-            <span className="text-[11px] font-semibold tracking-wide">BullMQ Workers</span>
-            <span className="text-[10px] text-slate-400 font-mono border-l border-slate-800 pl-1.5">Live · 2h/30m</span>
+            <Activity className="w-3 h-3 text-zinc-400" />
+            <span className="text-[11px] font-medium tracking-wide">BullMQ Workers</span>
+            <span className="text-[10px] text-zinc-500 font-mono border-l border-zinc-800 pl-1.5">Live · 2h/30m</span>
           </div>
         </div>
 
         {/* Navigation Tabs with Smooth Active Indicator */}
         <nav
-          className="hidden md:flex items-center p-1 bg-slate-950/60 backdrop-blur-md rounded-xl border border-slate-800/80 shadow-inner"
+          className="hidden md:flex items-center p-1 bg-zinc-950 rounded-lg border border-zinc-800"
           role="tablist"
           aria-label="Dashboard Navigation"
         >
@@ -126,33 +126,23 @@ export const Header: React.FC<HeaderProps> = ({
                 role="tab"
                 aria-selected={isActive}
                 onClick={tab.onClick}
-                className={`relative px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 z-10 select-none active:scale-95 ${
+                className={`relative px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 select-none cursor-pointer ${
                   isActive
-                    ? 'text-emerald-300 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-zinc-800 text-white'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                 }`}
               >
-                {/* Active tab background glow */}
-                {isActive && (
-                  <span className="absolute inset-0 bg-emerald-500/15 border border-emerald-500/30 rounded-lg -z-10 shadow-[0_0_12px_rgba(16,185,129,0.15)] transition-all duration-200" />
-                )}
-
-                {/* Smooth active indicator underline under tab */}
-                {isActive && (
-                  <span className="absolute -bottom-1 left-2.5 right-2.5 h-[2px] bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-in fade-in zoom-in-75 duration-200" />
-                )}
-
                 {tab.icon}
                 <span>{tab.label}</span>
 
                 {tab.badge !== undefined && (
                   <span
-                    className={`ml-0.5 text-[10px] px-1.5 py-0.2 rounded-full font-bold transition-colors ${
+                    className={`ml-0.5 text-[10px] px-1.5 py-0.2 rounded-full font-mono font-medium ${
                       tab.alertStyle
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
+                        ? 'bg-amber-950/60 text-amber-300 border border-amber-800/60'
                         : isActive
-                        ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-500/30'
-                        : 'bg-slate-800 text-slate-400 border border-slate-700/60'
+                        ? 'bg-zinc-900 text-zinc-200 border border-zinc-700'
+                        : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
                     }`}
                   >
                     {tab.badge}
@@ -167,36 +157,36 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2.5 shrink-0">
           {/* User Profile Pill with Avatar / Initials */}
           {sessionUser ? (
-            <div className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-slate-800/90 border border-slate-700/80 shadow-sm backdrop-blur-sm hover:border-emerald-500/40 transition">
+            <div className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm">
               {sessionUser.image ? (
                 <img
                   src={sessionUser.image}
                   alt={sessionUser.name || 'User'}
-                  className="w-7 h-7 rounded-full object-cover ring-2 ring-emerald-500/40"
+                  className="w-6 h-6 rounded-md object-cover border border-zinc-700"
                 />
               ) : (
-                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-sm">
+                <div className="w-6 h-6 rounded-md bg-zinc-800 text-zinc-200 font-semibold text-[10px] flex items-center justify-center border border-zinc-700">
                   {initials}
                 </div>
               )}
               <div className="flex flex-col text-left leading-tight">
-                <span className="text-xs font-semibold text-slate-100 max-w-[105px] truncate">
+                <span className="text-xs font-medium text-zinc-200 max-w-[105px] truncate">
                   {sessionUser.name || sessionUser.email?.split('@')[0]}
                 </span>
-                <span className="text-[9px] text-emerald-400 font-mono flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  Verified Pilot
+                <span className="text-[9px] text-zinc-400 font-mono flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Verified
                 </span>
               </div>
             </div>
           ) : (
-            <div className="hidden sm:flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-800/60 border border-slate-700/60 shadow-sm">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-[10px] flex items-center justify-center shadow-sm">
+            <div className="hidden sm:flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm">
+              <div className="w-6 h-6 rounded-md bg-zinc-800 text-zinc-300 font-medium text-[10px] flex items-center justify-center border border-zinc-700">
                 DP
               </div>
               <div className="flex flex-col text-left leading-tight">
-                <span className="text-[11px] font-semibold text-slate-200">Pilot Guest</span>
-                <span className="text-[9px] text-emerald-400/80 font-mono">Sandbox Mode</span>
+                <span className="text-[11px] font-medium text-zinc-300">Pilot Guest</span>
+                <span className="text-[9px] text-zinc-500 font-mono">Sandbox</span>
               </div>
             </div>
           )}
@@ -210,19 +200,19 @@ export const Header: React.FC<HeaderProps> = ({
                   const found = SUPPORTED_COUNTRIES.find((c) => c.code === e.target.value);
                   if (found) onCountryChange(found);
                 }}
-                className="appearance-none bg-slate-800/80 hover:bg-slate-700/80 text-xs font-semibold text-slate-200 border border-slate-700/80 hover:border-emerald-500/40 rounded-xl pl-2.5 pr-7 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-400 transition"
+                className="appearance-none bg-zinc-900 hover:bg-zinc-850 text-xs font-medium text-zinc-200 border border-zinc-800 hover:border-zinc-700 rounded-lg pl-2.5 pr-7 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-zinc-600 transition"
               >
                 {SUPPORTED_COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code} className="bg-slate-900 text-slate-200">
+                  <option key={c.code} value={c.code} className="bg-black text-zinc-200">
                     {c.flag} {c.code} ({c.currency})
                   </option>
                 ))}
               </select>
-              <Globe className="w-3.5 h-3.5 absolute right-2 text-slate-400 pointer-events-none" />
+              <Globe className="w-3.5 h-3.5 absolute right-2 text-zinc-500 pointer-events-none" />
             </div>
           )}
 
-          <div className="h-5 w-px bg-slate-800 mx-0.5" />
+          <div className="h-4 w-px bg-zinc-800 mx-0.5" />
 
           {/* Better Auth Action Button / Modal Trigger */}
           <UserAuthButton />

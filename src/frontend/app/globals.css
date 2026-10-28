@@ -39,3 +39,56 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: #33333a;
 }
+
+/* Motion & Animation Utilities */
+@keyframes radar-pulse {
+  0% { transform: scale(0.92); opacity: 0.9; }
+  50% { transform: scale(1.08); opacity: 0.4; }
+  100% { transform: scale(0.92); opacity: 0.9; }
+}
+
+@keyframes sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-radar-pulse {
+  animation: radar-pulse 2.8s ease-in-out infinite;
+}
+
+.animate-sweep {
+  animation: sweep 4s linear infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Accessible Reduced Motion Gating (WCAG 2.3.3 / Tiered Degradation) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-radar-pulse,
+  .animate-sweep,
+  .animate-fade-in-up {
+    animation: none !important;
+    transform: none !important;
+  }
+}
