@@ -68,14 +68,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       id: 'search' as const,
       label: 'Deal Radar',
       icon: <Search className="w-4 h-4" />,
-      description: 'Search & Normalized Deals',
+      description: 'Search & Compare Deals',
     },
     {
       id: 'watches' as const,
       label: 'Active Watches',
       icon: <Clock className="w-4 h-4" />,
       badge: activeWatchesCount,
-      description: 'Background Tracking Rules',
+      description: 'Price Drop Trackers',
       onClick: () => {
         setActiveTab('watches');
         onRefreshWatches();
@@ -83,11 +83,11 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       id: 'alerts' as const,
-      label: 'Outbox Alerts',
+      label: 'Price Alerts',
       icon: <Bell className="w-4 h-4" />,
       badge: alertsCount,
       alertStyle: alertsCount > 0,
-      description: 'Transactional Notifications',
+      description: 'Email & App Alerts',
       onClick: () => {
         setActiveTab('alerts');
         onRefreshWatches();
@@ -97,13 +97,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       id: 'paypal' as const,
       label: 'PayPal Agent',
       icon: <CreditCard className="w-4 h-4 text-zinc-300" />,
-      description: 'Toolkit & Order Chat',
+      description: 'AI Orders & Checkout',
     },
     {
       id: 'simulation' as const,
       label: 'Test Lab',
       icon: <Zap className="w-4 h-4 text-zinc-300" />,
-      description: 'Failure Paths & Sim',
+      description: 'Simulation & Safety Checks',
     },
   ];
 

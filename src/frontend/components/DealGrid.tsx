@@ -5,6 +5,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry, ColDef } from 'ag-grid-community';
 
 import { formatCurrency, getDealScoreBadgeColor } from '../utils/formatters';
+import { computeProductDealScore } from '../utils/deal-scoring';
 import {
   ShieldCheck,
   Bell,
@@ -39,7 +40,8 @@ export const DealGrid: React.FC<DealGridProps> = ({
     return products.map((product) => {
       const offer = product.offers?.[0];
       const evalData = offer?.evaluations?.[0];
-      const score = evalData?.score || 78;
+      const dealScoreData = computeProductDealScore(product, offer);
+      const score = evalData?.score || dealScoreData.score;
       const history = offer?.observations || [];
       const currentPrice = offer?.totalPrice || 0;
       const lowestObserved =
@@ -425,7 +427,7 @@ export const DealGrid: React.FC<DealGridProps> = ({
         <div className="flex items-center gap-3 text-zinc-400 text-[11px]">
           <span>Sorted by relevance & deal rating</span>
           <span className="text-zinc-200 font-medium font-mono">
-            {rowData.length} normalized deals
+            {rowData.length} deals available
           </span>
         </div>
       </div>

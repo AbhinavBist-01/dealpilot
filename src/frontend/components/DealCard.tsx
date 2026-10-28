@@ -17,6 +17,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { formatCurrency, getDealScoreBadgeColor } from '../utils/formatters';
+import { computeProductDealScore } from '../utils/deal-scoring';
 
 interface DealCardProps {
   product: any;
@@ -35,8 +36,9 @@ export const DealCard: React.FC<DealCardProps> = ({
   const offer = product.offers?.[0];
   const evalData = offer?.evaluations?.[0];
 
-  // 1. Deal Score & Badge (0-100 rubric)
-  const score = evalData?.score || 78;
+  // 1. Dynamic Value & Deal Score (30% P + 25% Q + 15% H + 15% T + 15% U)
+  const dealScoreData = computeProductDealScore(product, offer);
+  const score = evalData?.score || dealScoreData.score;
 
   // 2. Pricing, Lowest Observed & Savings Calculation
   const currentPrice = offer?.totalPrice || 0;
@@ -82,10 +84,10 @@ export const DealCard: React.FC<DealCardProps> = ({
   const isExactModel = product.verification?.matchQuality === 'exact_model';
   const isVerified = product.verification?.isMatch !== false;
 
-  // 6. AI Summary about product specs & deal
+  // 6. Specs Summary
   const aiSummary =
     evalData?.explanation ||
-    `${conditionDisplay}. ${product.brand} ${product.model || product.title}. Deal score ${score}/100 verified across domestic merchants.`;
+    `${conditionDisplay}. ${product.brand} ${product.model || product.title}. Deal score ${score}/100 verified across stores.`;
 
   // Mini Sparkline Points
   const sparklinePath = `M 5 26 C 25 22, 45 26, 65 24 C 85 22, 105 14, 130 ${isAtHistoricalLow ? 8 : 14}`;
@@ -241,11 +243,45 @@ export const DealCard: React.FC<DealCardProps> = ({
             </div>
           </div>
 
-          {/* AI Specs Summary */}
+          {/* Value & Deal Score Factors Strip (30% P + 25% Q + 15% H + 15% T + 15% U) */}
+          <div className="bg-[#0b0b0e] rounded-lg p-2.5 border border-zinc-850 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+              <span className="text-zinc-400 flex items-center gap-1">
+                <Award className="w-3 h-3 text-emerald-400" />
+                <span>Value Score: <strong className="text-white">{score}/100</strong></span>
+              </span>
+              <span className="text-emerald-400 font-medium text-[10px]">{dealScoreData.gradeLabel}</span>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1 text-[9px] font-mono text-center">
+              <div className="bg-black p-1 rounded border border-zinc-850" title="Price & Deal Quality (30% weight)">
+                <div className="text-zinc-500 text-[8px] uppercase">Price 30%</div>
+                <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.P}</div>
+              </div>
+              <div className="bg-black p-1 rounded border border-zinc-850" title="Product Quality (25% weight)">
+                <div className="text-zinc-500 text-[8px] uppercase">Quality 25%</div>
+                <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.Q}</div>
+              </div>
+              <div className="bg-black p-1 rounded border border-zinc-850" title="Price History (15% weight)">
+                <div className="text-zinc-500 text-[8px] uppercase">Hist 15%</div>
+                <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.H}</div>
+              </div>
+              <div className="bg-black p-1 rounded border border-zinc-850" title="Seller Trust (15% weight)">
+                <div className="text-zinc-500 text-[8px] uppercase">Trust 15%</div>
+                <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.T}</div>
+              </div>
+              <div className="bg-black p-1 rounded border border-zinc-850" title="User Fit (15% weight)">
+                <div className="text-zinc-500 text-[8px] uppercase">Fit 15%</div>
+                <div className="text-zinc-200 font-bold tabular-nums">{dealScoreData.U}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Specs & Evaluation Summary */}
           <div className="bg-[#0e0e11] rounded-lg p-2.5 border border-zinc-850 text-xs text-zinc-400 space-y-1">
             <div className="flex items-center gap-1.5 text-zinc-300 font-mono text-[10px] uppercase font-semibold">
               <Sparkles className="w-3 h-3 text-zinc-400" />
-              <span>Spec & Evaluation</span>
+              <span>Summary</span>
             </div>
             <p className="text-zinc-400 text-xs leading-relaxed line-clamp-2 font-sans">
               {aiSummary}

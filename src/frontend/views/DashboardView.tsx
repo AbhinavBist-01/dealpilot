@@ -53,7 +53,6 @@ export const DashboardView: React.FC = () => {
   const [isDirectiveModalOpen, setIsDirectiveModalOpen] = useState(false);
 
   const [query, setQuery] = useState('');
-  const [budget, setBudget] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [trackingRules, setTrackingRules] = useState<any[]>([]);
@@ -78,21 +77,6 @@ export const DashboardView: React.FC = () => {
   // Status Banner
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
 
-  // Trending Indian Consumer Electronics & Quick Commerce items
-  const presetChips = [
-    { label: 'iPhone 16 Pro', query: 'iPhone 16 Pro', budget: '119900', icon: '📱' },
-    { label: 'MacBook Air M3', query: 'MacBook Air M3', budget: '114900', icon: '💻' },
-    { label: 'Sony PS5 Slim', query: 'PlayStation 5 Slim', budget: '54990', icon: '🎮' },
-    { label: 'boAt Earbuds', query: 'boAt Airdopes', budget: '1999', icon: '🎧' },
-  ];
-
-  const budgetTiers = [
-    { label: '≤ ₹30k', val: '30000' },
-    { label: '≤ ₹60k', val: '60000' },
-    { label: '≤ ₹150k', val: '150000' },
-    { label: '≤ ₹200k', val: '200000' },
-  ];
-
   const fetchOutboxAlerts = async () => {
     try {
       const res = await fetch('/api/notifications');
@@ -110,6 +94,7 @@ export const DashboardView: React.FC = () => {
   useEffect(() => {
     fetchTrackingRules();
     fetchOutboxAlerts();
+    handleSearch('Sony WH-1000XM5');
   }, []);
 
   const showBanner = (msg: string) => {
@@ -117,10 +102,9 @@ export const DashboardView: React.FC = () => {
     setTimeout(() => setBannerMessage(null), 4000);
   };
 
-  const handleSearch = async (overrideQuery?: string, overrideBudget?: string, overrideCountry?: CountryConfig) => {
+  const handleSearch = async (overrideQuery?: string, overrideCountry?: CountryConfig) => {
     setLoading(true);
     const q = overrideQuery !== undefined ? overrideQuery : query;
-    const b = overrideBudget !== undefined ? overrideBudget : budget;
     const activeCountry = overrideCountry || selectedCountry;
 
     try {
@@ -129,7 +113,6 @@ export const DashboardView: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: q,
-          budget: b ? parseFloat(b) : undefined,
           country: activeCountry.code,
           currency: activeCountry.currency,
         }),
@@ -147,13 +130,8 @@ export const DashboardView: React.FC = () => {
 
   const handleCountrySelect = (newCountry: CountryConfig) => {
     setSelectedCountry(newCountry);
-    if (newCountry.currency === 'INR' && Number(budget) < 1000) {
-      setBudget('30000');
-    } else if (newCountry.currency !== 'INR' && Number(budget) > 5000) {
-      setBudget('500');
-    }
     showBanner(`Market switched to ${newCountry.name} (${newCountry.currency})`);
-    handleSearch(query, undefined, newCountry);
+    handleSearch(query, newCountry);
   };
 
   const fetchTrackingRules = async () => {
@@ -293,9 +271,6 @@ export const DashboardView: React.FC = () => {
     );
   }
 
-  const budgetNum = Number(budget) || 0;
-  const budgetProgress = Math.min(100, Math.max(5, (budgetNum / 200000) * 100));
-
   const tabLabels: Record<string, string> = {
     search: 'Deal Radar & Search',
     watches: 'Active Background Watches',
@@ -417,14 +392,14 @@ export const DashboardView: React.FC = () => {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-[11px] font-mono uppercase text-emerald-400 tracking-wider font-semibold">
-                          Autonomous Agent Engine Active
+                          Autonomous Price Tracking Active
                         </span>
                       </div>
                       <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                        Continuous Radar & Directives Monitoring
+                        Continuous Price & Deal Monitoring
                       </h2>
                       <p className="text-xs text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-                        DealPilot background workers continuously scrape and normalize domestic offers across Amazon, Flipkart, Croma, Blinkit, Zepto, and Instamart. When a deal reaches target threshold, pre-flight safety locks the offer for 1-click execution.
+                        DealPilot continuously monitors prices across Amazon, Flipkart, Croma, Blinkit, Zepto, and Instamart. When prices drop to your target, it verifies stock and readies 1-click checkout.
                       </p>
                     </div>
 
@@ -433,34 +408,34 @@ export const DashboardView: React.FC = () => {
                       className="px-4 py-2.5 rounded-lg bg-zinc-100 hover:bg-white text-black font-semibold text-xs transition-all active:scale-[0.98] flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
                     >
                       <Command className="w-3.5 h-3.5" />
-                      <span>Deploy Buy Directive</span>
+                      <span>Set Price Watch</span>
                     </button>
                   </div>
 
                   {/* Agent 3-Metric Health Strip */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-zinc-850/80 text-xs font-mono">
                     <div className="p-3 rounded-lg bg-black border border-zinc-850">
-                      <div className="text-[10px] text-zinc-500 uppercase">Tracked Directives</div>
+                      <div className="text-[10px] text-zinc-500 uppercase">Active Price Trackers</div>
                       <div className="text-base font-bold text-zinc-100 tabular-nums mt-0.5">
-                        {trackingRules.length} Active Rules
+                        {trackingRules.length} Tracked Products
                       </div>
-                      <div className="text-[10px] text-emerald-400 mt-0.5">● Polling Cadence: 30m / 2h</div>
+                      <div className="text-[10px] text-emerald-400 mt-0.5">Live monitoring active</div>
                     </div>
 
                     <div className="p-3 rounded-lg bg-black border border-zinc-850">
-                      <div className="text-[10px] text-zinc-500 uppercase">Outbox Alerts Ready</div>
+                      <div className="text-[10px] text-zinc-500 uppercase">Price Drop Alerts</div>
                       <div className="text-base font-bold text-zinc-100 tabular-nums mt-0.5">
-                        {outboxAlerts.length} Captured Events
+                        {outboxAlerts.length} Alerts Dispatched
                       </div>
-                      <div className="text-[10px] text-zinc-400 mt-0.5">Gmail Dispatch Deduplicated</div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">Instant Email & Outbox</div>
                     </div>
 
                     <div className="p-3 rounded-lg bg-black border border-zinc-850">
-                      <div className="text-[10px] text-zinc-500 uppercase">Pre-Flight Safety</div>
+                      <div className="text-[10px] text-zinc-500 uppercase">Checkout Protection</div>
                       <div className="text-base font-bold text-zinc-100 mt-0.5">
-                        100% Guarded
+                        Verified Safe
                       </div>
-                      <div className="text-[10px] text-zinc-400 mt-0.5">Stock & Price Locked at Checkout</div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">Stock & price re-verified before purchase</div>
                     </div>
                   </div>
 
@@ -472,8 +447,8 @@ export const DashboardView: React.FC = () => {
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder={`Tell agent which product or category to crawl across ${selectedCountry.name}...`}
-                        className="w-full bg-black border border-zinc-800 hover:border-zinc-700 focus:border-zinc-500 rounded-lg pl-10 pr-24 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-colors"
+                        placeholder={`Search any product to monitor prices across ${selectedCountry.name}...`}
+                        className="w-full bg-black border border-zinc-800 hover:border-zinc-700 focus:border-zinc-500 rounded-lg pl-10 pr-28 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-colors"
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                       />
                       <button
@@ -481,44 +456,40 @@ export const DashboardView: React.FC = () => {
                         disabled={loading}
                         className="absolute right-1.5 top-1.5 px-3 py-1 rounded bg-zinc-850 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 transition-colors disabled:opacity-50 cursor-pointer"
                       >
-                        {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Crawl'}
+                        {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : 'Search Deals'}
                       </button>
                     </div>
                   </div>
                 </div>
               ) : (
-                /* MODE 2: MANUAL MODE CONSOLE (TRADER) */
+                /* MODE 2: MANUAL MODE CONSOLE (USER-FRIENDLY & CLEAN) */
                 <div className="bg-[#09090b] border border-zinc-850 rounded-xl p-5 sm:p-6 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
                         <span className="text-[11px] font-mono uppercase text-zinc-300 tracking-wider font-semibold">
-                          Manual Trader Mode
+                          Store Search & Comparison
                         </span>
                       </div>
                       <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                        Granular Search & Table Inspection
+                        Explore & Compare Real-Time Deals
                       </h2>
-                    </div>
-
-                    <div className="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
-                      <span>Ceiling:</span>
-                      <span className="text-emerald-400 font-bold tabular-nums">
-                        {selectedCountry.symbol}{budgetNum > 0 ? budgetNum.toLocaleString(selectedCountry.locale) : 'No Limit'}
-                      </span>
+                      <p className="text-xs text-zinc-400 mt-1">
+                        Find the lowest price across certified stores for {selectedCountry.name} ({selectedCountry.currency})
+                      </p>
                     </div>
                   </div>
 
-                  {/* Manual Search & Budget Inputs */}
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  {/* User-Friendly Search Input */}
+                  <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Search className="w-4 h-4 absolute left-3.5 top-3 text-zinc-500" />
                       <input
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder={`Search manual catalog for ${selectedCountry.name} (${selectedCountry.currency})...`}
+                        placeholder="Search products, brands, or models (e.g. Sony WH-1000XM5, iPhone, MacBook)..."
                         className="w-full bg-black border border-zinc-800 hover:border-zinc-700 focus:border-zinc-500 rounded-lg pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-colors"
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                       />
@@ -526,71 +497,21 @@ export const DashboardView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setQuery('')}
-                          className="absolute right-3 top-3 text-zinc-500 hover:text-white"
+                          className="absolute right-3 top-3 text-zinc-500 hover:text-white cursor-pointer"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
 
-                    <div className="relative w-full sm:w-44">
-                      <input
-                        type="number"
-                        value={budget}
-                        onChange={(e) => setBudget(e.target.value)}
-                        placeholder={`Budget (${selectedCountry.symbol})`}
-                        className="w-full bg-black border border-zinc-800 hover:border-zinc-700 focus:border-zinc-500 rounded-lg px-3 py-2.5 text-xs text-white placeholder-zinc-600 outline-none transition-colors font-mono"
-                      />
-                    </div>
-
                     <button
                       onClick={() => handleSearch()}
                       disabled={loading}
-                      className="px-4 py-2.5 rounded-lg bg-zinc-100 hover:bg-white text-black font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm shrink-0"
+                      className="px-5 py-2.5 rounded-lg bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm shrink-0"
                     >
                       {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                      <span>Search</span>
+                      <span>Find Deals</span>
                     </button>
-                  </div>
-
-                  {/* Budget Tiers Chips */}
-                  <div className="pt-2 border-t border-zinc-850/80 flex flex-wrap items-center gap-2 text-xs">
-                    <span className="text-zinc-500 font-mono text-[11px] uppercase mr-1">Tiers:</span>
-                    {budgetTiers.map((tier) => (
-                      <button
-                        key={tier.val}
-                        onClick={() => {
-                          setBudget(tier.val);
-                          handleSearch(query, tier.val);
-                        }}
-                        className={`px-2.5 py-1 rounded text-[11px] font-mono transition-colors cursor-pointer border ${
-                          budget === tier.val
-                            ? 'bg-zinc-800 text-white border-zinc-700'
-                            : 'bg-black text-zinc-400 hover:text-zinc-200 border-zinc-850'
-                        }`}
-                      >
-                        {tier.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Quick Presets */}
-                  <div className="pt-2 border-t border-zinc-850/80 flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className="text-zinc-500 font-mono text-[11px] uppercase mr-1">Presets:</span>
-                    {presetChips.map((chip) => (
-                      <button
-                        key={chip.label}
-                        onClick={() => {
-                          setQuery(chip.query);
-                          setBudget(chip.budget);
-                          handleSearch(chip.query, chip.budget);
-                        }}
-                        className="px-2.5 py-1 rounded bg-black hover:bg-zinc-900 border border-zinc-850 text-zinc-300 hover:text-white text-xs font-mono transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>{chip.icon}</span>
-                        <span>{chip.label}</span>
-                      </button>
-                    ))}
                   </div>
                 </div>
               )}
@@ -600,9 +521,9 @@ export const DashboardView: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
-                      <span>Normalized Catalog Results</span>
+                      <span>Available Deals</span>
                       <span className="text-[11px] font-mono px-2 py-0.2 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
-                        {products.length} Items Found
+                        {products.length} found
                       </span>
                     </h3>
                   </div>
@@ -630,7 +551,7 @@ export const DashboardView: React.FC = () => {
                         }`}
                       >
                         <Table className="w-3.5 h-3.5" />
-                        <span>AG Grid Table</span>
+                        <span>Table View</span>
                       </button>
                     </div>
                   )}
@@ -644,29 +565,11 @@ export const DashboardView: React.FC = () => {
                     </div>
                     <div className="max-w-md mx-auto space-y-1">
                       <h4 className="text-sm font-bold text-white">
-                        {dashboardMode === 'agent' ? 'No Active Agent Discoveries Yet' : 'No Catalog Offers Loaded'}
+                        No Deals Found
                       </h4>
                       <p className="text-xs text-zinc-400 leading-relaxed">
-                        {dashboardMode === 'agent'
-                          ? 'Instruct the agent with a natural language directive or search a product to trigger autonomous domestic crawlers.'
-                          : 'Enter a search term above or select a preset chip to view normalized multi-merchant offers.'}
+                        Search for a product above to explore live verified prices and set tracking alerts.
                       </p>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                      {presetChips.map((chip) => (
-                        <button
-                          key={chip.label}
-                          onClick={() => {
-                            setQuery(chip.query);
-                            setBudget(chip.budget);
-                            handleSearch(chip.query, chip.budget);
-                          }}
-                          className="px-3 py-1.5 rounded-md bg-black hover:bg-zinc-900 border border-zinc-850 text-zinc-300 hover:text-white text-xs font-mono transition-colors flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span>{chip.icon}</span>
-                          <span>{chip.label}</span>
-                        </button>
-                      ))}
                     </div>
                   </div>
                 )}
