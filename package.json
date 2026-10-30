@@ -10,6 +10,7 @@
     "worker": "tsx src/backend/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
     "eval": "vitest run tests/system-evals.test.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
