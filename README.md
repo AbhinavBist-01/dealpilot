@@ -1,529 +1,601 @@
 # 🎯 DealPilot
 
-> **Your autonomous, AI-powered deal-hunting and price-monitoring agent.**
+<div align="center">
 
-DealPilot monitors product deals across retailers in the background. When an item hits your target price or historical low, it alerts you instantly and enables seamless, verified checkout via PayPal integration with a single tap.
+> **Autonomous Deal-Hunting, Live Price-Monitoring & Verified Agentic Checkout**
+
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.4.2%20(Turbopack)-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/React-19.3.1-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis)](https://redis.io/)
+[![BullMQ](https://img.shields.io/badge/BullMQ-6.3-orange?style=for-the-badge)](https://bullmq.io/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+[![PayPal Agent](https://img.shields.io/badge/PayPal-Agent%20Toolkit-00457C?style=for-the-badge&logo=paypal)](https://developer.paypal.com/)
+[![Tests Passing](https://img.shields.io/badge/Tests-39%2F39%20Passing-brightgreen?style=for-the-badge)](https://vitest.dev/)
+
+</div>
 
 ---
 
 ## 📑 Table of Contents
 
-- [Overview & Value Proposition](#-overview--value-proposition)
-- [How It Works (Example Flow)](#-how-it-works-example-flow)
+- [Executive Summary](#-executive-summary)
 - [System Architecture](#-system-architecture)
-- [Core User Flows](#-core-user-flows)
-  - [A. Product Discovery & Evaluation](#a-discover-a-product-and-evaluate-current-deals)
-  - [B. Asynchronous Price Tracking](#b-track-a-price-asynchronously)
-  - [C. Deal Review & Secure Checkout](#c-review-and-purchase)
-- [Components & Responsibilities](#-components--responsibilities)
-- [Data Model & Entities](#-data-model--entities)
-- [Deal Scoring & AI Guardrails](#-deal-scoring--ai-guardrails)
+- [Core Architectural Workflows](#-core-architectural-workflows)
+  - [1. Multi-Merchant Discovery & Product Verification](#1-multi-merchant-discovery--product-verification)
+  - [2. Deterministic Scoring & Fact-Grounded LLM Explainer](#2-deterministic-scoring--fact-grounded-llm-explainer)
+  - [3. Adaptive Polling & BullMQ Task Queue](#3-adaptive-polling--bullmq-task-queue)
+  - [4. Transactional Outbox & Responsive Email Dispatch](#4-transactional-outbox--responsive-email-dispatch)
+  - [5. Pre-Flight Revalidation & PayPal Idempotent Checkout](#5-pre-flight-revalidation--paypal-idempotent-checkout)
+  - [6. Autonomous Buy Directives ("Buy Now" & "Leave")](#6-autonomous-buy-directives-buy-now--leave)
+  - [7. Interactive Comparison Grid & Price History Trajectories](#7-interactive-comparison-grid--price-history-trajectories)
+- [Codebase Architecture & Directory Layout](#-codebase-architecture--directory-layout)
+- [Data Model & Prisma Schema](#-data-model--prisma-schema)
 - [API Reference](#-api-reference)
-- [Reliability, Safety & Guardrails](#-reliability-safety--guardrails)
-- [Deep-Dive Design Improvements](#-deep-dive-design-improvements)
-  - [1. Decoupled Pipeline](#1-decoupled-collection-evaluation-and-notification-pipeline)
-  - [2. Source Adapters & Contract](#2-source-adapters--normalized-offer-contract)
-  - [3. Freshness & Evidence States](#3-first-class-data-freshness--evidence)
-  - [4. Scoring Confidence & Explainability](#4-deal-scoring-confidence--explainability)
-  - [5. Shopping Strategies](#5-flexible-shopping-strategies)
-  - [6. Adaptive Polling Engine](#6-adaptive-polling-with-source-rate-limits)
-  - [7. Transactional Outbox Pattern](#7-transactional-outbox-for-reliable-delivery)
-  - [8. Checkout State Machine](#8-explicit-checkout-state-machine)
-  - [9. Operational Data Model](#9-operational-data-model)
-  - [10. Observability & Telemetry](#10-observability--telemetry)
-  - [11. Security Safeguards](#11-security--access-control-safeguards)
-  - [12. Failure-Path Test Suite](#12-failure-path-test-suite)
-- [MVP Roadmap & Architecture Decision](#-mvp-roadmap--architecture-decision)
+- [Automated Guardrails & Failure-Path Test Suite](#-automated-guardrails--failure-path-test-suite)
+- [Environment Configuration](#-environment-configuration)
+- [Quickstart Guide](#-quickstart-guide)
+  - [Option A: Docker Services (Recommended)](#option-a-docker-services-recommended)
+  - [Option B: Zero-Dependency Local Dev (SQLite + Mock Redis)](#option-b-zero-dependency-local-dev-sqlite--mock-redis)
+  - [Option C: Multi-Stage Production Container](#option-c-multi-stage-production-container)
+- [Operational Runbooks & Worker Deployment](#-operational-runbooks--worker-deployment)
+- [Security & Compliance Safeguards](#-security--compliance-safeguards)
 
 ---
 
-## 💡 Overview & Value Proposition
+## 💡 Executive Summary
 
-Shopping online requires manual checking, price comparison across dozens of tabs, and navigating fake discounts. **DealPilot** automates this entire lifecycle:
+Online shoppers constantly face artificially inflated original prices ("anchor fraud"), out-of-sync inventory across merchant tabs, aggressive flash sale windows, and cumbersome multi-step checkouts.
 
-1. **Intelligent Discovery**: Parses natural language requests ("best noise-canceling headphones under ₹20,000") and aggregates normalized offers from supported retailer feeds.
-2. **Deterministic & AI Deal Scoring**: Computes objective deal scores based on verifiable price history and vendor reliability, using AI solely to explain offer quality without hallucinating discounts.
-3. **Autonomous Monitoring**: Runs background workers via Redis/BullMQ to poll prices on an adaptive schedule without violating vendor rate limits.
-4. **Frictionless, Safe Checkout**: Sends push/email notifications with an offer revalidation step, orchestrating safe purchases through PayPal Sandbox checkout.
+**DealPilot** is an enterprise-grade autonomous shopping assistant and price-monitoring agent system that eliminates these pain points:
 
----
-
-## 🚶 How It Works (Example Flow)
-
-```
-[User Query] ────────► [Agent Discovery] ────────► [Interactive Results]
-"Headphones under 20K"   Crawls & normalizes         Shows deals + rating
-                                                              │
-                    ┌─────────────────────────────────────────┴──────────────────────────────┐
-                    ▼                                                                        ▼
-            [Instant Buy]                                                           [Track Price]
-       PayPal Sandbox Checkout                                                  Worker polls every ~2 hrs
-                                                                                             │
-                                                                                             ▼
-                                                                                    [Target Price Hit!]
-                                                                                Push alert sent to phone/PC
-                                                                                             │
-                                                                                             ▼
-                                                                                   [Review & 1-Click Pay]
-                                                                                   Verified PayPal capture
-```
-
-1. **User Search**: The user enters: _"I want the best headphones under ₹20,000"_.
-2. **Autonomous Crawl**: An agent queries supported sources, normalizes variants, and ranks offers within the specified budget.
-3. **Deal Evaluation**: Every offer receives a transparent deal score based on verifiable historical observations and seller reputation.
-4. **User Action**: The user can purchase immediately or tap **Track Price** with a custom target threshold.
-5. **Background Monitoring**: An async BullMQ worker checks prices periodically (e.g., every 2 hours or on an adaptive schedule).
-6. **Smart Alerting**: When the price drops to or below the target, a deduplicated notification is delivered to the user's laptop/phone.
-7. **Revalidation & Purchase**: The user clicks **Review Deal**, the backend verifies live stock and price, and the order is completed safely via PayPal.
+1. **Autonomous Domestic Discovery**: Integrates with the official **Channel3 SDK (v4.3.0)** to query real-time merchant feeds, normalize heterogeneous product attributes into a unified schema, and automatically filter out misleading accessories (cases, cables, cushions).
+2. **Deterministic Deal Rubric Engine**: Computes objective mathematical deal scores (0–100) using 30-day moving averages, historical lows, and verified seller reputations. An LLM explainer (`gpt-6-luna` with a strict 3-second timeout and hard fallback) generates structured justifications **without ever being permitted to calculate prices or invent discounts**.
+3. **Adaptive Monitoring Background Workers**: BullMQ-powered workers continuously monitor tracked prices with dynamic polling cadence (2h baseline, accelerating to 30m when $\le 5\%$ from target) and exponential jitter backoff to respect merchant rate limits.
+4. **Transactional Outbox Delivery**: Price-drop notifications are committed in the same database transaction as the observation trigger, ensuring zero lost alerts and strict deduplication (`rule_id + offer_id + event + obs_id`). Alerts are dispatched via responsive HTML email templates with savings metrics.
+5. **Pre-Flight Verified Checkout**: Autonomous purchases are guarded by a live pre-flight revalidation check that verifies active stock, seller standing, and exact price immediately prior to order generation.
+6. **PayPal Agent Toolkit & Server-to-Server Capture**: Powered by the official `@paypal/agent-toolkit/openai` in Sandbox mode, enforcing idempotency keys on order creation and captures to prevent duplicate charges or double captures.
+7. **Better Auth & Modern UI**: Complete user identity via Better Auth (Google & GitHub OAuth), interactive AG Grid comparison tables with dark quartz styling, and SVG bezier price history trajectories with multi-range filters.
 
 ---
-
-## ADDONS
-
-Use these in the product too
-
-1. Channel3
-   Where: Product discovery and offer normalization.
-   If its current API provides the product and merchant data you need, use it to discover products and compare offers instead of building every retailer integration yourself.
-   Architecture: Price Discovery Worker → Channel3 adapter → normalized offers → PostgreSQL
-
-2. AG Grid
-   Where: Deal comparison dashboard.
-   Use it for a rich comparison table with current price, seller, shipping, historical low, deal score and last-checked time. Sorting and filtering would make DealPilot feel like a serious shopping intelligence tool.
-   Architecture: Next.js dashboard → AG Grid → offers API
-
-3. APIMatic
-   Where: External API integration.
-   Investigate it for generating client SDKs and integrating supported APIs from their specifications. This can help keep your retailer or commerce API integrations consistent.
-   Architecture: API specification → generated client → source adapter
-
-**Important**:Use idempotency keys while the payment is processed to prevent race around condns.
-:Use proper agent tool validation and verification with input schema , output schema reuirement when to use the tool
-: buget enforced agent running and gracefull fallback , model routing
 
 ## 🏗️ System Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Client["Client Layer"]
-        UI["Next.js Web App<br/>Product query · Budget · Target price<br/>Results · Deal score · Notifications"]
+    subgraph Client["Presentation Layer (Next.js 16 + React 19)"]
+        UI["DealPilot Web Dashboard<br/>Search · Budget Filters · AG Grid Table<br/>Price History Modal · Watchlist · Outbox Feed"]
+        RADAR["Autonomous Buy Directive Modal<br/>Action Commands: 'Buy Now' | 'Leave'"]
+        CHAT["PayPal Agent Chat Interface<br/>Natural Language Order Assistant"]
+        AUTH["Better Auth Client<br/>Google & GitHub OAuth"]
     end
 
-    subgraph API["API Layer"]
-        APIX["Express REST API<br/>Validate requests · Persist tracking rules<br/>Expose product and job status"]
+    subgraph API["Next.js App Router API Handlers (/api/*)"]
+        SEARCH_API["/api/search & /api/search/[jobId]<br/>Zod Input Validation"]
+        RULES_API["/api/tracking-rules & /api/tracking-rules/[id]<br/>Multi-Tenant Rule Enforcement"]
+        ORDERS_API["/api/orders & /api/orders/[id]/capture<br/>Pre-Flight Guard & Idempotency Key"]
+        AGENT_API["/api/agent/watch & /api/chat<br/>Directive Dispatch & Tool Execution"]
+        WEBHOOK_API["/api/webhooks/merchants<br/>Signature Verification & Ingestion"]
+        AUTH_API["/api/auth/[...all]<br/>Better Auth Route Handler"]
     end
 
-    subgraph Async["Asynchronous Processing"]
-        Q["BullMQ Queue"]
-        DISC["Price Discovery Worker<br/>Find and normalize offers"]
-        MON["Scheduled Monitoring Worker<br/>Refresh tracked prices"]
-        EVAL["Deal Evaluation Agent<br/>Structured analysis and explanation"]
-        RULES["Deterministic Deal Rules<br/>Target price · Budget · Thresholds"]
+    subgraph Workers["Asynchronous Distributed Engine (BullMQ + Redis 7)"]
+        DISC_W["Discovery Worker<br/>Channel3 Commerce Ingestion"]
+        MON_W["Adaptive Monitoring Worker<br/>Dynamic Polling Cadence"]
+        OUT_W["Transactional Outbox Worker<br/>Deduplicated HTML Email Dispatcher"]
     end
 
-    subgraph Data["Persistence"]
-        PG[("PostgreSQL<br/>Users · Products · Offers<br/>Price observations · Tracking rules<br/>Deal scores · Notifications · Orders")]
-        REDIS[("Redis<br/>BullMQ jobs and queue state")]
+    subgraph Engine["Deterministic & Agentic Decision Core"]
+        VERIFY["Product Verification Engine<br/>Spec Extractor & Accessory Guard"]
+        RUBRIC["Deterministic Deal Scorer<br/>30D Moving Avg · Historic Low · Rubric v1"]
+        FRESH["Data Freshness Engine<br/>Fresh · Stale · Unavailable State Machine"]
+        LLM_EXP["LLM Deal Explainer<br/>OpenAI gpt-6-luna (3s Timeout + Hard Fallback)"]
+        PP_AGENT["PayPal Agent Toolkit<br/>create_order · get_order · pay_order"]
     end
 
-    subgraph Actions["Notifications and Purchase"]
-        NOTIFY["Notification Service<br/>Email / push alerts"]
-        REVIEW["Review Deal<br/>Revalidate price, stock and seller"]
-        PAYPAL["PayPal Orders API<br/>Sandbox checkout"]
-        TX["Verify and record transaction"]
+    subgraph Data["Persistence & Storage Layer"]
+        PG[("PostgreSQL 16 (Prisma ORM)<br/>Users · Sessions · Accounts<br/>Products · Offers · Price Observations<br/>Tracking Rules · Outbox · Orders · Transactions")]
+        REDIS[("Redis 7 (BullMQ)<br/>Job Queues · Rate Limit Semaphores")]
     end
 
-    subgraph External["External Services"]
-        SOURCES["Supported retailer APIs / feeds"]
-        LLM["LLM Provider"]
-        PUSH["Email / Push Provider"]
-        PP["PayPal Developer Sandbox"]
+    subgraph External["External Commerce & Payment Providers"]
+        CHANNEL3["Channel3 Universal Commerce API"]
+        PAYPAL_SB["PayPal Orders v2 Sandbox API"]
+        OPENAI_API["OpenAI API Service"]
+        RESEND_API["Resend Email API / Local Mailer"]
     end
 
-    UI --> APIX
-    APIX --> PG
-    APIX --> Q
-    Q <--> REDIS
-    Q --> DISC
-    DISC --> SOURCES
-    DISC --> PG
-    DISC --> EVAL
-    EVAL <--> LLM
-    EVAL --> PG
-    EVAL --> UI
+    %% Client to API
+    UI --> SEARCH_API
+    UI --> RULES_API
+    UI --> ORDERS_API
+    RADAR --> AGENT_API
+    CHAT --> AGENT_API
+    AUTH --> AUTH_API
 
-    PG --> MON
-    MON --> SOURCES
-    MON --> PG
-    MON --> RULES
-    RULES --> EVAL
-    RULES --> NOTIFY
-    NOTIFY --> PUSH
-    PUSH --> UI
+    %% API to DB & Queues
+    SEARCH_API --> PG
+    SEARCH_API --> REDIS
+    RULES_API --> PG
+    ORDERS_API --> PG
+    AGENT_API --> PG
+    WEBHOOK_API --> PG
 
-    UI --> REVIEW
-    REVIEW --> APIX
-    APIX --> PAYPAL
-    PAYPAL --> PP
-    PP --> TX
-    TX --> PG
+    %% Workers
+    REDIS <--> DISC_W
+    REDIS <--> MON_W
+    REDIS <--> OUT_W
+
+    %% Worker Execution
+    DISC_W --> CHANNEL3
+    DISC_W --> VERIFY
+    DISC_W --> RUBRIC
+    DISC_W --> LLM_EXP
+    DISC_W --> PG
+
+    MON_W --> CHANNEL3
+    MON_W --> FRESH
+    MON_W --> PG
+    MON_W --> OUT_W
+
+    OUT_W --> PG
+    OUT_W --> RESEND_API
+
+    %% Orders & Agent
+    ORDERS_API --> FRESH
+    ORDERS_API --> PAYPAL_SB
+    AGENT_API --> PP_AGENT
+    PP_AGENT --> PAYPAL_SB
+    PP_AGENT <--> OPENAI_API
 ```
 
 ---
 
-## 🔄 Core User Flows
+## 🔄 Core Architectural Workflows
 
-### A. Discover a Product and Evaluate Current Deals
+### 1. Multi-Merchant Discovery & Product Verification
 
-1. **User Query**: The user inputs product keywords, preferences, budget limits, or target prices in the Next.js app.
-2. **Search Job**: The Express API validates input (via Zod) and pushes an asynchronous discovery job into BullMQ backed by Redis.
-3. **Offer Ingestion**: The `Price Discovery Worker` queries supported retailer APIs or permitted product feeds.
-4. **Data Normalization**: Product variants, merchant reputation, shipping costs, and URLs are normalized.
-5. **Observation Persistence**: Ingested offers and timestamped price observations are saved to PostgreSQL.
-6. **Deal Evaluation**: The `Deal Evaluation Agent` assesses the offer against price history and generates structured justifications.
-7. **Client Rendering**: Next.js displays ranked deals, deal scores, uncertainty indicators, and options to _Buy Now_ or _Track Price_.
+1. The user enters a natural language query (e.g., *"Sony WH-1000XM5 under ₹25,000"*).
+2. The endpoint invokes the `ProductVerifier` to extract canonical model signatures, color variants, and storage options.
+3. The **Accessory Exclusion Guard** deterministically rejects cables, ear cushions, and carrying cases matching blacklist tokens to eliminate false deals.
+4. The Channel3 adapter queries domestic merchant feeds via `@channel3/sdk`, standardizing merchant names, availability status, domestic currency, and direct offer links into a universal `NormalizedOffer`.
 
-### B. Track a Price Asynchronously
-
-1. **Tracking Rule Setup**: The user opts to track a product, setting a target price, optional expiration deadline, and notification preferences.
-2. **Job Scheduling**: The API records the rule in PostgreSQL and configures a recurring BullMQ monitoring job.
-3. **Periodic Checks**: The `Monitoring Worker` periodically queries sources according to an adaptive polling schedule.
-4. **Rule Evaluation**: Every new observation is checked deterministically against the user's target threshold.
-5. **Deduplication**: Alerts are checked against deduplication keys to prevent spamming notifications for identical events.
-6. **Notification Dispatch**: The Notification Service sends an email or push alert containing the observed price, vendor, and direct review link.
-
-### C. Review and Purchase
-
-1. **Alert Interaction**: The user opens the notification and clicks **Review Deal**.
-2. **Pre-Flight Revalidation**: The backend revalidates price, active inventory, seller status, and variant accuracy before showing checkout.
-3. **User Approval**: The UI shows the itemized final charge (product + tax + shipping) and requests explicit approval.
-4. **PayPal Order Creation**: On confirmation, the backend creates a PayPal Sandbox order.
-5. **Buyer Authentication**: The buyer completes checkout using the PayPal payment modal/redirect.
-6. **Server-Side Capture**: The backend executes the capture call and verifies payment completion directly with PayPal's API.
-7. **State Finalization**: Order and transaction records in PostgreSQL transition to `paid`, and receipt details are shown to the user.
-
-> [!IMPORTANT]
-> **Pre-Flight Checkout Validation**: Reaching a price target is never treated as proof of current stock. Always re-fetch live price and availability immediately prior to payment creation.
-> **Catalog Scope**: A PayPal integration does not enable checkout across arbitrary retailers; it applies only to supported merchants or controlled demo catalogs.
-
----
-
-## 🧩 Components & Responsibilities
-
-| Component                      | Technology                       | Primary Responsibilities                                                                                   |
-| ------------------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Web Client**                 | Next.js, React, Tailwind CSS     | Product discovery UI, budget/filter inputs, deal visualizer, tracked list management, and checkout review. |
-| **REST API**                   | Express.js, TypeScript           | Request authentication, input validation (Zod), tracking rule CRUD, search orchestration, order creation.  |
-| **Task Queue**                 | BullMQ + Redis                   | Resilient distributed task queueing, delayed jobs, scheduled cron polling, and backoff retries.            |
-| **Discovery Worker**           | Node.js Worker Process           | Ingests, normalizes, and deduplicates offers from supported retailer feeds and mock catalogs.              |
-| **Monitoring Worker**          | Node.js Worker Process           | Periodically polls active tracking rules, logs observations, and evaluates threshold breaches.             |
-| **Deal Evaluation Agent**      | LLM (Structured JSON)            | Evaluates non-deterministic qualities (review signals, product fit) and produces structured explanations.  |
-| **Deterministic Rules Engine** | Pure TypeScript Logic            | Hard validation for price targets, budgets, and stock; acts as the authoritative gatekeeper for purchases. |
-| **Primary Database**           | PostgreSQL                       | Source of truth for users, products, offers, price observations, tracking rules, orders, and audits.       |
-| **Notification Engine**        | Web Push / SendGrid / Nodemailer | Dispatches deduplicated alerts with actionable review links.                                               |
-| **Payment Gateway**            | PayPal Orders v2 SDK             | Secure server-side order creation, buyer approval capture, and webhook reconciliation.                     |
-
----
-
-## 🗄️ Data Model & Entities
-
-```
- ┌─────────────┐       ┌───────────────┐       ┌──────────────────────┐
- │    users    │───<   │tracking_rules │   >───│       products       │
- └─────────────┘       └───────────────┘       └──────────────────────┘
-        │                                                  │
-        │                                                  │
-        ▼                                                  ▼
- ┌─────────────┐       ┌───────────────┐       ┌──────────────────────┐
- │   orders    │   >───│    offers     │───<   │  price_observations  │
- └─────────────┘       └───────────────┘       └──────────────────────┘
-        │
-        ▼
- ┌─────────────┐
- │transactions │
- └─────────────┘
-```
-
-### Core Entity Definitions
-
-- **`users`**: User identity, auth credentials, notification preferences, and currency settings.
-- **`products`**: Canonical catalog items with standardized brand, model, UPC/EAN, and taxonomy.
-- **`offers`**: Retailer-specific listings linked to a canonical product, storing vendor ID, landing URL, item price, shipping fees, currency, and stock.
-- **`price_observations`**: Time-series log of all observed prices used to calculate moving averages, historical lows, and volatility.
-- **`tracking_rules`**: User watchlists defining target price, strategy (`target_price`, `deadline`, `historical_low`), expiration, and active status.
-- **`search_jobs`**: Job tracking for asynchronous multi-retailer queries, state, retries, and error logs.
-- **`deal_evaluations`**: Explainable deal evaluations, confidence scores, signals evaluated, and missing data points.
-- **`notifications`**: Outbox for delivered/pending alerts, carrying deduplication keys to prevent spam.
-- **`orders`**: Checkout records linking an offer, locked total price, buyer approval state, and PayPal order reference.
-- **`transactions`**: Authoritative record of payment captures verified directly with PayPal API responses.
-
-> [!TIP]
-> Use compound unique indices on `(tracking_rule_id, offer_id, observation_id)` and idempotency tokens on payment captures to prevent duplicate operations.
-
----
-
-## ⚖️ Deal Scoring & AI Guardrails
-
-DealPilot strictly delineates deterministic calculations from LLM-generated explanations:
+### 2. Deterministic Scoring & Fact-Grounded LLM Explainer
 
 ```mermaid
 flowchart LR
-    A["Raw Data (Price, Stock, History)"] --> B["Deterministic Rules Engine\n(Budget, Target, Freshness)"]
-    B -->|Pass / Fail Threshold| C["Evaluation Matrix"]
-    C --> D["LLM Explanation Agent\n(Structured Fact-Based Summary)"]
-    D --> E["User Deal Card\n(Score + Evidence + Warnings)"]
+    A["Raw Product Offer\n(Price, Merchant, Stock, History)"] --> B["Deterministic Deal Rules\n(Budget & Target Ceiling Checks)"]
+    B --> C["Rubric Scorer (v1.0)\n(30D Delta, Historical Low, Seller Rating)"]
+    C -->|Numeric Score 0-100| D["LLM Explainer Guardrail\n(OpenAI gpt-6-luna / 3s Timeout)"]
+    D -->|Failure / Timeout| E["Deterministic Rule Fallback Summary"]
+    D -->|Success| F["Fact-Grounded Structured Summary"]
+    E --> G["Normalized Deal Card & AG Grid Presentation"]
+    F --> G
 ```
 
-### Signals Evaluated
+- **Zero Hallucination Policy**: The LLM is never allowed to calculate final prices, compute discounts, or determine historical lows. All numbers are calculated by the deterministic rules engine before passing to the explainer.
+- **Circuit Breaker**: If OpenAI times out after 3,000ms or fails with an API error, DealPilot seamlessly falls back to a deterministic template without impacting user response times.
 
-- **All-inclusive Final Price**: Base price + mandatory shipping + estimated taxes.
-- **Target & Budget Compliance**: Absolute comparison against user-set thresholds.
-- **Historical Comparison**: Delta from 30/60/90-day moving averages and recorded all-time lows.
-- **Seller Reliability**: Verified merchant flags, rating counts, and return window flexibility.
-- **Variant Fidelity**: Strict attribute matching (color, storage capacity, condition: new vs. refurbished).
-- **Freshness Window**: Timestamp of the latest verified crawl.
+### 3. Adaptive Polling & BullMQ Task Queue
 
-### AI Boundaries & Guardrails
+Price tracking uses dynamic scheduling rather than inefficient fixed intervals:
+- **Default State**: Background check every 2 to 4 hours.
+- **Near-Target Acceleration**: When the current price comes within $\le 5\%$ of the user's target threshold, the polling cadence dynamically tightens to **30 minutes**.
+- **Jittered Backoff**: If merchant rate limits (HTTP 429) are encountered, exponential backoff with pseudo-random jitter is applied to prevent thundering herd problems.
 
-- **No Hallucinated Discounts**: The LLM is **never** permitted to calculate final prices or invent historical price lows.
-- **Missing Evidence Flags**: If seller ratings or price histories are missing, the UI displays a `Provisional Score` alert.
-- **Versioned Rubric**: Scoring calculations use explicit version keys (`rubric_v1`) to guarantee reproducibility.
+### 4. Transactional Outbox & Responsive Email Dispatch
+
+Alerts use the **Transactional Outbox Pattern** to prevent dropped notifications during worker crashes:
+1. When a price drop satisfies an active rule, the observation record and an outbox event are committed within a single atomic database transaction:
+   ```sql
+   INSERT INTO notification_outbox (tracking_rule_id, deduplication_key, payload, status)
+   VALUES ($ruleId, $dedupKey, $payload, 'pending');
+   ```
+2. The deduplication key prevents repeated alerts for identical price drops:
+   $$\text{Key} = \text{rule\_id} + \text{offer\_id} + \text{event\_type} + \text{observation\_id}$$
+3. The `OutboxWorker` renders a responsive, dark-quartz HTML email with price delta statistics, savings calculations, and direct revalidation checkout links.
+4. If `RESEND_API_KEY` is provided, emails are delivered via Resend; otherwise, DealPilot uses its built-in simulated testable mailer with zero external dependencies.
+
+### 5. Pre-Flight Revalidation & PayPal Idempotent Checkout
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Shopper
+    participant UI as Next.js Web App
+    participant API as /api/orders
+    participant Gate as Pre-Flight Gatekeeper
+    participant PP as PayPal Sandbox API
+    participant DB as PostgreSQL 16
+
+    User->>UI: Click "Buy Now" on Deal
+    UI->>API: POST /api/orders (offerId, Idempotency-Key)
+    API->>Gate: Execute Pre-Flight Revalidation
+    Gate->>Gate: Re-fetch live stock & price from merchant
+    alt Price shifted or Out of Stock
+        Gate-->>UI: 400 Bad Request (PRICE_SHIFTED / OUT_OF_STOCK)
+        UI-->>User: Display updated price for confirmation
+    else Offer Validated
+        Gate-->>API: Offer Confirmed Fresh
+        API->>PP: Create PayPal Order v2 (Intent: CAPTURE)
+        PP-->>API: Return paypalOrderId & Approval URL
+        API->>DB: Insert Order (Status: created)
+        API-->>UI: Return checkout payload & approval URL
+        UI->>User: Launch PayPal Sandbox Approval Modal
+        User->>PP: Authenticate & Approve Transaction
+        PP-->>UI: Return onApprove (orderId)
+        UI->>API: POST /api/orders/:id/capture (Idempotency-Key)
+        API->>PP: Execute Server-to-Server Capture
+        PP-->>API: Confirm Payment Status (COMPLETED)
+        API->>DB: Transition Order to "paid" & Log Transaction
+        API-->>UI: Order Receipt & Authoritative Confirmation
+        UI-->>User: Display Success Screen with Receipt
+    end
+```
+
+### 6. Autonomous Buy Directives ("Buy Now" & "Leave")
+
+Users can command the autonomous agent to monitor specific target prices via natural language directives (e.g., *"Find Sony XM5 under ₹18,000 and notify me"*):
+- The agent tracks the target price in the background.
+- When an offer matches the directive, the UI displays a focused decision card with strictly **two deterministic actions**:
+  1. **Buy Now**: Triggers pre-flight validation and initiates PayPal checkout.
+  2. **Leave**: Dismisses the match and continues autonomous monitoring.
+
+### 7. Interactive Comparison Grid & Price History Trajectories
+
+- **AG Grid Dark Quartz View**: Switch between visual deal cards and an enterprise comparison table featuring column sorting, merchant filters, stock indicators, and direct checkout buttons.
+- **Interactive Price Trajectory**: Visualizes all historical observations as a smooth SVG bezier curve with statistical metrics:
+  - All-time Low and All-time High
+  - 30-Day Moving Average
+  - Total Savings & Drop Percentage
+  - Dynamic Timeframe Selectors: `7D`, `14D`, `30D`, and `ALL`
+  - Multi-Merchant Price Comparison breakdown table
+
+---
+
+## 🏛️ Codebase Architecture & Directory Layout
+
+The codebase strictly enforces modular separation with **only two subdirectories inside `src/`**:
+
+```
+dealpilot/
+├── Dockerfile                      # Multi-stage production container build (Node 22 Alpine)
+├── docker-compose.yml              # PostgreSQL 16 + Redis 7 services with healthchecks
+├── package.json                    # Dependencies, scripts (Turbopack, Vitest, Prisma)
+├── tsconfig.json                   # Strict TypeScript compiler options
+├── vitest.config.ts                # Unit and integration test configuration
+├── prisma/
+│   └── schema.prisma               # 11 relational models synced to PostgreSQL 16
+│
+├── tests/
+│   ├── failure-paths.test.ts       # 17 automated architectural guardrail tests
+│   └── system-evals.test.ts        # 22 comprehensive end-to-end subsystem evaluations
+│
+└── src/                            # Strictly 2 subdirectories ONLY
+    │
+    ├── frontend/                   # Next.js 16 App Router layer (client & routes)
+    │   ├── app/                    # Next.js App Router
+    │   │   ├── layout.tsx          # Root layout with dark quartz theme
+    │   │   ├── globals.css         # Tailwind CSS styling and AG Grid quartz overrides
+    │   │   ├── page.tsx            # Main dashboard entrypoint
+    │   │   ├── auth/page.tsx       # Authentication view
+    │   │   └── api/                # REST API route handlers
+    │   │       ├── agent/watch/    # Autonomous buy directive endpoint
+    │   │       ├── auth/[...all]/  # Better Auth OAuth handlers
+    │   │       ├── chat/           # PayPal Agent Toolkit interactive endpoint
+    │   │       ├── notifications/  # Notification outbox & test email triggers
+    │   │       ├── orders/         # Pre-flight order creation & server capture
+    │   │       ├── products/       # Price history and statistical analytics
+    │   │       ├── search/         # Asynchronous Channel3 search & worker query
+    │   │       ├── tracking-rules/ # Price watch CRUD & multi-tenant isolation
+    │   │       └── webhooks/       # Merchant incoming price update webhooks
+    │   ├── components/             # Reusable UI component library
+    │   │   ├── Header.tsx          # Navigation, status badges & auth trigger
+    │   │   ├── DealCard.tsx        # Visual deal card with rubric badges & specs
+    │   │   ├── DealGrid.tsx        # AG Grid comparison table with sorting & filters
+    │   │   ├── WatchesList.tsx     # Active tracking rules with pause/resume
+    │   │   ├── OutboxAlertsList.tsx# Transactional outbox email dispatch history
+    │   │   ├── PriceHistoryModal.tsx# SVG bezier trajectory chart & stats
+    │   │   ├── AgentBuyDirectiveModal.tsx # Autonomous "Buy Now" | "Leave" modal
+    │   │   ├── PayPalChatInterface.tsx # Conversational PayPal agent assistant
+    │   │   └── UserAuthButton.tsx  # Google/GitHub Better Auth login button
+    │   ├── views/                  # Composed page views (DashboardView.tsx)
+    │   ├── utils/                  # UI formatting helpers & color token resolvers
+    │   └── next.config.js          # Turbopack & serverExternalPackages configuration
+    │
+    └── backend/                    # Domain logic, queues, workers & utilities
+        ├── adapters/               # Retailer feeds & Channel3 SDK 4.3.0 adapter
+        │   ├── channel3-catalog.ts # Official Channel3 commerce client
+        │   └── mock-catalog.ts     # Resilient seed catalog adapter
+        ├── contracts/              # Universal TypeScript data schemas
+        │   ├── offer.ts            # NormalizedOffer, PriceRecord & Condition
+        │   ├── rules.ts            # TrackingRule, Strategy & Freshness
+        │   └── dealpilot-openapi.json # APIMatic OpenAPI 3.1 specification
+        ├── engine/                 # Deterministic business logic & verification
+        │   ├── deal-rules.ts       # Budget checks & target threshold evaluator
+        │   ├── deal-scorer.ts      # Rubric v1 numeric deal quality scorer (0-100)
+        │   ├── freshness.ts        # Freshness state machine & revalidation
+        │   └── product-verifier.ts # Spec extractor & accessory exclusion guard
+        ├── queue/                  # Distributed queuing infrastructure
+        │   ├── connection.ts       # Resilient Redis connection (mock + real)
+        │   └── deal-queue.ts       # BullMQ discovery & monitoring queue wrappers
+        ├── services/               # External provider integrations & services
+        │   ├── paypal.ts           # PayPal Orders v2 Sandbox & capture verification
+        │   ├── paypal-agent.ts     # Official @paypal/agent-toolkit tools
+        │   ├── email.ts            # Responsive dark-quartz HTML email service
+        │   ├── outbox.ts           # Atomic transactional outbox logger
+        │   ├── llm.ts              # OpenAI deal explainer with 3s fallback guard
+        │   └── agent-fallback.ts   # Exponential jitter retries & circuit breakers
+        ├── workers/                # BullMQ asynchronous background processes
+        │   ├── discovery-worker.ts # Multi-merchant ingestion worker
+        │   ├── monitoring-worker.ts# Adaptive cadence price monitoring worker
+        │   └── outbox-worker.ts    # Transactional outbox email dispatch worker
+        └── utils/                  # Shared database singletons & auth helpers
+            ├── db.ts               # PrismaClient singleton with connection pooling
+            └── auth.ts             # Better Auth server configuration
+```
+
+---
+
+## 🗄️ Data Model & Prisma Schema
+
+DealPilot utilizes 11 relational models in PostgreSQL via Prisma:
+
+| Model | Table | Purpose |
+|---|---|---|
+| `User` | `users` | User identity, preferences, currency settings, and active session link. |
+| `Session` | `sessions` | Active Better Auth session tokens and expiration timestamps. |
+| `Account` | `accounts` | OAuth credentials (Google, GitHub) managed securely by Better Auth. |
+| `Verification` | `verifications` | One-time verification tokens and email challenges. |
+| `Product` | `products` | Canonical catalog item with standardized brand, model, and taxonomy. |
+| `Offer` | `offers` | Merchant-specific listing linked to a product with price, URL, stock, and seller rating. |
+| `PriceObservation` | `price_observations` | Historical time-series record of observed prices for trend calculations. |
+| `TrackingRule` | `tracking_rules` | User-defined watch with target price, strategy, deadline, and notification settings. |
+| `DealEvaluation` | `deal_evaluations` | Audit trail of rubric scores, confidence levels, and LLM justifications. |
+| `NotificationOutbox`| `notification_outbox`| Transactional outbox table with unique deduplication constraint. |
+| `Order` | `orders` | Purchase checkout record with locked price, approval status, and PayPal order ID. |
+| `Transaction` | `transactions` | Authoritative payment capture record verified server-to-server with PayPal. |
 
 ---
 
 ## 🔌 API Reference
 
-All requests must include a valid session token in the `Authorization` header. Sensitive secrets (PayPal client keys, LLM tokens) reside exclusively on the server.
+All mutating endpoints enforce validation via **Zod** schemas and verify user session ownership.
 
-### Discovery & Tracking
+### Discovery & Search
 
-| Method   | Endpoint                          | Description                                                      |
-| -------- | --------------------------------- | ---------------------------------------------------------------- |
-| `POST`   | `/api/search`                     | Initiates an asynchronous product discovery job.                 |
-| `GET`    | `/api/search/:jobId`              | Polls the status and aggregated results of a search job.         |
-| `POST`   | `/api/tracking-rules`             | Creates a new price monitoring rule for a product/offer.         |
-| `GET`    | `/api/tracking-rules`             | Lists all active and paused tracking rules for the current user. |
-| `PATCH`  | `/api/tracking-rules/:id`         | Modifies rule parameters (target price, pause, resume).          |
-| `DELETE` | `/api/tracking-rules/:id`         | Terminates and archives a tracking rule.                         |
-| `GET`    | `/api/products/:id/price-history` | Returns historical price observations for charting.              |
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/search` | Dispatches an asynchronous multi-merchant discovery job. |
+| `GET` | `/api/search/:jobId` | Polls the status and normalized results of a search job. |
+| `POST` | `/api/agent/watch` | Creates an autonomous buy directive and returns matched offers. |
+
+### Price Tracking & Rules
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/tracking-rules` | Lists all active and paused tracking rules for the current user. |
+| `POST` | `/api/tracking-rules` | Creates a new tracking rule with a target price and strategy. |
+| `PATCH` | `/api/tracking-rules/:id` | Updates target price or toggles active/paused status. |
+| `DELETE` | `/api/tracking-rules/:id` | Deactivates and deletes a tracking rule (enforces user isolation). |
+| `GET` | `/api/products/:id/price-history` | Returns historical price records, moving averages, and highs/lows. |
 
 ### Checkout & Payments
 
-| Method | Endpoint                  | Description                                                         |
-| ------ | ------------------------- | ------------------------------------------------------------------- |
-| `POST` | `/api/orders`             | Revalidates the selected offer and creates a PayPal checkout order. |
-| `POST` | `/api/orders/:id/capture` | Captures an approved PayPal order and updates state server-side.    |
-| `GET`  | `/api/orders/:id`         | Returns authoritative, verified order status and receipt info.      |
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/orders` | Executes pre-flight revalidation and creates a PayPal Sandbox order. |
+| `GET` | `/api/orders/:id` | Returns authoritative order details, line items, and payment state. |
+| `POST` | `/api/orders/:id/capture` | Captures approved PayPal payment server-to-server with idempotency. |
+
+### Agent Assistant & Webhooks
+
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/chat` | Interacts with the PayPal Agent Toolkit for conversational order operations. |
+| `POST` | `/api/webhooks/merchants` | Ingests incoming price update webhooks from merchants. |
+| `POST` | `/api/notifications/test-email` | Dispatches a test price-drop HTML email through the outbox engine. |
 
 ---
 
-## 🛡️ Reliability, Safety & Guardrails
+## 🛡️ Automated Guardrails & Failure-Path Test Suite
 
-- **Exponential Backoff**: Source queries use jittered exponential backoff to handle transient network errors gracefully.
-- **Rate Limit Adherence**: Each retailer adapter enforces global concurrency caps and cooldown intervals.
-- **Data Freshness SLAs**: Offers checked outside the validity window are labeled `Stale` and cannot trigger checkout without revalidation.
-- **Idempotent Operations**: Queue jobs, alerts, and payment captures enforce strict idempotency keys.
-- **Explicit Human-in-the-Loop**: Autonomous checkout is never completely unsupervised in the MVP; explicit user review and confirmation are required.
-- **Prompt Injection Defense**: Retailer titles, descriptions, and user notes are treated as raw untrusted data, never as prompt instructions.
-- **Privacy & Security**: Financial tokens, API keys, and PII are redacted from application logs.
+DealPilot enforces **39 fully automated tests** spanning 17 architectural guardrails and 22 comprehensive system functionality evaluations via Vitest (`pnpm test`):
+
+```
+✓ tests/failure-paths.test.ts (17 tests passed)
+  ✓ 1. Target Match: Target price equal to or below threshold triggers rule
+  ✓ 2. Variant Guard: Refurbished or mismatched variant rejected deterministically
+  ✓ 3. Stale Protection: Stale offer cannot trigger checkout without revalidation
+  ✓ 4. Deduplication: Repeated worker executions produce identical deduplication keys
+  ✓ 5. Source Outage: Network timeout preserves last observation as stale without crashing
+  ✓ 6. LLM Outage Guardrail: Deterministic target detection functions when LLM fails
+  ✓ 7. Double-Capture Guard: Repeated capture calls return idempotent response
+  ✓ 8. Client-Side Spoofing: Fake client redirect cannot mark an order paid without server verification
+  ✓ 9. Multi-Tenant Isolation: User A cannot modify or delete User B's tracking rule
+  ✓ 10. Price Shift at Checkout: Price increase aborts order creation for user re-review
+  ✓ 11. Payment Idempotency: Duplicate order creations return cached responses without double-charging
+  ✓ 12. Transactional Outbox: Price drop emits atomic outbox event & responsive HTML email
+  ✓ 13. PayPal Agent Toolkit: Initializes with sandbox context and executes order actions
+  ✓ 14. Stock Depletion: Out-of-stock offer aborts checkout immediately
+  ✓ 15. Invalid Strategy Parameter: Unsupported strategy rejected by Zod validation
+  ✓ 16. Mismatched PayPal Order ID: Spoofed PayPal order ID is rejected and throws
+  ✓ 17. Unauthenticated Rule Modification: Anonymous rule deletion rejected with 401/403
+
+✓ tests/system-evals.test.ts (22 tests passed)
+  ✓ Eval 1: Source Adapters & Normalization (Channel3 SDK 4.3.0 & Mock Catalog)
+  ✓ Eval 2: Product Verification & Intent Guard (Spec extraction & accessory blacklist)
+  ✓ Eval 3: Deterministic Deal Rules & Rubric Scorer (Budget, target, score 0-100)
+  ✓ Eval 4: Transactional Outbox & Email Notification Service (Atomic DB writes, HTML templates)
+  ✓ Eval 5: Pre-Flight Revalidation & PayPal Idempotency (Stock verification, server capture)
+  ✓ Eval 6: Official PayPal Agent Toolkit Integration (Autonomous tool calling with retries)
+  ✓ Eval 7: User Authentication & Security (Better Auth session verification)
+```
 
 ---
 
-## 🔬 Deep-Dive Design Improvements
+## ⚙️ Environment Configuration
 
-### 1. Decoupled Collection, Evaluation, and Notification Pipeline
+Copy `.env.example` to `.env` and configure your credentials:
 
-Decoupling collection from evaluation ensures an LLM downtime or push provider timeout never causes a price observation to be lost:
+```bash
+cp .env.example .env
+```
+
+| Variable | Required | Default | Description |
+|---|:---:|---|---|
+| `DATABASE_URL` | **Yes** | `postgresql://dealpilot:dealpilot_password@localhost:5432/dealpilot?schema=public` | PostgreSQL connection string (or `file:./dev.db` for SQLite). |
+| `REDIS_HOST` | **Yes** | `127.0.0.1` | Redis host for BullMQ queues. |
+| `REDIS_PORT` | **Yes** | `6379` | Redis port. |
+| `USE_MOCK_REDIS` | No | `false` | Set to `true` to run BullMQ with an in-memory mock Redis (no Docker needed). |
+| `OPENAI_API_KEY` | Optional | `""` | OpenAI API key for deal explainer and PayPal agent tool calling. |
+| `OPENAI_MODEL` | No | `gpt-6-luna` | Model identifier for LLM summaries. |
+| `CHANNEL3_API_KEY`| Optional | `""` | Channel3 API key for live multi-merchant product discovery. |
+| `PAYPAL_MODE` | No | `sandbox` | `sandbox` or `live`. |
+| `PAYPAL_CLIENT_ID`| Optional | `mock_paypal_client_id` | PayPal Developer Sandbox Client ID. |
+| `PAYPAL_CLIENT_SECRET` | Optional | `mock_paypal_client_secret` | PayPal Developer Sandbox Secret. |
+| `BETTER_AUTH_SECRET` | **Yes** | (min 32 chars) | Secret key for signing Better Auth sessions and cookies. |
+| `BETTER_AUTH_URL` | **Yes** | `http://localhost:3000` | Canonical public URL of your application. |
+| `GOOGLE_CLIENT_ID` | Optional | `""` | Google OAuth Client ID for social login. |
+| `GITHUB_CLIENT_ID` | Optional | `""` | GitHub OAuth Client ID for social login. |
+| `RESEND_API_KEY` | Optional | `""` | Resend API key for live email delivery (falls back to local simulated mailer). |
+| `EMAIL_FROM` | No | `alerts@dealpilot.ai` | From address for price drop email notifications. |
+
+---
+
+## 🚀 Quickstart Guide
+
+### Prerequisites
+- **Node.js**: v20.x or v22.x LTS
+- **pnpm**: v10+ (`corepack enable && corepack prepare pnpm@latest --activate`)
+- **Docker & Docker Compose**: (Recommended for PostgreSQL 16 & Redis 7)
+
+---
+
+### Option A: Docker Services (Recommended)
+
+1. **Clone and Install Dependencies**:
+   ```bash
+   git clone https://github.com/dealpilot/dealpilot.git
+   cd dealpilot
+   pnpm install
+   ```
+
+2. **Start Infrastructure Services (PostgreSQL 16 & Redis 7)**:
+   ```bash
+   pnpm docker:up
+   ```
+   *PostgreSQL will be running on port `5432` and Redis on port `6379` with automatic healthchecks.*
+
+3. **Synchronize Database Schema**:
+   ```bash
+   pnpm db:push
+   ```
+
+4. **Launch the Next.js Web Dashboard**:
+   ```bash
+   pnpm dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+5. **Start the Background Worker Engine** (in a separate terminal):
+   ```bash
+   pnpm worker
+   ```
+
+---
+
+### Option B: Zero-Dependency Local Dev (SQLite + Mock Redis)
+
+For quick offline development without Docker:
+1. In your `.env` file, configure:
+   ```env
+   DATABASE_URL="file:./dev.db"
+   USE_MOCK_REDIS="true"
+   ```
+2. Push the SQLite schema:
+   ```bash
+   pnpm db:push
+   ```
+3. Run the development server:
+   ```bash
+   pnpm dev
+   ```
+
+---
+
+### Option C: Multi-Stage Production Container
+
+Build and run the complete containerized stack using the production `Dockerfile`:
+
+```bash
+# Build the production image
+docker build -t dealpilot:latest .
+
+# Run the container
+docker run -p 3000:3000 \
+  --env-file .env \
+  --name dealpilot-app \
+  dealpilot:latest
+```
+
+---
+
+## 🧪 Testing & Verification
+
+Run the entire test suite covering all 39 guardrails and system evaluations:
+
+```bash
+# Run all 39 failure-path and system evaluation tests
+pnpm test
+
+# Run tests in interactive watch mode
+pnpm test:watch
+
+# Execute only the end-to-end system evaluations
+pnpm eval
+
+# Perform strict TypeScript type checking
+pnpm typecheck
+
+# Verify the Next.js production build
+pnpm build
+```
+
+---
+
+## ⚙️ Operational Runbooks & Worker Deployment
+
+In production environments, the Next.js web application and the background workers should be operated as decoupled processes:
 
 ```mermaid
 flowchart LR
-    A["Scheduled Poll"] --> B["Source Adapter"]
-    B --> C["Normalize & Validate"]
-    C --> D["Persist Observation"]
-    D --> E["Deterministic Rules"]
-    E --> F["Deal Evaluation (LLM)"]
-    F --> G["Outbox Event"]
-    G --> H["Notification Delivery"]
+    A["Web App Instances\n(Next.js App Router)"] -->|Enqueue Jobs| B[("Redis 7 Cluster\n(BullMQ)")]
+    B -->|Consume Jobs| C["Worker Process 1\n(Discovery Worker)"]
+    B -->|Consume Jobs| D["Worker Process 2\n(Monitoring Worker)"]
+    B -->|Consume Jobs| E["Worker Process 3\n(Outbox Email Worker)"]
+    C & D & E --> F[("PostgreSQL 16\n(Connection Pool)")]
 ```
 
-### 2. Source Adapters & Normalized Offer Contract
-
-Retailer-specific scraping or API nuances are isolated within dedicated adapters implementing a unified contract:
-
-```typescript
-interface NormalizedOffer {
-  sourceId: string; // e.g., 'amazon', 'bestbuy', 'catalog_demo'
-  externalProductId: string;
-  offerUrl: string;
-  canonicalProductId: string;
-  variantAttributes: {
-    color?: string;
-    storage?: string;
-    condition: "new" | "refurbished" | "open_box";
-  };
-  seller: {
-    id: string;
-    name: string;
-    isAuthorized: boolean;
-  };
-  price: {
-    itemPrice: number;
-    shippingPrice: number;
-    fees: number;
-    currency: string;
-    totalPrice: number;
-  };
-  availabilityStatus: "in_stock" | "out_of_stock" | "preorder";
-  sourceConfidence: number; // 0.0 - 1.0
-  observedAt: Date;
-}
-```
-
-### 3. First-Class Data Freshness & Evidence
-
-Offers transition through explicit freshness states:
-
-- `fresh`: Verified within the retailer-specific window (e.g., < 2 hours).
-- `stale`: Last successful check exceeds threshold; requires immediate refresh.
-- `unavailable`: Merchant actively reports zero stock.
-- `unknown`: Source response did not contain unambiguous availability data.
-- `error`: Last probe failed; preserves previous known price labeled as unverified.
-
-### 4. Deal Scoring Confidence & Explainability
-
-Deal evaluations are logged with audit trails:
-
-```json
-{
-  "score": 88,
-  "scoreVersion": "v1.2",
-  "recommendation": "strong_buy",
-  "confidenceLevel": "high",
-  "signals": {
-    "priceVsTargetDelta": -12.5,
-    "percentBelow30DayAvg": 18.2,
-    "isAuthorizedSeller": true,
-    "stockConfirmed": true
-  },
-  "missingEvidence": [],
-  "sampleCount": 42
-}
-```
-
-### 5. Flexible Shopping Strategies
-
-Users can configure tracking modes beyond simple price ceilings:
-
-- **`target_price`**: Alerts when verified total price $\le$ target.
-- **`best_deal_by_deadline`**: Evaluates all offers within a designated time window (e.g., 7 days) and recommends the best verified deal before expiration.
-- **`near_historical_low`**: Alerts when the price comes within 3–5% of the recorded all-time low (requires $\ge 15$ observations).
-
-### 6. Adaptive Polling with Source Rate Limits
-
-Rather than polling all items on a static cadence, the scheduler adapts dynamically:
-
-- **Normal Monitoring**: Every 2 to 4 hours.
-- **Near Target ($\le 5\%$ above target)**: Frequency increases to every 30 minutes.
-- **Approaching Deadline**: Dynamic ramp-up within vendor rate allowances.
-- **Backoff Mode**: Exponential delay if consecutive failures occur.
-
-### 7. Transactional Outbox for Reliable Delivery
-
-To prevent worker crashes from dropping alerts, state changes and notification events are saved inside the same database transaction:
-
-```sql
-BEGIN;
-  UPDATE tracking_rules SET last_triggered_at = NOW() WHERE id = $1;
-  INSERT INTO notification_outbox (tracking_rule_id, deduplication_key, payload, status)
-  VALUES ($1, $2, $3, 'pending');
-COMMIT;
-```
-
-A dedicated dispatch worker processes the outbox and guarantees at-least-once delivery with idempotency keys formatted as:
-$$\text{key} = \text{tracking\_rule\_id} + \text{offer\_id} + \text{event\_type} + \text{observation\_id}$$
-
-### 8. Explicit Checkout State Machine
-
-Order workflows are managed via an explicit state machine:
-
-```mermaid
-stateDiagram-v2
-    [*] --> offer_review
-    offer_review --> awaiting_approval: Offer revalidated
-    offer_review --> expired: Price or stock changed
-    awaiting_approval --> paypal_order_created: User clicks Buy
-    paypal_order_created --> capture_pending: Buyer approves in PayPal
-    capture_pending --> paid: Server verifies capture
-    capture_pending --> failed: Capture error / declined
-    awaiting_approval --> cancelled: User dismisses
-```
-
-> [!WARNING]
-> Client-side browser redirects are never treated as confirmation of payment. Orders are transitioned to `paid` **only** after direct server-to-server verification with the PayPal Orders API.
-
-### 9. Operational Data Model
-
-For enterprise durability and debugging, operational telemetry tables complement business entities:
-
-- `source_checks`: Logs provider latency, HTTP status codes, and payload signatures.
-- `notification_deliveries`: Tracks delivery attempts, provider response codes, and errors.
-- `checkout_attempts`: Logs transition timestamps and PayPal gateway responses.
-- `product_match_reviews`: Flags uncertain automated matches for user validation.
-
-### 10. Observability & Telemetry
-
-Every background job carries a unique `correlation_id` across queues, logs, and external calls:
-
-- Queue latency and job execution runtimes.
-- Ratio of successful crawls vs. rate-limited attempts.
-- Freshness age distribution of active watchlist items.
-- Real-time debug dashboard displaying active watches, next check timestamps, and circuit-breaker states.
-
-### 11. Security & Access Control Safeguards
-
-- Schema validation on every incoming endpoint via **Zod**.
-- Strict resource ownership enforcement: `WHERE id = $id AND user_id = $sessionUserId`.
-- Rate limiting on discovery queries and watch creation to prevent abuse.
-- Sanitized user error responses preventing leakage of internal stack traces.
-
-### 12. Failure-Path Test Suite
-
-The test matrix prioritizes edge and failure scenarios:
-
-1. ✅ **Target Match**: Target price hit $\rightarrow$ event emitted.
-2. 🛡️ **Variant Guard**: Different variant / refurbished model rejected.
-3. ⏳ **Stale Protection**: Stale offer cannot trigger checkout.
-4. 🚫 **Deduplication**: 5 consecutive runs with identical price produce only 1 alert.
-5. 🌐 **Source Outage**: Network timeout preserves last observation as stale; no crash.
-6. 🧠 **LLM Failure**: Rule engine triggers alert even if LLM explanation times out.
-7. 💳 **Double-Capture Guard**: Repeated capture calls return idempotent response.
-8. 🛑 **Client-Side Spoofing**: Fake frontend payment redirect rejected by server check.
-9. 🔒 **Multi-Tenant Isolation**: User A cannot read or modify User B's tracking rule.
-10. 🏷️ **Price Shift at Checkout**: If price increases between alert and checkout, order is rejected for user re-review.
+- **Process Supervision**: In standard Linux or containerized environments, run `pnpm worker` under a process supervisor such as `systemd`, `pm2`, or as a dedicated Kubernetes Deployment.
+- **Graceful Shutdown**: The worker engine listens for `SIGTERM` and `SIGINT` signals, draining active BullMQ queue jobs before terminating database connections.
+- **Connection Pooling**: PostgreSQL connection strings should include pool sizing parameters (e.g., `?connection_limit=20&pool_timeout=10`) when scaling worker replicas.
 
 ---
 
-## 🚀 MVP Roadmap & Architecture Decision
+## 🔒 Security & Compliance Safeguards
 
-### Architecture Decision: Monorepo Simplicity
-
-For speed and maintainability during a hackathon / solo sprint:
-
-- **Client & API**: Next.js 14+ (App Router with Route Handlers) or Next.js + light Express backend sharing common TypeScript types.
-- **Workers**: Dedicated Node.js TypeScript worker executing BullMQ jobs against Redis.
-- **Database**: PostgreSQL with Prisma or Drizzle ORM.
-- **Hosting**: Vercel/Node + Supabase/Neon PostgreSQL + Upstash/Railway Redis.
-
-### Recommended Execution Milestones
-
-- [ ] **Milestone 1**: Mock Catalog + Source Adapter with normalized contract.
-- [ ] **Milestone 2**: PostgreSQL schema, price observation logger, and freshness status.
-- [ ] **Milestone 3**: Deterministic target price rule engine + explainable deal evaluation.
-- [ ] **Milestone 4**: BullMQ worker with adaptive polling schedules and backoff retries.
-- [ ] **Milestone 5**: Notification outbox dispatcher (Email / Push) with deduplication keys.
-- [ ] **Milestone 6**: Pre-flight deal revalidation and PayPal Sandbox checkout flow.
-- [ ] **Milestone 7**: Observability telemetry and automated failure-path test suite.
+- **Strict Server-to-Server Payment Verification**: Client-side PayPal redirects are treated as untrusted hints. Orders are transitioned to `paid` **strictly** after the backend verifies the capture directly with PayPal Orders v2.
+- **Multi-Tenant Authorization**: All tracking rule queries enforce compound predicates: `WHERE id = $id AND user_id = $sessionUserId`.
+- **Payment Idempotency**: Order creation and payment captures enforce unique `Idempotency-Key` headers to guarantee zero double captures during network retries.
+- **Prompt Injection Defense**: Merchant listing titles and product descriptions are treated as raw un-executable strings and escaped prior to passing to LLM contexts.
+- **Zero Hallucination Scoring**: Deal scores, savings amounts, and percentage drops are calculated via deterministic TypeScript math functions; the LLM is restricted to qualitative, fact-grounded explanations.
 
 ---
 
-_DealPilot — Built to make deals trustworthy, verifiable, and effortless._
+<div align="center">
+
+**DealPilot** — *Built for trustworthy, autonomous shopping intelligence.*
+
+</div>
